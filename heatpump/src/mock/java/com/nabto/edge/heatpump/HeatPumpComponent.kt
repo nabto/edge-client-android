@@ -1,6 +1,10 @@
 package com.nabto.edge.heatpump
 
 import androidx.fragment.app.FragmentFactory
+import com.nabto.edge.heatpump.modules.AppModule
+import com.nabto.edge.heatpump.modules.NabtoClientModule
+import com.nabto.edge.heatpump.modules.RoomModule
+import com.nabto.edge.heatpump.modules.SharedPreferencesModule
 import dagger.Component
 
 @Component(modules = [

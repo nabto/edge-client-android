@@ -2,9 +2,8 @@ package com.nabto.edge.heatpump.data.source.heatpump
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.nabto.edge.heatpump.PairedDevice
+import com.nabto.edge.heatpump.data.source.overview.PairedDevice
 import com.nabto.edge.heatpump.heatpump.HeatPumpConnection
-import com.nabto.edge.heatpump.heatpump.HeatPumpRepository
 import com.nabto.edge.heatpump.heatpump.HeatPumpState
 import javax.inject.Inject
 
@@ -15,24 +14,27 @@ class FakeHeatPumpConnectionImpl : HeatPumpConnection {
 
     }
     var hps = HeatPumpState("HEAT", true, 24.0,23.2)
+    override fun getConnectionState(): LiveData<HeatPumpConnection.ConnectionState> {
+        return MutableLiveData<HeatPumpConnection.ConnectionState>(HeatPumpConnection.ConnectionState.CONNECTED)
+    }
 
-    override fun connect() {
+    override suspend fun connect() {
         return;
     }
 
-    override fun getState(): HeatPumpState {
+    override suspend fun getState(): HeatPumpState {
         return hps;
     }
 
-    override fun setPower(power: Boolean) {
+    override suspend fun setPower(power: Boolean) {
         hps.power = power;
     }
 
-    override fun setMode(mode: String) {
+    override suspend fun setMode(mode: String) {
         hps.mode = mode;
     }
 
-    override fun setTarget(target: Double) {
+    override suspend fun setTarget(target: Double) {
         hps.target = target;
     }
 }

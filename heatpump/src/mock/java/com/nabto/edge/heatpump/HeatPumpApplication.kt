@@ -5,6 +5,10 @@ import android.content.Context
 import android.net.nsd.NsdManager
 import androidx.preference.PreferenceManager
 import com.nabto.edge.client.NabtoClient
+import com.nabto.edge.heatpump.modules.AppModule
+import com.nabto.edge.heatpump.modules.NabtoClientModule
+import com.nabto.edge.heatpump.modules.RoomModule
+import com.nabto.edge.heatpump.modules.SharedPreferencesModule
 
 class HeatPumpApplication : Application()  {
 
