@@ -5,7 +5,7 @@ set(libressldir ${CMAKE_CURRENT_BINARY_DIR}/libressl-2.9.1)
 
 if(NOT EXISTS ${libressldir})
   if (NOT EXISTS ${libressltar})
-    file(DOWNLOAD https://cloudflare.cdn.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.9.1.tar.gz ${libressltar}
+    file(DOWNLOAD https://downloads.nabto.com/assets/3rdparty-source/libressl/libressl-2.9.1.tar.gz ${libressltar}
       TIMEOUT 60
       EXPECTED_HASH SHA256=39e4dd856694dc10d564201e4549c46d2431601a2b10f3422507e24ccc8f62f8
       TLS_VERIFY ON
@@ -36,17 +36,17 @@ add_subdirectory(../nabto-client-sdk ${CMAKE_BINARY_DIR}/nabto_client)
 
 add_custom_command(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND bash "generate_swig.sh"
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp_wrapper/nabto_client.i"
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.i"
   OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/src/jni/nabto_client_wrap.cpp"
   )
 
 
 set(src
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp_wrapper/nabto_client_impl.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp_wrapper/nabto_client.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client_impl.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/jni/nabto_client_wrap.cpp
   )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../cpp_wrapper)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper)
 add_library(nabto_client_jni SHARED ${src})
 target_link_libraries(nabto_client_jni nabto_client ${log-lib})
