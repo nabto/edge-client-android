@@ -1,7 +1,6 @@
-package com.nabto.client.jni;
+package com.nabto.edge.client.swig;
 
 import android.util.Log;
-import com.nabto.client.jni.*;
 
 class LoggerImpl extends Logger {
     public void log(LogMessage message) {

@@ -4,6 +4,7 @@
 
 *.iml
 
+/jni/src/main/java/com/nabto/edge/client/swig/*.java
 /jni/src/main/java/com/nabto/client/jni/*.java
 /jni/src/jni/nabto_client_wrap.cpp
 /jni/src/jni/nabto_client_wrap.h

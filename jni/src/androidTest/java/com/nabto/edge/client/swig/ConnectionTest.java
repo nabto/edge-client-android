@@ -1,27 +1,11 @@
-package com.nabto.client.jni;
+package com.nabto.edge.client.swig;
 
 //import android.content.Context;
-import android.content.res.Resources;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.Assert;
-
-import static org.junit.Assert.*;
-
-import com.nabto.client.jni.*;
-
-import com.nabto.client.jni.test.R;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 
 /**

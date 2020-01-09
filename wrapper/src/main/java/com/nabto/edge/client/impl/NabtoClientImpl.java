@@ -10,7 +10,7 @@ import com.nabto.edge.client.NabtoClient;
 import com.nabto.edge.client.Connection;
 
 public class NabtoClientImpl extends NabtoClient {
-    private com.nabto.client.jni.Context context = com.nabto.client.jni.Context.create();
+    private com.nabto.edge.client.swig.Context context = com.nabto.edge.client.swig.Context.create();
     private Logger logger = new Logger();
     private WifiMonitor wifiMonitor;
     /**
@@ -52,7 +52,7 @@ public class NabtoClientImpl extends NabtoClient {
     public void setLogLevel(String level) {
         try {
             context.setLogLevel(level);
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
     }

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nabto.client.jni">
+    package="com.nabto.edge.client.swig">
     <uses-permission android:name="android.permission.INTERNET"/>
 
 </manifest>

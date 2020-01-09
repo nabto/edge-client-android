@@ -2,8 +2,8 @@ package com.nabto.edge.client.impl;
 
 import android.util.Log;
 
-class Logger extends com.nabto.client.jni.Logger {
-    public void log(com.nabto.client.jni.LogMessage message) {
+class Logger extends com.nabto.edge.client.swig.Logger {
+    public void log(com.nabto.edge.client.swig.LogMessage message) {
         String msg = message.getMessage();
         if (message.getSeverity() == "trace") {
             Log.v("nabto", msg);

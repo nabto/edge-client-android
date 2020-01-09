@@ -1,7 +1,6 @@
-package com.nabto.client.jni;
+package com.nabto.edge.client.swig;
 
 //import android.content.Context;
-import android.content.res.Resources;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -9,10 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
-
-import androidx.test.platform.app.*;
-
-import com.nabto.client.jni.test.R;
 
 
 /**

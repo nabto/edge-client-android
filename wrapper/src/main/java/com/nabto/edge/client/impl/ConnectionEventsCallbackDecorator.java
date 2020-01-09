@@ -2,7 +2,7 @@ package com.nabto.edge.client.impl;
 
 import com.nabto.edge.client.ConnectionEventsCallback;
 
-public class ConnectionEventsCallbackDecorator extends com.nabto.client.jni.ConnectionEventsCallback {
+public class ConnectionEventsCallbackDecorator extends com.nabto.edge.client.swig.ConnectionEventsCallback {
     private ConnectionEventsCallback callback;
     ConnectionEventsCallbackDecorator(ConnectionEventsCallback cb)
     {

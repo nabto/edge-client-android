@@ -8,18 +8,17 @@ import com.nabto.edge.client.ConnectionEventsCallback;
 import com.nabto.edge.client.Stream;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 
 public class ConnectionImpl implements Connection {
 
-    com.nabto.client.jni.Connection connection;
+    com.nabto.edge.client.swig.Connection connection;
     WifiManager.MulticastLock multicastLock;
     WifiManager.WifiLock wifiLock;
 
     HashMap<ConnectionEventsCallback, ConnectionEventsCallbackDecorator> connectionEventsCallbacks = new HashMap<ConnectionEventsCallback, ConnectionEventsCallbackDecorator>();
 
-    ConnectionImpl(com.nabto.client.jni.Connection connection, WifiManager.MulticastLock multicastLock, WifiManager.WifiLock wifiLock) {
+    ConnectionImpl(com.nabto.edge.client.swig.Connection connection, WifiManager.MulticastLock multicastLock, WifiManager.WifiLock wifiLock) {
         this.connection = connection;
         this.multicastLock = multicastLock;
         this.wifiLock = wifiLock;
@@ -30,7 +29,7 @@ public class ConnectionImpl implements Connection {
     public void updateOptions(String json) {
         try {
             connection.setOptions(json);
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
     }
@@ -38,7 +37,7 @@ public class ConnectionImpl implements Connection {
     public String getOptions() {
         try {
             return connection.getOptions();
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
     }
@@ -46,7 +45,7 @@ public class ConnectionImpl implements Connection {
     public String getDeviceFingerprintHex() {
         try {
             return connection.getDeviceFingerprintHex();
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
 
@@ -55,7 +54,7 @@ public class ConnectionImpl implements Connection {
     public String getClientFingerprintHex() {
         try {
             return connection.getClientFingerprintHex();
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
     }
@@ -66,7 +65,7 @@ public class ConnectionImpl implements Connection {
     public void close() {
         try {
             connection.close().waitForResult();
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
     }
@@ -77,7 +76,7 @@ public class ConnectionImpl implements Connection {
     public void connect() {
         try {
             connection.connect().waitForResult();
-        } catch (com.nabto.client.jni.NabtoException e) {
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoException(e);
         }
     }

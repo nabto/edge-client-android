@@ -1,17 +1,12 @@
-package com.nabto.client.jni;
+package com.nabto.edge.client.swig;
 
 //import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import android.util.Log;
 
 import static org.junit.Assert.*;
-
-import com.nabto.client.jni.LoggerImpl;
-
-import com.nabto.client.jni.*;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -19,14 +14,17 @@ import com.nabto.client.jni.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class LogTest {
+public class ExceptionTest {
+
     @Test
-    public void loggerTest() throws NabtoException {
+    public void exceptionTest() {
         Context context = Context.create();
-        LoggerImpl logger = new LoggerImpl();
-        context.setLogger(logger);
-        context.setLogLevel("trace");
-        Connection connection = context.createConnection();
-        assertTrue(logger.getLogs() > 0);
+        try {
+            context.setLogLevel("invalid");
+            // never here
+            assertFalse(true);
+        } catch (NabtoException ne) {
+            assertEquals(ne.getMessage(), "Bad argument");
+        }
     }
 }

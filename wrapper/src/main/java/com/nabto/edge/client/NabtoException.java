@@ -5,8 +5,8 @@ import java.lang.RuntimeException;
 public class NabtoException extends RuntimeException {
     private String description;
     private String name;
-    private com.nabto.client.jni.NabtoException origin;
-    public NabtoException(com.nabto.client.jni.NabtoException e)
+    private com.nabto.edge.client.swig.NabtoException origin;
+    public NabtoException(com.nabto.edge.client.swig.NabtoException e)
     {
         description = e.status().getDescription();
         name = e.status().getName();

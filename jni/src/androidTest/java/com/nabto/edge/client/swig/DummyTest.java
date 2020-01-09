@@ -1,17 +1,12 @@
-package com.nabto.client.jni;
+package com.nabto.edge.client.swig;
 
 //import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import android.util.Log;
 
 import static org.junit.Assert.*;
-
-import com.nabto.client.jni.LoggerImpl;
-
-import com.nabto.client.jni.*;
 
 /**
  * Instrumented test, which will execute on an Android device.
