@@ -16,12 +16,12 @@ pipeline {
             }
             steps {
                 checkout scm
-                sh "./gradlew :jni:build --rerun-tasks"
+                sh "./gradlew :library:build --rerun-tasks"
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'jni/build/outputs/aar/*.aar', onlyIfSuccessful: true
-                    archiveArtifacts artifacts: 'jni/build/libs/jni-sources.jar', onlyIfSuccessful: true
+                    archiveArtifacts artifacts: 'library/build/outputs/aar/*.aar', onlyIfSuccessful: true
+                    archiveArtifacts artifacts: 'library/build/libs/library-sources.jar', onlyIfSuccessful: true
                 }
             }
         }
