@@ -1,1 +1,1 @@
-include ':wrapper', ':jni', ':heatpump'
+include ':library', ':heatpump'
