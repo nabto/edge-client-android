@@ -44,7 +44,7 @@ add_custom_command(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 set(src
   ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client_impl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/jni/nabto_client_wrap.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/swig/nabto_client_wrap.cpp
   )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper)
