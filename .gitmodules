@@ -1,0 +1,3 @@
+[submodule "nabto-client-sdk"]
+	path = nabto-client-sdk
+	url = git@github.com:nabto/nabto-client-sdk
