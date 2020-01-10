@@ -4,6 +4,8 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 
+apply from: '../versioning.gradle'
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -13,8 +15,8 @@ android {
         applicationId "com.nabto.edge.heatpump"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode buildVersionCode()
+        versionName buildVersionName()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

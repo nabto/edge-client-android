@@ -1,4 +1,6 @@
 
+apply from: 'versioning.gradle'
+
 buildscript {
     repositories {
         google()
@@ -26,4 +28,8 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task showVersion() {
+    println 'VersionName: '  + buildVersionName()
 }
