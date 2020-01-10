@@ -44,4 +44,9 @@ public abstract class NabtoClient {
      * device.
      */
     public abstract Connection createConnection();
+
+    /**
+     * @return the version of the underlying native nabto client library.
+     */
+    public abstract String version();
 }

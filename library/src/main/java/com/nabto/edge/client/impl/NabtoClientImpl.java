@@ -69,4 +69,9 @@ public class NabtoClientImpl extends NabtoClient {
     public Connection createConnection() {
         return new ConnectionImpl(context.createConnection(), multicastLock, wifiLock);
     }
+
+    @Override
+    public String version() {
+        return com.nabto.edge.client.swig.Context.version();
+    }
 }
