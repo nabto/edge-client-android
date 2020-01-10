@@ -32,8 +32,6 @@ android {
         cmake {
             version "3.10.0+"
             path file('CMakeLists.txt')
-	    //cFlags "-DANDROID_PLATFORM=23"
-	    //cppFlags "-DANDROID_PLATFORM=23"
         }
     }
     defaultConfig {
