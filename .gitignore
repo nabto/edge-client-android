@@ -19,3 +19,11 @@
 /.gradle/
 /library/build
 local.properties
+
+
+/demo/build/*
+/demo/heatpump/build/*
+
+/demo/.gradle/*
+*/.gradle/*
+*/.idea/*

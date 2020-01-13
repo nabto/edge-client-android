@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 
-apply from: '../versioning.gradle'
+apply from: '../../versioning.gradle'
 
 android {
     compileSdkVersion 29
@@ -71,7 +71,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation project(path: ':library')
     implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.1.0'
 
@@ -87,5 +86,6 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.0'
     implementation 'com.google.dagger:dagger:2.25.3'
     kapt 'com.google.dagger:dagger-compiler:2.25.3'
+    implementation 'com.nabto.edge.client:library:0.0.1-master.15+b76c37e.dirty'
 
 }
