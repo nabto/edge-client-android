@@ -14,7 +14,7 @@ ext {
 
     buildVersionName = { ->
         if (gitTag) {
-            gitTag
+            gitTag.substring(1)
         } else if (gitBranch.matches('^[0-9].*$')) {
             versionNumber + "-rc." + gitCount + "+" + gitHash + gitDirty
         } else {
