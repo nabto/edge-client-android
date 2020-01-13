@@ -6,11 +6,13 @@ apply from: '../versioning.gradle'
 publishing {
     publications {
         Production(MavenPublication) {
-            artifact("$buildDir/outputs/aar/library-release.aar")
             groupId 'com.nabto.edge.client'
             artifactId 'library'
             version buildVersionName()
-            artifact sourcesJar
+            artifact sourcesJar {
+                classifier "sources"
+            }
+            artifact("$buildDir/outputs/aar/library-release.aar")
 
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
@@ -34,11 +36,10 @@ bintray {
     user = project.hasProperty('bintrayUser') ?: System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ?: System.getenv('BINTRAY_API_KEY')
     publications = ['Production']
-    configurations = ['archives']
     override = true
     pkg {
         repo = 'android'
-        name = 'com.nabto.edge.client'
+        name = 'com.nabto.edge.client:library'
         description = "Nabto Edge client libraries for android"
         publish = true
         publicDownloadNumbers = false
