@@ -5,6 +5,9 @@ pipeline {
             dir 'build-container'
         }
     }
+    environment {
+        BINTRAY_USER = 'nabto'
+    }
     options { disableConcurrentBuilds() }
     stages {
         stage('Build') {
