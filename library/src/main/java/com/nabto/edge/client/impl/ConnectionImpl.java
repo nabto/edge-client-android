@@ -6,6 +6,7 @@ import com.nabto.edge.client.Connection;
 import com.nabto.edge.client.Coap;
 import com.nabto.edge.client.ConnectionEventsCallback;
 import com.nabto.edge.client.Stream;
+import com.nabto.edge.client.TcpTunnel;
 
 import java.util.HashMap;
 
@@ -87,6 +88,10 @@ public class ConnectionImpl implements Connection {
 
     public Stream createStream() {
         return new StreamImpl(connection.createStream());
+    }
+
+    public TcpTunnel createTcpTunnel() {
+        return new TcpTunnelImpl(connection.createTcpTunnel());
     }
 
     @Override
