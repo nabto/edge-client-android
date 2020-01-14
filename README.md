@@ -71,12 +71,6 @@ The app must be able to get logs from the nabto-client-sdk.
 
 Scope: connectedAndroidTest
 
-### Test Feature 3.
-
-The app must be able to use a future both as blocking and nonblocking.
-
-Scope: connectedAndroidTest
-
 ### Test Feature 4.
 
 The app must be able to make a stream.
@@ -88,6 +82,11 @@ Scope: connectedAndroidTest
 The app must be able to make a coap request.
 
 Scope: connectedAndroidTest
+
+### Test Feature 6.
+
+The app must be able to get the version of the nabto core library.
+The app must be able to get the version of the nabto wrapper library.
 
 
 ## Connectivity
