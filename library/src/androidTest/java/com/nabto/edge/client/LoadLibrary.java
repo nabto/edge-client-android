@@ -1,12 +1,15 @@
-package com.nabto.edge.client.swig;
+package com.nabto.edge.client;
 
-//import android.content.Context;
+import android.content.Context;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
+
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -14,11 +17,11 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class DummyTest {
+public class LoadLibrary {
     @Test
-    public void dummy() {
-        int x = 2;
-        int y = 4;
-        assertEquals(x+y, 6);
+    public void loadLibrary() {
+        Context c = InstrumentationRegistry.getInstrumentation().getContext();
+        NabtoClient client = NabtoClient.create(c);
+        assert(true);
     }
 }

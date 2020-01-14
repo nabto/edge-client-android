@@ -1,8 +1,9 @@
-package com.nabto.edge.client.swig;
+package com.nabto.edge.client;
 
 //import android.content.Context;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,32 +19,26 @@ import static org.junit.Assert.*;
 public class StreamTest {
 
     @Test
-    public void loadLibrary() {
-        Context context = Context.create();
-    }
-
-    @Test
     public void connect() throws NabtoException {
-
-        Context context = Context.create();
-        Connection connection = Helper.createConnection(context);
-        connection.connect().waitForResult();
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createConnection(client);
+        connection.connect();
         Stream stream = connection.createStream();
-        stream.open(42).waitForResult();
+        stream.open(42);
         byte[] toWrite = new byte[]{42,32,44,45};
         stream.write(toWrite);
-        byte[] result = stream.readAll(4).waitForResult();
+        byte[] result = stream.readAll(4);
         assertEquals(result.length, 4);
 
         //for (int i = 0; i < data.length; i++) {
         assertArrayEquals(toWrite, result); // toWrite.data()[i], data[i]);
             //}
         try {
-            stream.close().waitForResult();
+            stream.close();
         } catch (Exception e) {
             // TODO this should close cleanly
         }
-        connection.close().waitForResult();
+        connection.close();
 
     }
 }

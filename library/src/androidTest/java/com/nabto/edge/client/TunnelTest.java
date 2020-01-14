@@ -1,8 +1,9 @@
-package com.nabto.edge.client.swig;
+package com.nabto.edge.client;
 
 //import android.content.Context;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,11 +25,6 @@ import java.net.URL;
 @RunWith(AndroidJUnit4.class)
 public class TunnelTest {
 
-    @Test
-    public void loadLibrary() {
-        Context context = Context.create();
-    }
-
     private String readStream(InputStream is) {
         try {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -45,9 +41,9 @@ public class TunnelTest {
 
     @Test
     public void connect() throws Exception {
-        Context context = Context.create();
-        Connection connection = Helper.createConnection(context);
-        connection.connect().waitForResult();
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createConnection(client);
+        connection.connect();
         TcpTunnel tunnel = connection.createTcpTunnel();
         tunnel.open(4242, "", 29281);
 
@@ -61,29 +57,6 @@ public class TunnelTest {
             urlConnection.disconnect();
         }
 
-        class CallbackImpl extends FutureCallback {
-            final Object syncObject = new Object();
-
-            public Status status;
-            public void run(Status status) {
-                this.status = status;
-                synchronized (syncObject){
-                    syncObject.notify();
-                }
-            }
-
-            public Status waitStatus() throws Exception {
-                synchronized (syncObject){
-                   syncObject.wait();
-                }
-                return status;
-            }
-        }
-
-        FutureVoid future = connection.close();
-        CallbackImpl ci = new CallbackImpl();
-        future.callback(ci);
-        Status closeStatus = ci.waitStatus();
-        assertTrue(closeStatus.ok());
+        connection.close();
     }
 }
