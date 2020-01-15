@@ -14,6 +14,7 @@ pipeline {
 
             steps {
                 checkout scm
+                sh "./library/generate_swig.sh"
                 sh "./gradlew :library:build --rerun-tasks"
             }
             post {
