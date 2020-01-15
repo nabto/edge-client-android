@@ -61,6 +61,7 @@ public class StreamTest {
         try {
             byte[] result = stream.readAll(4);
         } catch (NabtoEOFException e) {
+            assertTrue(e.getErrorCode() == ErrorCodes.END_OF_FILE);
             eof = true;
         } finally {
             assertTrue(eof);
