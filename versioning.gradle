@@ -6,7 +6,7 @@ ext {
     gitHash = ['sh', '-c', 'git rev-parse --short HEAD'].execute().text.trim()
 
 
-    versionNumber = "0.0.3"
+    versionNumber = "0.0.6"
 
     buildVersionCode = { ->
         Integer.parseInt(gitCount)

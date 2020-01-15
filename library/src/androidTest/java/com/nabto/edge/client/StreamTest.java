@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 public class StreamTest {
 
     @Test
-    public void connect() throws NabtoException {
+    public void echo() {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         Connection connection = Helper.createConnection(client);
         connection.connect();
@@ -27,17 +27,46 @@ public class StreamTest {
         stream.open(42);
         byte[] toWrite = new byte[]{42,32,44,45};
         stream.write(toWrite);
-        byte[] result = stream.readAll(4);
-        assertEquals(result.length, 4);
-
-        //for (int i = 0; i < data.length; i++) {
-        assertArrayEquals(toWrite, result); // toWrite.data()[i], data[i]);
-            //}
         try {
-            stream.close();
-        } catch (Exception e) {
-            // TODO this should close cleanly
+            byte[] result = stream.readAll(4);
+            assertEquals(result.length, 4);
+            assertArrayEquals(toWrite, result); // toWrite.data()[i], data[i]);
+        } catch (NabtoEOFException e) {
+            assert(false);
         }
+
+        stream.close();
+        connection.close();
+
+    }
+
+    @Test
+    public void echoUntilEOF() throws Exception {
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createConnection(client);
+        connection.connect();
+        Stream stream = connection.createStream();
+        stream.open(42);
+        byte[] toWrite = new byte[]{42,32,44,45};
+        stream.write(toWrite);
+        stream.close();
+        try {
+            byte[] result = stream.readAll(4);
+            assertEquals(result.length, 4);
+        } catch (NabtoEOFException e) {
+            throw e;
+        }
+
+        boolean eof = false;
+        try {
+            byte[] result = stream.readAll(4);
+        } catch (NabtoEOFException e) {
+            eof = true;
+        } finally {
+            assertTrue(eof);
+        }
+
+        stream.close();
         connection.close();
 
     }

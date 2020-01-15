@@ -18,7 +18,7 @@ public interface Stream {
      *
      * @return bytes read.
      */
-    public byte[] readSome();
+    public byte[] readSome() throws NabtoEOFException;
 
     /**
      * Read an exact amount of bytes from a stream.
@@ -29,7 +29,7 @@ public interface Stream {
      * @return Bytes read, less than length bytes can be returned if
      * the stream is reaching end of file.
      */
-    public byte[] readAll(int length);
+    public byte[] readAll(int length) throws NabtoEOFException;
 
     /**
      * Write bytes to a stream. This function blocks until the bytes
