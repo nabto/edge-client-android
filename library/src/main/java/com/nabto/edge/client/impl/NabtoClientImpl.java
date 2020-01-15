@@ -53,7 +53,7 @@ public class NabtoClientImpl extends NabtoClient {
         try {
             context.setLogLevel(level);
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 

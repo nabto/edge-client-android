@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 public class CoapTest {
     @Test
-    public void connect() throws NabtoException {
+    public void connect() {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
 
         Connection connection = Helper.createConnection(client);

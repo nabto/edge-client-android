@@ -14,7 +14,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
         try {
             stream.open(streamPort).waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -23,9 +23,9 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
             return stream.readSome(1024).waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             if (e.status().getErrorCode() == com.nabto.edge.client.swig.Status.getEND_OF_FILE()) {
-                throw new NabtoEOFException();
+                throw new NabtoEOFException(e);
             } else {
-                throw new com.nabto.edge.client.NabtoException(e);
+                throw new com.nabto.edge.client.NabtoRuntimeException(e);
             }
         }
     }
@@ -35,9 +35,9 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
             return stream.readAll(length).waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             if (e.status().getErrorCode() == com.nabto.edge.client.swig.Status.getEND_OF_FILE()) {
-                throw new NabtoEOFException();
+                throw new NabtoEOFException(e);
             } else {
-                throw new com.nabto.edge.client.NabtoException(e);
+                throw new com.nabto.edge.client.NabtoRuntimeException(e);
             }
         }
     }
@@ -46,7 +46,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
         try {
             stream.write(bytes).waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }
@@ -55,7 +55,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
         try {
             stream.close().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }

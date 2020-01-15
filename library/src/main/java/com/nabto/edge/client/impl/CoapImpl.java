@@ -15,7 +15,7 @@ public class CoapImpl implements Coap {
         try {
             coap.setRequestPayload(contentFormat, payload);
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -24,7 +24,7 @@ public class CoapImpl implements Coap {
         try {
             coap.execute().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }
@@ -33,7 +33,7 @@ public class CoapImpl implements Coap {
         try {
             return coap.getResponseStatusCode();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }
@@ -42,7 +42,7 @@ public class CoapImpl implements Coap {
         try {
             return coap.getResponseContentFormat();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }
@@ -51,7 +51,7 @@ public class CoapImpl implements Coap {
         try {
             return coap.getResponsePayload();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }

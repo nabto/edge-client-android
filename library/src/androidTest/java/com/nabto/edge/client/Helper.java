@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 public class Helper {
 
-    public static Connection createConnection(NabtoClient client) throws NabtoException {
+    public static Connection createConnection(NabtoClient client) {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
         Connection connection = client.createConnection();

@@ -31,7 +31,7 @@ public class ConnectionImpl implements Connection {
         try {
             connection.setOptions(json);
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -39,7 +39,7 @@ public class ConnectionImpl implements Connection {
         try {
             return connection.getOptions();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -47,7 +47,7 @@ public class ConnectionImpl implements Connection {
         try {
             return connection.getDeviceFingerprintHex();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }
@@ -56,7 +56,7 @@ public class ConnectionImpl implements Connection {
         try {
             return connection.getClientFingerprintHex();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -67,7 +67,7 @@ public class ConnectionImpl implements Connection {
         try {
             connection.close().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -78,7 +78,7 @@ public class ConnectionImpl implements Connection {
         try {
             connection.connect().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoException(e);
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
