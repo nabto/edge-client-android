@@ -63,7 +63,7 @@ public class ConnectionTest {
             fail();
 
         } catch (NabtoNoChannelsException e) {
-            assert(e.getMdnsChannelErrorCode().getErrorCode() == ErrorCodes.NOT_FOUND);
+            assert(e.getLocalChannelErrorCode().getErrorCode() == ErrorCodes.NOT_FOUND);
         }
     }
     @Test(expected = Test.None.class)
@@ -78,8 +78,8 @@ public class ConnectionTest {
             fail();
 
         } catch (NabtoNoChannelsException e) {
-            assertEquals(e.getMdnsChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
-            assertEquals(e.getUdpRelayChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
+            assertEquals(e.getLocalChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
+            //assertEquals(e.getRemoteChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
         }
     }
 }
