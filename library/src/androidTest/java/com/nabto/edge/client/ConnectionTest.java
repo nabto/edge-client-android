@@ -2,8 +2,6 @@ package com.nabto.edge.client;
 
 //import android.content.Context;
 
-import android.util.Log;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -64,7 +62,7 @@ public class ConnectionTest {
             connection.connect();
             fail();
 
-        } catch (NabtoConnectFailedException e) {
+        } catch (NabtoNoChannelsException e) {
             assert(e.getMdnsChannelErrorCode().getErrorCode() == ErrorCodes.NOT_FOUND);
         }
     }
@@ -79,7 +77,7 @@ public class ConnectionTest {
             connection.connect();
             fail();
 
-        } catch (NabtoConnectFailedException e) {
+        } catch (NabtoNoChannelsException e) {
             assertEquals(e.getMdnsChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
             assertEquals(e.getUdpRelayChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
         }

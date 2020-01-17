@@ -6,11 +6,9 @@ import com.nabto.edge.client.Connection;
 import com.nabto.edge.client.Coap;
 import com.nabto.edge.client.ConnectionEventsCallback;
 import com.nabto.edge.client.ErrorCodes;
-import com.nabto.edge.client.NabtoConnectFailedException;
+import com.nabto.edge.client.NabtoNoChannelsException;
 import com.nabto.edge.client.Stream;
 import com.nabto.edge.client.TcpTunnel;
-
-import org.json.JSONObject;
 
 import java.util.HashMap;
 
@@ -83,10 +81,10 @@ public class ConnectionImpl implements Connection {
             connection.connect().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             if (e.status().getErrorCode() == ErrorCodes.NO_CHANNELS) {
-                int mdnsEc = connection.getMdnsChannelErrorCode();
-                int udpRelayEc = connection.getUdpRelayChannelErrorCode();
+                int localEc = connection.getLocalChannelErrorCode();
+                int remoteEc = connection.getRemoteChannelErrorCode();
 
-                throw new NabtoConnectFailedException(mdnsEc, udpRelayEc);
+                throw new NabtoNoChannelsException(localEc, remoteEc);
 
             } else {
                 throw new com.nabto.edge.client.NabtoRuntimeException(e);
