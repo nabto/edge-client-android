@@ -2,12 +2,18 @@ package com.nabto.edge.client;
 
 //import android.content.Context;
 
+import android.util.Log;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -42,5 +48,40 @@ public class ConnectionTest {
         options.put("Remote", true);
         connection.connect();
         connection.close();
+    }
+
+    @Test(expected = Test.None.class)
+    public void noSuchLocalDevice() throws Exception {
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createConnection(client);
+        JSONObject options = new JSONObject();
+        options.put("Local", true);
+        options.put("Remote", false);
+        options.put("DeviceId", "unknown");
+        connection.updateOptions(options.toString());
+
+        try {
+            connection.connect();
+            fail();
+
+        } catch (NabtoConnectFailedException e) {
+            assert(e.getMdnsChannelErrorCode().getErrorCode() == ErrorCodes.NOT_FOUND);
+        }
+    }
+    @Test(expected = Test.None.class)
+    public void noSuchLocalOrRemoteDevice() throws Exception {
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createConnection(client);
+        JSONObject options = new JSONObject();
+        //options.put("DeviceId", "unknown");
+        connection.updateOptions(options.toString());
+        try {
+            connection.connect();
+            fail();
+
+        } catch (NabtoConnectFailedException e) {
+            assertEquals(e.getMdnsChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
+            assertEquals(e.getUdpRelayChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
+        }
     }
 }

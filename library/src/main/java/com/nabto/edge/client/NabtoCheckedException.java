@@ -5,22 +5,11 @@ public class NabtoCheckedException extends Exception implements NabtoException {
 
     public NabtoCheckedException(com.nabto.edge.client.swig.NabtoException e)
     {
+        super(e.getMessage(), e);
         origin = e;
     }
 
-    public String getDescription()  {
-        return origin.status().getDescription();
-    }
-
-    public String getName() {
-        return origin.status().getName();
-    }
-
-    public String getMessage() {
-        return origin.getMessage();
-    }
-
-    public int getErrorCode() {
-        return origin.status().getErrorCode();
+    public ErrorCode getErrorCode() {
+        return new ErrorCode(origin.status().getErrorCode());
     }
 }

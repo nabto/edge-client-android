@@ -5,8 +5,12 @@ import android.net.wifi.WifiManager;
 import com.nabto.edge.client.Connection;
 import com.nabto.edge.client.Coap;
 import com.nabto.edge.client.ConnectionEventsCallback;
+import com.nabto.edge.client.ErrorCodes;
+import com.nabto.edge.client.NabtoConnectFailedException;
 import com.nabto.edge.client.Stream;
 import com.nabto.edge.client.TcpTunnel;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 
@@ -78,7 +82,15 @@ public class ConnectionImpl implements Connection {
         try {
             connection.connect().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+            if (e.status().getErrorCode() == ErrorCodes.NO_CHANNELS) {
+                int mdnsEc = connection.getMdnsChannelErrorCode();
+                int udpRelayEc = connection.getUdpRelayChannelErrorCode();
+
+                throw new NabtoConnectFailedException(mdnsEc, udpRelayEc);
+
+            } else {
+                throw new com.nabto.edge.client.NabtoRuntimeException(e);
+            }
         }
     }
 
