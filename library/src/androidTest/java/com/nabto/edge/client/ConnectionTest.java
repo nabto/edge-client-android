@@ -79,7 +79,7 @@ public class ConnectionTest {
 
         } catch (NabtoNoChannelsException e) {
             assertEquals(e.getLocalChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
-            //assertEquals(e.getRemoteChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
+            assertEquals(e.getRemoteChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_ATTACHED).getName());
         }
     }
 }

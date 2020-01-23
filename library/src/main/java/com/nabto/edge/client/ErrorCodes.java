@@ -27,4 +27,6 @@ public class ErrorCodes {
     public static int STOPPED =  com.nabto.edge.client.swig.Status.getSTOPPED();
     public static int TIMEOUT =  com.nabto.edge.client.swig.Status.getTIMEOUT();
     public static int UNKNOWN =  com.nabto.edge.client.swig.Status.getUNKNOWN();
+    public static int NONE = com.nabto.edge.client.swig.Status.getNONE();
+    public static int NOT_ATTACHED = com.nabto.edge.client.swig.Status.getNOT_ATTACHED();
 }
