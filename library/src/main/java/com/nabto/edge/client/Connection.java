@@ -1,11 +1,16 @@
 package com.nabto.edge.client;
 
 
-
+/**
+ * Connection API.
+ *
+ * Connection instances represents a Nabto Edge Direct connection between a client and a device.
+ * The instance is used to create new reliable streams or CoAP sessions on top of a connection.
+ */
 public interface Connection {
 
     /**
-     * See nabto_client_connection_set_options for refetence.
+     * See nabto_client_connection_set_options for reference.
      *
      * update the options for a connection, the provided options is
      * merged with the already set options.

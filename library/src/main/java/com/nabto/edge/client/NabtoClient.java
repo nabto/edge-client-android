@@ -7,6 +7,12 @@ import android.content.Context;
 
 import com.nabto.edge.client.impl.NabtoClientImpl;
 
+/**
+ * This class is the Nabto Edge Client SDK main entry point.
+ *
+ * It allows you to create private keys to use to open a connection. And to create the actual
+ * connection object used to start interaction with a Nabto Edge embedded device.
+ */
 public abstract class NabtoClient {
 
     /**
@@ -46,7 +52,9 @@ public abstract class NabtoClient {
     public abstract Connection createConnection();
 
     /**
-     * @return the version of the underlying native nabto client library.
+     * Get the version of the underlying native nabto client library.
+     *
+     * @return version string
      */
     public abstract String version();
 }

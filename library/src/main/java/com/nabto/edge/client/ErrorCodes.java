@@ -1,6 +1,10 @@
 package com.nabto.edge.client;
 
+/**
+ * This class represents error codes from the SDK.
+ */
 public class ErrorCodes {
+
     /**
      * Error codes which the nabto client sdk exposes.
      * The documentation for the actual error codes can be found

@@ -1,5 +1,12 @@
 package com.nabto.edge.client;
 
+/**
+ * The Stream API.
+ *
+ * The Streaming API enables socket-like communication between client and device. The stream is
+ * reliable and ensures data is received ordered and complete. If either of these conditions cannot be
+ * met, the stream will be closed in such a way that it is detectable.
+ */
 public interface Stream {
     /**
      * Open a stream. This function blocks until the stream is opened.

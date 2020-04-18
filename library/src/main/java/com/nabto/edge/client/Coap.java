@@ -1,5 +1,13 @@
-package com.nabto.edge.client;
+// package com.nabto.edge.client;
 
+/**
+ * The CoAP API.
+ *
+ * The CoAP API allows exchange of CoAP message on top of a Nabto connection between a client and
+ * device. This is conceptually similar to Nabto 4 RPC but much more robust and complete.
+ *
+ * Create instances of this interface through createCoap() on a Connection object.
+ */
 public interface Coap {
 
     /**
@@ -11,7 +19,6 @@ public interface Coap {
         public static final int APPLICATION_XML = 41;
         public static final int APPLICATION_OCTET_STREAM = 42;
         public static final int APPLICATION_CBOR = 60;
-
     }
 
     /**
