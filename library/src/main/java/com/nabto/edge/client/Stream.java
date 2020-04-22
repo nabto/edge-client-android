@@ -6,6 +6,9 @@ package com.nabto.edge.client;
  * The Streaming API enables socket-like communication between client and device. The stream is
  * reliable and ensures data is received ordered and complete. If either of these conditions cannot be
  * met, the stream will be closed in such a way that it is detectable.
+ *
+ * Stream instances are created using the Connection.createStream() factory method.
+
  */
 public interface Stream {
     /**

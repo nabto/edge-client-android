@@ -49,6 +49,9 @@ public interface Connection {
      */
     Coap createCoap(String method, String path);
 
+    /**
+     * Create a TCP tunnel.
+     */
     TcpTunnel createTcpTunnel();
 
     /**

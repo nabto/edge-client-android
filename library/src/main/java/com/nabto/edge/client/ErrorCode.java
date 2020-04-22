@@ -2,6 +2,9 @@ package com.nabto.edge.client;
 
 import com.nabto.edge.client.swig.Status;
 
+/**
+ * This class wraps Nabto Edge SDK error codes.
+ */
 public class ErrorCode {
     private Status status;
 

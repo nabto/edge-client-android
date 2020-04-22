@@ -6,7 +6,7 @@
  * The CoAP API allows exchange of CoAP message on top of a Nabto connection between a client and
  * device. This is conceptually similar to Nabto 4 RPC but much more robust and complete.
  *
- * Create instances of this interface through createCoap() on a Connection object.
+ * Stream instances are created using the Connection.createCoap() factory method.
  */
 public interface Coap {
 
@@ -15,9 +15,25 @@ public interface Coap {
      * https://www.iana.org/assignments/core-parameters/core-parameters.xhtml
      */
     public class ContentFormat {
+
+        /**
+         * Plain text content.
+         */
         public static final int TEXT_PLAIN = 0;
+
+        /**
+         * XML content.
+         */
         public static final int APPLICATION_XML = 41;
+
+        /**
+         * Binary data.
+         */
         public static final int APPLICATION_OCTET_STREAM = 42;
+
+        /**
+         * Concise Binary Object Representation (compact data representation inspired by JSON).
+         */
         public static final int APPLICATION_CBOR = 60;
     }
 

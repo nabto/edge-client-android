@@ -7,6 +7,8 @@ package com.nabto.edge.client;
  * through Nabto by integrating through a simple TCP socket, just like e.g. SSH tunnels. TCP Tunnels
  * can hence be used to quickly add remote access capabilities to existing applications that already
  * support TCP communication.
+ *
+ * TCP Tunnel instances are created using the Connection.createTcpTunnel() factory method.
  */
 public interface TcpTunnel {
 
