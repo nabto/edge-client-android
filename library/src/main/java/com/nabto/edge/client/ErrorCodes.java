@@ -121,7 +121,7 @@ public class ErrorCodes {
     public static int NONE = com.nabto.edge.client.swig.Status.getNONE();
 
     /**
-     * The target device is not attached with any server (it is offline).
+     * The target device is not attached to any server (it is offline).
      */
     public static int NOT_ATTACHED = com.nabto.edge.client.swig.Status.getNOT_ATTACHED();
 }
