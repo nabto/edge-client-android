@@ -10,19 +10,42 @@ package com.nabto.edge.client;
 public interface Connection {
 
     /**
-     * See nabto_client_connection_set_options for reference.
+     * Set connection parameters through a JSON document.
      *
-     * update the options for a connection, the provided options is
-     * merged with the already set options.
+     * The provided options are merged with the already set options. n error is returned if a
+     * parameter is not recognized. This only updates the internal representation of parameters.
      *
+     * Options are set in a JSON document as follows:
+     * ```
+     * {
+     *   "ProductId": "pr-12345678",
+     *   "DeviceId": "de-12345678",
+     *   "ServerUrl": "https://pr-12345678.clients.nabto.net",
+     *   "ServerKey": "sk-12345678123456781234567812345678"
+     * }
+     * ```
+     *
+     * The following options are supported:
+     *
+     * ```
+     * ProductId
+     * DeviceId
+     * PrivateKey
+     * ServerUrl
+     * ServerKey
+     * ServerJwtToken
+     * ServerConnectToken
+     * AppName
+     * AppVersion
+     * ```
      * @param json a string of valid json.
      */
     void updateOptions(String json);
 
     /**
+     * Get connection options as a JSON document.
+     *
      * See nabto_client_connection_get_options for reference.
-     *
-     *
      */
     String getOptions();
 
