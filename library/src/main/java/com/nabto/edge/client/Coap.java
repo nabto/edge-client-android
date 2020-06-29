@@ -1,4 +1,4 @@
-// package com.nabto.edge.client;
+package com.nabto.edge.client;
 
 /**
  * The CoAP API.
