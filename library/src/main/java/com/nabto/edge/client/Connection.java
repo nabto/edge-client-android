@@ -55,12 +55,27 @@ public interface Connection {
      * If the connection is not connected this function throws an
      * exception.
      */
-    String getDeviceFingerprintHex();
+    String getDeviceFingerprint();
 
     /**
      * Get the fingerprint of the clients public key as a hex string.
      */
-    String getClientFingerprintHex();
+    String getClientFingerprint();
+    
+    /**
+     * Enable the direct candidates feature for the connection.
+     */
+    void enableDirectCandidates();
+
+    /**
+     * Add a diect candidate.
+     */
+    void addDirectCandidate(String host, int port);
+
+    /**
+     * Mark the end of direct candidates,
+     */
+    void endOfDirectCandidates();
 
     /**
      * Create stream.
@@ -90,6 +105,13 @@ public interface Connection {
      */
     void connect();
 
+    /**
+     * Password authenticate a connectio.
+     * 
+     * This function blocks until the exchange is done an throws an exception
+     * if the password authentication fails.
+     */
+    void passwordAuthenticate(String username, String password);
 
     /**
      * Add a listener for connection events.
@@ -100,4 +122,6 @@ public interface Connection {
      * Remove a listener for connection events.
      */
     void removeConnectionEventsListener(ConnectionEventsCallback connectionEventsCallback);
+
+
 }

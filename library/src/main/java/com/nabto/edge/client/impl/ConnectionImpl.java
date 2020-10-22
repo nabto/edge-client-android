@@ -44,23 +44,57 @@ public class ConnectionImpl implements Connection {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
-
-    public String getDeviceFingerprintHex() {
+    
+    public String getDeviceFingerprint() {
         try {
-            return connection.getDeviceFingerprintHex();
+            return connection.getDeviceFingerprint();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
 
     }
 
-    public String getClientFingerprintHex() {
+    public String getClientFingerprint() {
         try {
-            return connection.getClientFingerprintHex();
+            return connection.getClientFingerprint();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
+
+    /**
+     * Enable the direct candidates feature for the connection.
+     */
+    public void enableDirectCandidates() {
+        try {
+            connection.enableDirectCandidates();
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
+    /**
+     * Add a diect candidate.
+     */
+    public void addDirectCandidate(String host, int port) {
+        try {
+            connection.addDirectCandidate(host, port);
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
+    /**
+     * Mark the end of direct candidates,
+     */
+    public void endOfDirectCandidates() {
+        try {
+            connection.endOfDirectCandidates();
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
 
     /**
      * Blocking close
@@ -83,14 +117,27 @@ public class ConnectionImpl implements Connection {
             if (e.status().getErrorCode() == ErrorCodes.NO_CHANNELS) {
                 int localEc = connection.getLocalChannelErrorCode();
                 int remoteEc = connection.getRemoteChannelErrorCode();
+                int directCandidatesEc = connection.getDirectCandidatesChannelErrorCode();
 
-                throw new NabtoNoChannelsException(localEc, remoteEc);
+                throw new NabtoNoChannelsException(localEc, remoteEc, directCandidatesEc);
 
             } else {
                 throw new com.nabto.edge.client.NabtoRuntimeException(e);
             }
         }
     }
+
+    /**
+     * Blocking close
+     */
+    public void passwordAuthenticate(String username, String password) {
+        try {
+            connection.passwordAuthenticate(username, password).waitForResult();
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
 
     public Coap createCoap(String method, String path) {
         return new CoapImpl(connection.createCoap(method, path));

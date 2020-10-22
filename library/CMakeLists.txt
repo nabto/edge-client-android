@@ -34,7 +34,7 @@ add_subdirectory(../nabto-client-sdk ${CMAKE_BINARY_DIR}/nabto_client)
 
 add_custom_command(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND bash "generate_swig.sh"
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.i"
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.i" "${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.hpp"
   OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/src/swig/nabto_client_wrap.cpp"
   )
 

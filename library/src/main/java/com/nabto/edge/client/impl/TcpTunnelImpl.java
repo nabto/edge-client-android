@@ -8,18 +8,26 @@ public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
         this.tcpTunnel = tcpTunnel;
     }
 
-    public void open(int localPort, String remoteHost, int remotePort)
+    public void open(String service, int localPort)
     {
         try {
-            tcpTunnel.open(localPort, remoteHost, remotePort).waitForResult();
+            tcpTunnel.open(service, localPort).waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
     public void close() {
-         try {
+        try {
             tcpTunnel.close().waitForResult();
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
+    public int getLocalPort() {
+        try {
+            return tcpTunnel.getLocalPort();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }

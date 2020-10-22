@@ -6,10 +6,12 @@ package com.nabto.edge.client;
 public class NabtoNoChannelsException extends RuntimeException {
     private ErrorCode localChannelErrorCode;
     private ErrorCode remoteChannelErrorCode;
+    private ErrorCode directCandidatesChannelErrorCode;
 
-    public NabtoNoChannelsException(int localChannelError, int remoteChannelError) {
+    public NabtoNoChannelsException(int localChannelError, int remoteChannelError, int directCandidatesChannelError) {
         localChannelErrorCode = new ErrorCode(localChannelError);
         remoteChannelErrorCode = new ErrorCode(remoteChannelError);
+        directCandidatesChannelErrorCode = new ErrorCode(directCandidatesChannelError);
     }
 
     /**
@@ -24,5 +26,9 @@ public class NabtoNoChannelsException extends RuntimeException {
      */
     public ErrorCode getRemoteChannelErrorCode() {
         return remoteChannelErrorCode;
+    }
+
+    public ErrorCode getDirectCandidatesChannelErrorCode() {
+        return directCandidatesChannelErrorCode;
     }
 }

@@ -15,10 +15,18 @@ public interface TcpTunnel {
     /**
      * Open a tunnel
      */
-    public void open(int localPort, String remoteHost, int remotePort);
+    public void open(String service, int localPort);
 
     /**
      * Close a tunnel, this function blocks until the tunnel is closed
      */
     public void close();
+
+    /**
+     * Get the local port whic the tunnel is bound to.
+     * If the tunnel is not opened an exception is thrown
+     *
+     * @return the local port number used.
+     */
+    public int getLocalPort();
 }
