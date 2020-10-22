@@ -8,6 +8,13 @@ package com.nabto.edge.client;
  * The instance is used to create new reliable streams or CoAP sessions on top of a connection.
  */
 public interface Connection {
+    /**
+     * Connection type
+     */
+    public enum Type {
+        RELAY,
+        DIRECT
+    }
 
     /**
      * Set connection parameters through a JSON document.
@@ -62,6 +69,11 @@ public interface Connection {
      */
     String getClientFingerprint();
     
+    /**
+     * Get the connection type.
+     */
+    Type getType();
+
     /**
      * Enable the direct candidates feature for the connection.
      */

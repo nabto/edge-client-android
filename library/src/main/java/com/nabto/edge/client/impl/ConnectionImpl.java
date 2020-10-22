@@ -62,6 +62,21 @@ public class ConnectionImpl implements Connection {
         }
     }
 
+    public Type getType() {
+        try {
+            com.nabto.edge.client.swig.Connection.Type type = connection.getType();
+            if (type == com.nabto.edge.client.swig.Connection.Type.RELAY) {
+                return Type.RELAY;
+            }
+            if (type == com.nabto.edge.client.swig.Connection.Type.DIRECT) {
+                return Type.DIRECT;
+            }
+            throw new com.nabto.edge.client.NabtoRuntimeException(new com.nabto.edge.client.swig.NabtoException(com.nabto.edge.client.swig.Status.getUNKNOWN()));
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
     /**
      * Enable the direct candidates feature for the connection.
      */
