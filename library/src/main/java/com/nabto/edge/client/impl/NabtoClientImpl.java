@@ -8,6 +8,9 @@ import android.net.wifi.WifiManager;
 
 import com.nabto.edge.client.NabtoClient;
 import com.nabto.edge.client.Connection;
+import com.nabto.edge.client.MdnsResultListener;
+
+import java.util.HashMap;
 
 public class NabtoClientImpl extends NabtoClient {
     private com.nabto.edge.client.swig.Context context = com.nabto.edge.client.swig.Context.create();
@@ -25,6 +28,7 @@ public class NabtoClientImpl extends NabtoClient {
      */
     private WifiManager.WifiLock wifiLock;
 
+    private HashMap<MdnsResultListener, MdnsResultScanner> mdnsResultListeners;
 
     public NabtoClientImpl(Context context) {
         try {
@@ -68,6 +72,30 @@ public class NabtoClientImpl extends NabtoClient {
     @Override
     public Connection createConnection() {
         return new ConnectionImpl(context.createConnection(), multicastLock, wifiLock);
+    }
+
+    @Override
+    public void addMdnsResultListener(MdnsResultListener listener)
+    {
+        addMdnsResultListener(listener, "");
+
+    }
+
+    @Override
+    public void addMdnsResultListener(MdnsResultListener listener, String subtype)
+    {
+        MdnsResultScanner scanner = new MdnsResultScanner(context, listener, subtype);
+        mdnsResultListeners.put(listener, scanner);
+    }
+
+    @Override
+    public void removeMdnsResultListener(MdnsResultListener listener)
+    {
+        MdnsResultScanner scanner = mdnsResultListeners.get(listener);
+        if (scanner != null) {
+            scanner.stop();
+        }
+        mdnsResultListeners.remove(listener);
     }
 
     @Override

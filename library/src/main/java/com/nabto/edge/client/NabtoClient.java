@@ -52,6 +52,23 @@ public abstract class NabtoClient {
     public abstract Connection createConnection();
 
     /**
+     * Add a listener for mdns results.
+     *
+     * Listen for mdns results.
+     */
+    public abstract void addMdnsResultListener(MdnsResultListener listener);
+
+    /**
+     * Add a mdns result listener which only returns results for the given subtype.
+     */
+    public abstract void addMdnsResultListener(MdnsResultListener listener, String subtype);
+
+    /**
+     * Remove a mdns result listener.
+     */
+    public abstract void removeMdnsResultListener(MdnsResultListener listener);
+
+    /**
      * Get the version of the underlying native nabto client library.
      *
      * @return version string
