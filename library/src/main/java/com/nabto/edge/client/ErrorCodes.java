@@ -124,4 +124,14 @@ public class ErrorCodes {
      * The target device is not attached to any server (it is offline).
      */
     public static int NOT_ATTACHED = com.nabto.edge.client.swig.Status.getNOT_ATTACHED();
+
+    public static int TOKEN_REJECTED = com.nabto.edge.client.swig.Status.getTOKEN_REJECTED();
+    public static int COULD_BLOCK = com.nabto.edge.client.swig.Status.getCOULD_BLOCK();
+    public static int UNAUTHORIZED = com.nabto.edge.client.swig.Status.getUNAUTHORIZED();
+    public static int TOO_MANY_REQUESTS = com.nabto.edge.client.swig.Status.getTOO_MANY_REQUESTS();
+    public static int UNKNOWN_PRODUCT_ID = com.nabto.edge.client.swig.Status.getUNKNOWN_PRODUCT_ID();
+    public static int UNKNOWN_DEVICE_ID = com.nabto.edge.client.swig.Status.getUNKNOWN_DEVICE_ID();
+    public static int UNKNOWN_SERVER_KEY = com.nabto.edge.client.swig.Status.getUNKNOWN_SERVER_KEY();
+    public static int CONNECTION_REFUSED = com.nabto.edge.client.swig.Status.getCONNECTION_REFUSED();
+    public static int INTERNAL_ERROR = com.nabto.edge.client.swig.Status.getINTERNAL_ERROR();
 }

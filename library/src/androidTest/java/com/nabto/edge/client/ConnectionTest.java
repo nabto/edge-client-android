@@ -71,7 +71,7 @@ public class ConnectionTest {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         Connection connection = Helper.createConnection(client);
         JSONObject options = new JSONObject();
-        //options.put("DeviceId", "unknown");
+        options.put("DeviceId", "unknown");
         connection.updateOptions(options.toString());
         try {
             connection.connect();
@@ -79,7 +79,8 @@ public class ConnectionTest {
 
         } catch (NabtoNoChannelsException e) {
             assertEquals(e.getLocalChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_FOUND).getName());
-            assertEquals(e.getRemoteChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NOT_ATTACHED).getName());
+            assertEquals(e.getRemoteChannelErrorCode().getName(), new ErrorCode(ErrorCodes.UNKNOWN_DEVICE_ID).getName());
+            assertEquals(e.getDirectCandidatesChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NONE).getName());
         }
     }
 }

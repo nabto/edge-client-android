@@ -65,11 +65,17 @@ The app must be able to make a tunnel and it should be shown that a resource can
 
 Scope: connectedAndroidTest
 
+```
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.TunnelTest#connect
+```
+
 ### Test Feature 2.
 
 The app must be able to get logs from the nabto-client-sdk.
 
 Scope: connectedAndroidTest
+
+
 
 ### Test Feature 4.
 
@@ -77,11 +83,19 @@ The app must be able to make a stream.
 
 Scope: connectedAndroidTest
 
+```
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.StreamTest
+```
+
 ### Test Feature 5.
 
 The app must be able to make a coap request.
 
 Scope: connectedAndroidTest
+
+```
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.CoapTest
+```
 
 ### Test Feature 6.
 

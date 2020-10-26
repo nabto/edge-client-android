@@ -22,7 +22,10 @@ public class Helper {
             options.put("ProductId", resources.getString(R.string.product_id));
             options.put("DeviceId", resources.getString(R.string.device_id));
             options.put("ServerKey", resources.getString(R.string.server_key));
-            options.put("ServerUrl", resources.getString(R.string.server_url));
+            String serverUrl = resources.getString(R.string.server_url);
+            if (!serverUrl.isEmpty()) {
+                options.put("ServerUrl", serverUrl);
+            }
             options.put("PrivateKey", client.createPrivateKey());
             connection.updateOptions(options.toString());
         } catch (JSONException e) {

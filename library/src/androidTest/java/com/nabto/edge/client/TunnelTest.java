@@ -44,10 +44,12 @@ public class TunnelTest {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         Connection connection = Helper.createConnection(client);
         connection.connect();
+        assertEquals(connection.getType(), Connection.Type.DIRECT);
         TcpTunnel tunnel = connection.createTcpTunnel();
-        tunnel.open(4242, "", 29281);
+        tunnel.open("http", 0);
+        int localPort = tunnel.getLocalPort();
 
-        URL url = new URL("http://127.0.0.1:4242/hello-world");
+        URL url = new URL("http://127.0.0.1:"+localPort+"/hello-world");
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());

@@ -26,7 +26,7 @@ public class CoapTest {
 
         Connection connection = Helper.createConnection(client);
         connection.connect();
-        Coap coap = connection.createCoap("GET", "/test/get");
+        Coap coap = connection.createCoap("GET", "/hello-world");
         coap.execute();
 
         int statusCode = coap.getResponseStatusCode();

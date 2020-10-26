@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="product_id">pr-bqyh43fb</string>
-  <string name="device_id">de-hkpcwynp</string>
-  <string name="server_url">https://pr-bqyh43fb.clients.dev.nabto.net</string>
-  <string name="server_key">sk-9d3028f1f3de68f0844ea544a42a4f05</string>
+  <string name="product_id">pr-9fbbczma</string>
+  <string name="device_id">de-twrvhpg3</string>
+  <string name="server_url"></string>
+  <string name="server_key">sk-b871d571b5a7b68a612e075eb685fd5a</string>
 </resources>
