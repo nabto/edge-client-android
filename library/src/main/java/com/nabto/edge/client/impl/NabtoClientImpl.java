@@ -51,6 +51,8 @@ public class NabtoClientImpl extends NabtoClient {
 
         this.wifiLock = wifiManager.createWifiLock("nabto_client_sdk");
         this.wifiLock.setReferenceCounted(true);
+
+        this.mdnsResultListeners = new HashMap<MdnsResultListener, MdnsResultScanner>();
     }
 
     public void setLogLevel(String level) {
