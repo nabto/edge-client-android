@@ -7,5 +7,5 @@ interface UnpairedDevice {
     suspend fun connect();
     suspend fun coapPairing();
     suspend fun getClientSettings() : ClientSettings;
-    fun getDeviceFingerprintHex() : String;
+    fun getDeviceFingerprint() : String;
 }

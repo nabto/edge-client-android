@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.View
 import androidx.lifecycle.*
 import androidx.navigation.Navigation
-import com.nabto.edge.client.NabtoException
 import com.nabto.edge.heatpump.data.source.overview.PairedDevice
 import com.nabto.edge.heatpump.data.source.overview.PairedDevicesDao
 import kotlinx.coroutines.launch
@@ -74,7 +73,7 @@ class PairDeviceViewModel @Inject constructor(
                 unpairedDevice.coapPairing();
                 val clientSettings = unpairedDevice.getClientSettings();
 
-                pairedDevicesDao.insert(PairedDevice(productId.value!!, deviceId.value!!, clientSettings.serverUrl, clientSettings.serverKey, unpairedDevice.getDeviceFingerprintHex(), "foo bar"))
+                pairedDevicesDao.insert(PairedDevice(productId.value!!, deviceId.value!!, clientSettings.serverUrl, clientSettings.serverKey, unpairedDevice.getDeviceFingerprint(), "foo bar"))
                 setState(State.DONE);
             } catch (e: Exception) {
                 setError(e.message!!)

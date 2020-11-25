@@ -88,7 +88,7 @@ class UnpairedDeviceImpl : UnpairedDevice {
         }
     }
 
-    override fun getDeviceFingerprintHex(): String {
-        return connection.deviceFingerprintHex;
+    override fun getDeviceFingerprint(): String {
+        return connection.deviceFingerprint;
     }
 }
