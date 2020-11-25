@@ -28,12 +28,13 @@ class LocalDevicesNabto @Inject constructor(private val nabtoClient : NabtoClien
     private fun removeService(serviceInstanceName : String)
     {
         currentDeviceList.remove(serviceInstanceName);
+        devices.postValue(ArrayList(currentDeviceList.values));
     }
 
     private fun addService(productId : String, deviceId : String, key : String)
     {
         currentDeviceList[key] = ScanDevice(productId, deviceId, "device");
-        devices.postValue(ArrayList(currentDeviceList.values))
+        devices.postValue(ArrayList(currentDeviceList.values));
     }
 
     private fun loadDevices() {
