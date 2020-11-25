@@ -87,6 +87,8 @@ public class NabtoClientImpl extends NabtoClient {
     public void addMdnsResultListener(MdnsResultListener listener, String subtype)
     {
         MdnsResultScanner scanner = new MdnsResultScanner(context, listener, subtype);
+        multicastLock.acquire();
+        wifiLock.acquire();
         mdnsResultListeners.put(listener, scanner);
     }
 
@@ -97,6 +99,8 @@ public class NabtoClientImpl extends NabtoClient {
         if (scanner != null) {
             scanner.stop();
         }
+        multicastLock.release();
+        wifiLock.release();
         mdnsResultListeners.remove(listener);
     }
 
