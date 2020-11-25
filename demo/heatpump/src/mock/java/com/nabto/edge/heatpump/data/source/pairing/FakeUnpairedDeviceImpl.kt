@@ -15,7 +15,7 @@ class FakeUnpairedDeviceImpl : UnpairedDevice {
         return UnpairedDevice.ClientSettings("https://foo.bar.baz", "123123")
     }
 
-    override fun getDeviceFingerprintHex(): String {
+    override fun getDeviceFingerprint(): String {
         return "12341234123412341234123412341234"
     }
 

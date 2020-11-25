@@ -12,5 +12,6 @@ data class PairedDevice (
         @ColumnInfo(name = "server_url") val serverUrl: String,
         @ColumnInfo(name = "server_key") val serverKey: String,
         @ColumnInfo(name = "device_fingerprint") val deviceFingerprint: String,
-        @ColumnInfo(name = "friendly_name") override val friendlyName: String
+        @ColumnInfo(name = "friendly_name") override val friendlyName: String,
+        @ColumnInfo(name = "sct") val sct: String
 ) : DeviceListItem

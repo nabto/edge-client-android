@@ -13,7 +13,6 @@ class HeatPumpApplication : Application()  {
 
     override fun onCreate() {
         super.onCreate()
-        val nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager;
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -21,7 +20,7 @@ class HeatPumpApplication : Application()  {
 
         appComponent = DaggerHeatPumpComponent.
                 builder().
-                scanServiceModule(ScanServiceModule(nsdManager)).
+                scanServiceModule(ScanServiceModule(nabtoClient)).
                 nabtoClientModule(NabtoClientModule(NabtoClient.create(this))).
                 sharedPreferencesModule(SharedPreferencesModule((sharedPreferences))).
                 roomModule(RoomModule(this)).

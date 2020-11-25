@@ -38,18 +38,12 @@ public class NabtoClientImpl extends NabtoClient {
 
         wifiMonitor = new WifiMonitor(this);
         wifiMonitor.init(context);
-        try {
-            // TOOD do something to wait for networks to be discovered
-            // before the first connection is made
-            Thread.sleep(100);
-        } catch (Exception e) {
-        }
 
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         this.multicastLock = wifiManager.createMulticastLock("nabto_client_sdk");
         this.multicastLock.setReferenceCounted(true);
 
-        this.wifiLock = wifiManager.createWifiLock("nabto_client_sdk");
+        this.wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "nabto_client_sdk");
         this.wifiLock.setReferenceCounted(true);
 
         this.mdnsResultListeners = new HashMap<MdnsResultListener, MdnsResultScanner>();
@@ -87,6 +81,8 @@ public class NabtoClientImpl extends NabtoClient {
     public void addMdnsResultListener(MdnsResultListener listener, String subtype)
     {
         MdnsResultScanner scanner = new MdnsResultScanner(context, listener, subtype);
+        multicastLock.acquire();
+        wifiLock.acquire();
         mdnsResultListeners.put(listener, scanner);
     }
 
@@ -97,6 +93,8 @@ public class NabtoClientImpl extends NabtoClient {
         if (scanner != null) {
             scanner.stop();
         }
+        multicastLock.release();
+        wifiLock.release();
         mdnsResultListeners.remove(listener);
     }
 
