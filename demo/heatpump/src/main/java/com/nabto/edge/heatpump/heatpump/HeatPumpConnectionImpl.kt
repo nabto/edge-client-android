@@ -47,9 +47,10 @@ class HeatPumpConnectionImpl @Inject constructor(val pairedDevice: PairedDevice,
             var options = JSONObject()
             options.put("ProductId", pairedDevice.productId)
             options.put("DeviceId", pairedDevice.deviceId);
-            options.put("ServerUrl", pairedDevice.serverUrl)
+            //options.put("ServebrUrl", pairedDevice.serverUrl)
             options.put("ServerKey", pairedDevice.serverKey)
             options.put("PrivateKey", getPrivateKey())
+            options.put("ServerConnectToken", pairedDevice.sct);
 
             connection.updateOptions(options.toString())
             connection.connect();

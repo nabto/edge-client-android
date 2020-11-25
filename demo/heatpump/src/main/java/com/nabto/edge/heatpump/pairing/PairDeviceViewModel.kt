@@ -10,6 +10,7 @@ import com.nabto.edge.heatpump.data.source.overview.PairedDevicesDao
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.nabto.edge.heatpump.R
+import com.nabto.edge.heatpump.iam.IAM
 
 class PairDeviceViewModel @Inject constructor(
         val pairedDevicesDao : PairedDevicesDao,
@@ -69,11 +70,24 @@ class PairDeviceViewModel @Inject constructor(
             try {
                 unpairedDevice.connect()
 
-                setState(State.BUTTON_PAIRING)
-                unpairedDevice.coapPairing();
-                val clientSettings = unpairedDevice.getClientSettings();
+                val serverKey = "sk-d8254c6f790001003d0c842d1b63b134";
 
-                pairedDevicesDao.insert(PairedDevice(productId.value!!, deviceId.value!!, clientSettings.serverUrl, clientSettings.serverKey, unpairedDevice.getDeviceFingerprint(), "foo bar"))
+                val iam = IAM(unpairedDevice.getConnection());
+
+                val pairing = iam.getPairing();
+                try {
+                    val user = iam.getMe();
+                    // already paired
+                } catch (e : java.lang.Exception) {
+                    // Not paired
+                    if (pairing.modes.contains("LocalInitial")) {
+                        iam.localInitialPairing();
+                    } else {
+                        throw Exception("No supported pairing modes");
+                    }
+                }
+                val user = iam.getMe();
+                pairedDevicesDao.insert(PairedDevice(pairing.productId, pairing.deviceId, "", serverKey, unpairedDevice.getDeviceFingerprint(), "heat pump", user.sct));
                 setState(State.DONE);
             } catch (e: Exception) {
                 setError(e.message!!)

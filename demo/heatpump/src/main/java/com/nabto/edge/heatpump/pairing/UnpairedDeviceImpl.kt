@@ -2,14 +2,11 @@ package com.nabto.edge.heatpump.pairing
 
 import android.content.SharedPreferences
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.NabtoClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import javax.inject.Inject
 
 class UnpairedDeviceImpl : UnpairedDevice {
 
@@ -36,9 +33,21 @@ class UnpairedDeviceImpl : UnpairedDevice {
         this.nabtoClient = nabtoClient
     }
 
-    private class ClientSettingsCoap {
-        @JsonProperty("ServerUrl", required = true) var serverUrl : String = ""
-        @JsonProperty("ServerKey", required = true) var serverKey : String = ""
+    private class IAMUser {
+        @JsonProperty("Username", required = true) var username : String = ""
+        @JsonProperty("Role", required = false) var role : String = ""
+        @JsonProperty("Fingerprint", required = false) var fingerprint : String = ""
+        @JsonProperty("DisplayName", required = false) var displayName : String = ""
+        @JsonProperty("Sct", required = false) var sct : String = ""
+    }
+
+    private class IAMPairing {
+        @JsonProperty("Modes", required = false) var modes : List<String> = listOf()
+        @JsonProperty("NabtoVersion", required = false) var nabtoVersion : String = ""
+        @JsonProperty("AppVersion", required = false) var appVersion : String = ""
+        @JsonProperty("AppName", required = false) var appName : String = ""
+        @JsonProperty("ProductId", required = false) var productId : String = ""
+        @JsonProperty("DeviceId", required = false) var deviceId : String = ""
     }
 
     private fun createConnection() : Connection {
@@ -48,8 +57,12 @@ class UnpairedDeviceImpl : UnpairedDevice {
         return c;
     }
 
-    val connection : Connection by lazy {
+    val conn : Connection by lazy {
         createConnection();
+    }
+
+    override public fun getConnection() : Connection {
+        return conn;
     }
 
     fun getPrivateKey() : String {
@@ -60,35 +73,10 @@ class UnpairedDeviceImpl : UnpairedDevice {
     }
 
     override suspend fun connect() {
-        connection.connect();
-    }
-
-    override suspend fun coapPairing() {
-        withContext(Dispatchers.IO) {
-            val coap = connection.createCoap("POST", "/pairing/button")
-            coap.execute()
-            if (coap.responseStatusCode != 201) {
-                throw(Exception("invalid coap response code " + coap.responseStatusCode));
-                return@withContext;
-            }
-        }
-    }
-
-    override suspend fun getClientSettings() : UnpairedDevice.ClientSettings {
-        return withContext(Dispatchers.IO) {
-            val csCoap = connection.createCoap("GET", "/beta/client-settings")
-            csCoap.execute()
-            if (csCoap.responseStatusCode != 205) {
-                throw(Exception("Invalid coap client settings response " + csCoap.responseStatusCode));
-            }
-            val f = CBORFactory();
-            val mapper = ObjectMapper(f);
-            val clientSettings = mapper.readValue<ClientSettingsCoap>(csCoap.responsePayload, ClientSettingsCoap::class.java)
-            return@withContext UnpairedDevice.ClientSettings( clientSettings.serverUrl, clientSettings.serverKey);
-        }
+        conn.connect();
     }
 
     override fun getDeviceFingerprint(): String {
-        return connection.deviceFingerprint;
+        return conn.deviceFingerprint;
     }
 }
