@@ -43,7 +43,7 @@ public class NabtoClientImpl extends NabtoClient {
         this.multicastLock = wifiManager.createMulticastLock("nabto_client_sdk");
         this.multicastLock.setReferenceCounted(true);
 
-        this.wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "nabto_client_sdk");
+        this.wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "nabto_client_sdk");
         this.wifiLock.setReferenceCounted(true);
 
         this.mdnsResultListeners = new HashMap<MdnsResultListener, MdnsResultScanner>();
