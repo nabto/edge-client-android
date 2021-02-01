@@ -1,8 +1,11 @@
 package com.nabto.edge.client;
 
+/**
+ * The result of an mDNS discovery request.
+ */
 public interface MdnsResult {
     /**
-     * Action whih is associated with a result. This is used together
+     * Action which is associated with a result. This is used together
      * with the service instance name to manipulate the list of device.
      */
     enum Action {
