@@ -8,7 +8,7 @@ android {
 
 
     defaultConfig {
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 29
         versionCode buildVersionCode()
         versionName buildVersionName()
@@ -37,8 +37,8 @@ android {
     defaultConfig {
         externalNativeBuild {
             cmake {
-                cFlags "-DANDROID_PLATFORM=19"
-                cppFlags "-DANDROID_PLATFORM=19"
+                cFlags "-DANDROID_PLATFORM=24"
+                cppFlags "-DANDROID_PLATFORM=24"
             }
         }
     }
