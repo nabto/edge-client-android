@@ -22,6 +22,6 @@ RUN $ANDROID_HOME/tools/bin/sdkmanager "tools" "platform-tools"
 RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.2"
 RUN $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-29"
 RUN $ANDROID_HOME/tools/bin/sdkmanager "ndk-bundle"
-RUN $ANDROID_HOME/tools/bin/sdkmanager "cmake;3.10.2.4988404"
+RUN $ANDROID_HOME/tools/bin/sdkmanager "cmake;3.18.1"
 
 RUN yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
