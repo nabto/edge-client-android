@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 USER root
 
-RUN apt-get update && apt-get install curl unzip git build-essential openjdk-8-jdk swig -y
+RUN apt-get update && apt-get install curl unzip git build-essential openjdk-11-jdk swig -y
 
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip" \
     ANDROID_HOME="/usr/local/android-sdk" \
