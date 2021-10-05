@@ -24,7 +24,7 @@ RUN yes | $ANDROID_SDKMANAGER --licenses
 # Install Android Build Tool and Libraries
 RUN $ANDROID_SDKMANAGER "tools" "platform-tools"
 RUN $ANDROID_SDKMANAGER "build-tools;30.0.2"
-RUN $ANDROID_SDKMANAGER "platforms;android-29"
+RUN $ANDROID_SDKMANAGER "platforms;android-31"
 RUN $ANDROID_SDKMANAGER "ndk-bundle"
 RUN $ANDROID_SDKMANAGER "cmake;3.18.1"
 RUN $ANDROID_SDKMANAGER "ndk;21.4.7075529"
