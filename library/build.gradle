@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 
 apply from: '../versioning.gradle'
 
+
 android {
     compileSdkVersion 31
     buildToolsVersion "30.0.2"
@@ -43,13 +44,6 @@ android {
         }
     }
 }
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
-
-build.dependsOn sourcesJar
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

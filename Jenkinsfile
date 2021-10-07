@@ -25,12 +25,12 @@ pipeline {
             }
         }
         stage('Deploy') {
-            when {
-                buildingTag()
-            }
             steps {
-                 withCredentials([string(credentialsId: "bintray_api_key", variable: "BINTRAY_API_KEY")]) {
-                     sh "./gradlew :library:bintrayUpload"
+                 withCredentials([string(credentialsId: "android_signing_key", variable: "ORG_GRADLE_PROJECT_GPG_SIGNING_KEY"),
+                                  string(credentialsId: "android_signing_key_password", variable: "ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD"),
+                                  string(credentialsId: "sonatype_ossrh_username", variable: "ORG_GRADLE_PROJECT_OSSRH_USERNAME"),
+                                  string(credentialsId: "sonatype_ossrh_password", variable: "ORG_GRADLE_PROJECT_OSSRH_PASSWORD")]) {
+                     sh "./gradlew publish"
                  }
             }
         }

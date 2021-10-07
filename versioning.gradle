@@ -21,4 +21,8 @@ ext {
             versionNumber + "-" + gitBranch + "." + gitCount + "+" + gitHash + gitDirty
         }
     }
+
+    isReleaseVersion = { ->
+        !gitTag.isEmpty()
+    }
 }
