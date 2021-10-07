@@ -61,9 +61,9 @@ afterEvaluate { project ->
 
     }
     signing {
-        project.logger.info('version: ' + project.getVersion())
-        def signingKey = GPG_SIGNING_KEY
         def signingPassword = GPG_SIGNING_PASSWORD
+        def signingKey = new String(Base64.decoder.decode(GPG_SIGNING_KEY_BASE64))
+        project.logger.info('password: ' + signingKey)
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign publishing.publications.mavenJava
     }
