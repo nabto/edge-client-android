@@ -63,6 +63,10 @@ afterEvaluate { project ->
     signing {
         def signingPassword = GPG_SIGNING_PASSWORD
         def signingKey = new String(Base64.decoder.decode(GPG_SIGNING_KEY_BASE64))
+        if (signingPassword.empty || signingKey.empty) {
+            project.logger.info("missing signing password or key so skipping the signing of the artifacts.")
+            return
+        }
         project.logger.info('password: ' + signingKey)
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign publishing.publications.mavenJava
