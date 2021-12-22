@@ -5,9 +5,6 @@ pipeline {
             dir 'build-container'
         }
     }
-    environment {
-        BINTRAY_USER = 'nabto'
-    }
     options { disableConcurrentBuilds() }
     stages {
         stage('Build') {
@@ -16,12 +13,6 @@ pipeline {
                 checkout scm
                 sh "./library/generate_swig.sh"
                 sh "./gradlew :library:build --rerun-tasks"
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'library/build/outputs/aar/*.aar', onlyIfSuccessful: true
-                    archiveArtifacts artifacts: 'library/build/libs/library-sources.jar', onlyIfSuccessful: true
-                }
             }
         }
         stage('Deploy') {
