@@ -2,12 +2,13 @@ package com.nabto.edge.client;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
-
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -24,11 +25,4 @@ public class ClientTest {
 
         assertTrue(v, v.matches("^\\d+\\.\\d+\\.\\d+.*$"));
     }
-
-    @Test
-    public void libraryVersion() {
-        String v = com.nabto.edge.client.BuildConfig.VERSION_NAME;
-        assertTrue(v, v.matches("^\\d+\\.\\d+\\.\\d+.*$"));
-    }
-
 }

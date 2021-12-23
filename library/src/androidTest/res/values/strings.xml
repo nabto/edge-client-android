@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="product_id">pr-9fbbczma</string>
-  <string name="device_id">de-twrvhpg3</string>
-  <string name="server_url"></string>
-  <string name="server_key">sk-b871d571b5a7b68a612e075eb685fd5a</string>
+  <string name="product_id">pr-fatqcwj9</string>
+  <string name="device_id">de-avmqjaje</string>
+  <string name="server_key">sk-5f3ab4bea7cc2585091539fb950084ce</string>
+
+  <string name="tunnel_product_id">pr-fatqcwj9</string>
+  <string name="tunnel_device_id">de-ijrdq47i</string>
+  <string name="tunnel_server_key">sk-9c826d2ebb4343a789b280fe22b98305</string>
+  <string name="tunnel_sct">WzwjoTabnvux</string>
+
+  <string name="stream_product_id">pr-fatqcwj9</string>
+  <string name="stream_device_id">de-bdsotcgm</string>
+  <string name="stream_server_key">sk-5f3ab4bea7cc2585091539fb950084ce</string>
+
+  <string name="local_product_id">pr-test</string>
+  <string name="local_device_id">de-test</string>
 </resources>

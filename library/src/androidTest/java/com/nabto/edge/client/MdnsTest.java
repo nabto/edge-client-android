@@ -1,26 +1,22 @@
 package com.nabto.edge.client;
 
-//import android.content.Context;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import android.content.res.Resources;
-import com.nabto.edge.client.test.R;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import org.json.JSONObject;
+import com.nabto.edge.client.test.R;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -69,8 +65,8 @@ public class MdnsTest {
         ResultListener rl = new ResultListener();
         client.addMdnsResultListener(rl);
 
-        String productId = resources.getString(R.string.product_id);
-        String deviceId = resources.getString(R.string.device_id);
+        String productId = resources.getString(R.string.local_product_id);
+        String deviceId = resources.getString(R.string.local_device_id);
 
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
@@ -82,10 +78,10 @@ public class MdnsTest {
 
         LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
-        client.addMdnsResultListener(rl,"testdevice");
+        client.addMdnsResultListener(rl,"testsubtype");
 
-        String productId = resources.getString(R.string.product_id);
-        String deviceId = resources.getString(R.string.device_id);
+        String productId = resources.getString(R.string.local_product_id);
+        String deviceId = resources.getString(R.string.local_device_id);
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
 
@@ -97,13 +93,13 @@ public class MdnsTest {
 
         LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
-        client.addMdnsResultListener(rl,"testdevice");
+        client.addMdnsResultListener(rl,"testsubtype");
 
-        String productId = resources.getString(R.string.product_id);
-        String deviceId = resources.getString(R.string.device_id);
+        String productId = resources.getString(R.string.local_product_id);
+        String deviceId = resources.getString(R.string.local_device_id);
         MdnsResult mr = rl.waitForDevice(productId, deviceId);
         assertNotEquals(mr, null);
         Map<String,String> txtItems = mr.getTxtItems();
-        assertTrue(txtItems.get("foo").equals("bar"));
+        assertTrue(txtItems.get("testkey").equals("testvalue"));
     }
 }

@@ -1,7 +1,5 @@
 package com.nabto.edge.client;
 
-//import android.content.Context;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -42,22 +40,17 @@ public class TunnelTest {
     @Test
     public void connect() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createConnection(client);
+        Connection connection = Helper.createTunnelConnection(client);
         connection.connect();
-        assertEquals(connection.getType(), Connection.Type.DIRECT);
         TcpTunnel tunnel = connection.createTcpTunnel();
         tunnel.open("http", 0);
         int localPort = tunnel.getLocalPort();
 
-        URL url = new URL("http://127.0.0.1:"+localPort+"/hello-world");
+        URL url = new URL("http://127.0.0.1:"+localPort+"/");
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        try {
-            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-            String output = readStream(in);
-            assertEquals(output, "Hello World");
-        } finally {
-            urlConnection.disconnect();
-        }
+        assertEquals(200, urlConnection.getResponseCode());
+        urlConnection.disconnect();
+
 
         connection.close();
     }

@@ -1,7 +1,5 @@
 package com.nabto.edge.client;
 
-//import android.content.Context;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -21,7 +19,7 @@ public class StreamTest {
     @Test
     public void echo() {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createConnection(client);
+        Connection connection = Helper.createStreamConnection(client);
         connection.connect();
         Stream stream = connection.createStream();
         stream.open(42);
@@ -43,7 +41,7 @@ public class StreamTest {
     @Test
     public void echoUntilEOF() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createConnection(client);
+        Connection connection = Helper.createStreamConnection(client);
         connection.connect();
         Stream stream = connection.createStream();
         stream.open(42);

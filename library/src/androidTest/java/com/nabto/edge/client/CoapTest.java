@@ -1,9 +1,5 @@
 package com.nabto.edge.client;
 
-//import android.content.Context;
-
-import android.content.Context;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 

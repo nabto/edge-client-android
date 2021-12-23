@@ -1,7 +1,5 @@
 package com.nabto.edge.client;
 
-//import android.content.Context;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -10,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -24,13 +21,7 @@ public class ConnectionTest {
     @Test(expected = Test.None.class)
     public void connectLocal() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createConnection(client);
-
-        JSONObject options = new JSONObject();
-        options.put("Local", true);
-        options.put("Remote", false);
-
-        connection.updateOptions(options.toString());
+        Connection connection = Helper.createLocalConnection(client);
 
         connection.connect();
         connection.close();
@@ -39,11 +30,8 @@ public class ConnectionTest {
     @Test(expected = Test.None.class)
     public void connectRemote() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createConnection(client);
+        Connection connection = Helper.createRemoteConnection(client);
 
-        JSONObject options = new JSONObject();
-        options.put("Local", false);
-        options.put("Remote", true);
         connection.connect();
         connection.close();
     }
