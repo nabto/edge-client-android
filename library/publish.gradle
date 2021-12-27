@@ -10,6 +10,8 @@ def getSnapshotRepositoryUrl() {
     return 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
 }
 
+
+
 afterEvaluate { project ->
     publishing {
         publications {
@@ -22,6 +24,8 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID
                 from components.release
+                artifact sourcesJar
+                artifact javadocJar
                 pom {
                     name = POM_ARTIFACT_ID
                     description = POM_DESCRIPTION
@@ -71,4 +75,18 @@ afterEvaluate { project ->
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign publishing.publications.mavenJava
     }
+}
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
