@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Hello World</string>
+    <string name="button_text">CoAP Get /helloworld</string>
+    <string name="product_id">pr-fatqcwj9</string>
+    <string name="device_id">de-avmqjaje</string>
+    <string name="server_key">sk-5f3ab4bea7cc2585091539fb950084ce</string>
+</resources>
