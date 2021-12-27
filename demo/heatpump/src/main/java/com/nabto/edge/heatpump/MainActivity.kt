@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         val actionBar = getSupportActionBar();
         actionBar?.setDisplayHomeAsUpEnabled(true);
 
+        navController.setGraph(R.navigation.mobile_navigation);
         appBarConfiguration = AppBarConfiguration(navController.graph)
 
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);

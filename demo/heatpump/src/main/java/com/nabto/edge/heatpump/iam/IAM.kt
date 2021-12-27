@@ -1,6 +1,7 @@
 package com.nabto.edge.heatpump.iam
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory
 import com.nabto.edge.client.Connection
@@ -39,7 +40,7 @@ class IAM {
                 throw(Exception("Maybe Not paired " + csCoap.responseStatusCode));
             }
             val f = CBORFactory();
-            val mapper = ObjectMapper(f);
+            val mapper = ObjectMapper(f).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             val user = mapper.readValue<IAMUser>(csCoap.responsePayload, IAMUser::class.java)
             return@withContext user
         }

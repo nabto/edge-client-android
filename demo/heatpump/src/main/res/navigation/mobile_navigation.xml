@@ -74,10 +74,6 @@
         android:id="@+id/remote_pair_device_dest"
         android:name="com.nabto.edge.heatpump.pairing.RemotePairDeviceFragment">
 
-
-        <deepLink
-            android:id="@+id/deepLink2"
-            app:uri="heatpump://app/remote_pair_device?{args}" />
         <argument
             android:name="args"
             app:argType="string" />
