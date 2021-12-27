@@ -27,6 +27,7 @@ public interface Stream {
      * is aborted an exception is thrown.
      *
      * @return bytes read.
+     * @throws NabtoEOFException if eof is reached
      */
     public byte[] readSome() throws NabtoEOFException;
 
@@ -37,6 +38,7 @@ public interface Stream {
      *
      * @param length  The amount of bytes to read.
      * @return Bytes read, less than length bytes can be returned if
+     * @throws NabtoEOFException if eof is reached.
      * the stream is reaching end of file.
      */
     public byte[] readAll(int length) throws NabtoEOFException;

@@ -16,6 +16,7 @@ public class NabtoNoChannelsException extends RuntimeException {
 
     /**
      * Get underlying error code on local channel.
+     * @return the local channel error code
      */
     public ErrorCode getLocalChannelErrorCode() {
         return localChannelErrorCode;
@@ -23,11 +24,15 @@ public class NabtoNoChannelsException extends RuntimeException {
 
     /**
      * Get underlying error code on remote channel.
+     * @return the remote channel error code
      */
     public ErrorCode getRemoteChannelErrorCode() {
         return remoteChannelErrorCode;
     }
 
+    /**
+     * @return the direct channel error code
+     */
     public ErrorCode getDirectCandidatesChannelErrorCode() {
         return directCandidatesChannelErrorCode;
     }

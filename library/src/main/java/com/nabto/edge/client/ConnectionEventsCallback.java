@@ -20,6 +20,7 @@ public abstract class ConnectionEventsCallback {
 
     /**
      * Invoked when an event occurs.
+     * @param event the event which had happened.
      */
     public abstract void onEvent(int event);
 }

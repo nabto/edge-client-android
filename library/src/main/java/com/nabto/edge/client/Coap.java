@@ -41,7 +41,7 @@ public interface Coap {
      * Set the payload for the request.
      *
      * @param contentFormat a contentformat.
-     * @param paylaod the payload.
+     * @param payload the payload.
      */
     void setRequestPayload(int contentFormat, byte[] payload);
 
