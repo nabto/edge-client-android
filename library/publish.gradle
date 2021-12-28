@@ -20,7 +20,7 @@ afterEvaluate { project ->
                 if (isReleaseVersion()) {
                     version = buildVersionName()
                 } else {
-                    version = buildVersionName() + '-SNAPSHOT'
+                    version = gitBranch + "-SNAPSHOT"
                 }
                 artifactId = POM_ARTIFACT_ID
                 from components.release
