@@ -20,6 +20,7 @@ afterEvaluate { project ->
                 if (isReleaseVersion()) {
                     version = buildVersionName()
                 } else {
+                    // this makes it possible to specify the master-SNAPSHOT
                     version = gitBranch + "-SNAPSHOT"
                 }
                 artifactId = POM_ARTIFACT_ID
