@@ -31,6 +31,7 @@ public class NabtoNoChannelsException extends RuntimeException {
     }
 
     /**
+     * Get the direct channel error code.
      * @return the direct channel error code
      */
     public ErrorCode getDirectCandidatesChannelErrorCode() {
