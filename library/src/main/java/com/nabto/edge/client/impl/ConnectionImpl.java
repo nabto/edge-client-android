@@ -9,6 +9,7 @@ import com.nabto.edge.client.ErrorCodes;
 import com.nabto.edge.client.NabtoNoChannelsException;
 import com.nabto.edge.client.Stream;
 import com.nabto.edge.client.TcpTunnel;
+import com.nabto.edge.client.NabtoCallback;
 
 import java.util.HashMap;
 
@@ -140,6 +141,15 @@ public class ConnectionImpl implements Connection {
                 throw new com.nabto.edge.client.NabtoRuntimeException(e);
             }
         }
+    }
+
+    public void connectCallback(NabtoCallback callback) {
+        com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
+            public void run(com.nabto.edge.client.swig.Status status) {
+                callback.run(null);
+            }
+        };
+        connection.connect().callback(cb);
     }
 
     /**

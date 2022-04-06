@@ -1,5 +1,6 @@
 package com.nabto.edge.client.impl;
 
+import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.Coap;
 
 public class CoapImpl implements Coap {
@@ -26,8 +27,18 @@ public class CoapImpl implements Coap {
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
-
     }
+
+    public void executeCallback(NabtoCallback callback)
+    {
+        com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
+            public void run(com.nabto.edge.client.swig.Status status) {
+                callback.run(null);
+            }
+        };
+        coap.execute().callback(cb);
+    }
+
     public int getResponseStatusCode()
     {
         try {

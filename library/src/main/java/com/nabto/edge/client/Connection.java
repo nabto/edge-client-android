@@ -131,6 +131,11 @@ public interface Connection {
     void connect();
 
     /**
+     * Connect a connection, run callback once connection is established.
+     */
+    public void connectCallback(NabtoCallback callback);
+
+    /**
      * Password authenticate a connectio.
      *
      * This function blocks until the exchange is done an throws an exception

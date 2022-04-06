@@ -52,6 +52,11 @@ public interface Coap {
     void execute();
 
     /**
+     * Executes request asynchronously with a callback
+     */
+    void executeCallback(NabtoCallback callback);
+
+    /**
      * Return status code returned from the server e.g. 204.
      *
      * @return the status code, e.g. 204

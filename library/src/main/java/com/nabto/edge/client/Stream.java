@@ -33,6 +33,11 @@ public interface Stream {
     public byte[] readSome() throws NabtoEOFException;
 
     /**
+     * Read some bytes from a stream. Call callback with result.
+     */
+    public void readSomeCallback(NabtoCallback<byte[]> callback) throws NabtoEOFException;
+
+    /**
      * Read an exact amount of bytes from a stream.
      *
      * This function blocks until the bytes is read.
