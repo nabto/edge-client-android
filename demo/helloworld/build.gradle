@@ -38,8 +38,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     // implementation 'com.nabto.edge.client:library:2.1.0'
-    implementation files('/Users/as/Workspace/edge-client-android/library-ktx/build/outputs/aar/library-ktx-debug.aar')
-    implementation files('/Users/as/Workspace/edge-client-android/library/build/outputs/aar/library-debug.aar')
+    implementation files('../../library-ktx/build/outputs/aar/library-ktx-debug.aar')
+    implementation files('../../library/build/outputs/aar/library-debug.aar')
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

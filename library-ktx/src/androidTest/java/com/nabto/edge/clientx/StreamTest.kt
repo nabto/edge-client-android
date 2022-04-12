@@ -1,18 +1,19 @@
-package com.nabto.edge.clientx.test;
+package com.nabto.edge.clientx
+import com.nabto.edge.clientx.test.R
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.Assert.*;
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.Assert.*
 import kotlinx.coroutines.*
 
 import com.nabto.edge.client.NabtoClient
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.NabtoEOFException
 import com.nabto.edge.clientx.*
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.JSONException
+import org.json.JSONObject
 
 @RunWith(AndroidJUnit4::class)
 class StreamTest {
