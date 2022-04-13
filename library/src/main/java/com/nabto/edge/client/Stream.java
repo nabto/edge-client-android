@@ -21,6 +21,11 @@ public interface Stream {
     public void open(int streamPort);
 
     /**
+     * Open a stream without blocking.
+     */
+    public void openCallback(int streamPort, NabtoCallback callback);
+
+    /**
      * Read some bytes from a stream.
      *
      * This function blocks until stream is read or the stream is
@@ -33,7 +38,7 @@ public interface Stream {
     public byte[] readSome() throws NabtoEOFException;
 
     /**
-     * Read some bytes from a stream. Call callback with result.
+     * Read some bytes from a stream without blocking.
      */
     public void readSomeCallback(NabtoCallback<byte[]> callback) throws NabtoEOFException;
 
@@ -50,12 +55,22 @@ public interface Stream {
     public byte[] readAll(int length) throws NabtoEOFException;
 
     /**
+     * Read an exact amount of bytes from a stream without blocking.
+     */
+    public void readAllCallback(int length, NabtoCallback<byte[]> callback) throws NabtoEOFException;
+
+    /**
      * Write bytes to a stream. This function blocks until the bytes
      * has been written to the stream.
      *
      * @param bytes  The bytes to write to the stream.
      */
     public void write(byte[] bytes);
+
+    /**
+     * Write bytes to a stream without blocking.
+     */
+    public void writeCallback(byte[] bytes, NabtoCallback callback);
 
     /**
      * Close the write direction of the stream. This will make the
@@ -66,6 +81,11 @@ public interface Stream {
      * stream.
      */
     public void close();
+
+    /**
+     * Close the write direction of the stream without blocking.
+     */
+    public void closeCallback(NabtoCallback callback);
 
     /**
      * Abort a stream. If for some reason the stream just need to be
