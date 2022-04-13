@@ -6,12 +6,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.Assert.*
-import androidx.test.core.app.launchActivity
-
-import android.app.Activity
-import android.content.res.Resources
-import androidx.lifecycle.Lifecycle.State
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
 import org.json.JSONObject
 
@@ -34,45 +28,41 @@ suspend fun createConnection(client : NabtoClient): Connection? {
     return connection
 }
 
-class TestActivity : Activity() {
-    public fun runTest() {
-        var connection : Connection? = null
-
-        // @TODO: Using a variable like this to check that finally block was reached is maybe not the best option? needs more research.
-        var wasClosed: Boolean
-
-        // @TODO: We want to use this lifecycleScope but its not working.
-        // this.lifecycleScope.launch {
-        runBlocking {
-            try {
-                val client : NabtoClient = NabtoClient.create(this@TestActivity);
-                connection = createConnection(client)
-            } finally {
-                // Assert that there is a connection that is then closed.
-                assertNotNull(connection)
-                connection?.close()
-                wasClosed = true
-            }
-        }
-
-        assertTrue(wasClosed)
-    }
-}
-
 @RunWith(AndroidJUnit4::class)
 class CoroutineTest {
     @Test
-    fun coroutineCancelAndJoin() {
+    fun test() {
+        val mockScope = MainScope()
+        var connection : Connection? = null
+        var wasCancelled = false
+        var wasClosed = false
 
-    }
-
-    @Test
-    fun activityCoroutineCancellation() {
-        val scenario = launchActivity<TestActivity>()
-        assertEquals(scenario.getState(), State.RESUMED)
-        scenario.onActivity { activity ->
-            activity.runTest()
+        val job = mockScope.launch {
+            try {
+                val client : NabtoClient = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+                connection = createConnection(client)
+                assertNotNull(connection)
+            } catch(e: CancellationException) {
+                wasCancelled = true
+            } finally {
+                wasClosed = true
+                // @TODO: This is a blocking call, is there any issues with that?
+                connection?.close()
+                connection = null
+            }
         }
-        scenario.close()
+
+        // This throws a CancellationException into the coroutine children
+        // An android lifecycleScope will call .cancel() when the lifecycle is over
+        // Hopefully this mock test is close enough to reality
+        mockScope.cancel()
+        runBlocking {
+            // Wait for the job to finish everything
+            job.cancelAndJoin()
+        }
+
+        assertTrue(wasCancelled)
+        assertTrue(wasClosed)
+        assertNull(connection)
     }
 }
