@@ -36,18 +36,19 @@ class CoroutineTest {
         var connection : Connection? = null
         var wasCancelled = false
         var wasClosed = false
+        var wasStopped = true
 
         val job = mockScope.launch {
             try {
                 val client : NabtoClient = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
                 connection = createConnection(client)
+                delay(3000L)
+                wasStopped = false
                 assertNotNull(connection)
             } catch(e: CancellationException) {
                 wasCancelled = true
             } finally {
                 wasClosed = true
-                // @TODO: This is a blocking call, is there any issues with that?
-                connection?.close()
                 connection = null
             }
         }
@@ -63,6 +64,7 @@ class CoroutineTest {
 
         assertTrue(wasCancelled)
         assertTrue(wasClosed)
+        assertTrue(wasStopped)
         assertNull(connection)
     }
 }
