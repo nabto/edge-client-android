@@ -1,4 +1,5 @@
 package com.nabto.edge.client.impl;
+import com.nabto.edge.client.ErrorCodes;
 
 import com.nabto.edge.client.NabtoEOFException;
 import com.nabto.edge.client.NabtoCallback;
@@ -23,7 +24,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
     public void openCallback(int streamPort, NabtoCallback callback) {
         com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
             public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(null);
+                callback.run(status.getErrorCode(), null);
             }
         };
         try {
@@ -50,10 +51,14 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
             FutureBuffer buffer = stream.readSome(1024);
             com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
                 public void run(com.nabto.edge.client.swig.Status status) {
-                    try {
-                        callback.run(buffer.getResult());
-                    } catch (com.nabto.edge.client.swig.NabtoException e) {
-                        throw new com.nabto.edge.client.NabtoRuntimeException(e);
+                    if (status.getErrorCode() == ErrorCodes.OK) {
+                        try {
+                            callback.run(ErrorCodes.OK, buffer.getResult());
+                        } catch (com.nabto.edge.client.swig.NabtoException e) {
+                            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+                        }
+                    } else {
+                        callback.run(status.getErrorCode(), null);
                     }
                 }
             };
@@ -84,20 +89,20 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
             FutureBuffer buffer = stream.readAll(length);
             com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
                 public void run(com.nabto.edge.client.swig.Status status) {
-                    try {
-                        callback.run(buffer.getResult());
-                    } catch (com.nabto.edge.client.swig.NabtoException e) {
-                        throw new com.nabto.edge.client.NabtoRuntimeException(e);
+                    if (status.getErrorCode() == ErrorCodes.OK) {
+                        try {
+                            callback.run(ErrorCodes.OK, buffer.getResult());
+                        } catch (com.nabto.edge.client.swig.NabtoException e) {
+                            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+                        }
+                    } else {
+                        callback.run(status.getErrorCode(), null);
                     }
                 }
             };
             buffer.callback(cb);
         } catch (com.nabto.edge.client.swig.NabtoException e) {
-            if (e.status().getErrorCode() == com.nabto.edge.client.swig.Status.getEND_OF_FILE()) {
-                throw new NabtoEOFException(e);
-            } else {
-                throw new com.nabto.edge.client.NabtoRuntimeException(e);
-            }
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
 
@@ -112,7 +117,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
     public void writeCallback(byte[] bytes, NabtoCallback callback) {
         com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
             public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(null);
+                callback.run(status.getErrorCode(), null);
             }
         };
         stream.write(bytes).callback(cb);
@@ -130,7 +135,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
     public void closeCallback(NabtoCallback callback) {
         com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
             public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(null);
+                callback.run(status.getErrorCode(), null);
             }
         };
         try {

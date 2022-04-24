@@ -1,5 +1,5 @@
 package com.nabto.edge.client;
 
 public interface NabtoCallback<T> {
-    void run(T arg);
+    void run(int errorCode, T arg);
 }

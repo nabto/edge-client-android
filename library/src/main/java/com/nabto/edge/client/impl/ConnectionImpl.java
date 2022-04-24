@@ -146,7 +146,7 @@ public class ConnectionImpl implements Connection {
     public void connectCallback(NabtoCallback callback) {
         com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
             public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(null);
+                callback.run(status.getErrorCode(), null);
             }
         };
         connection.connect().callback(cb);

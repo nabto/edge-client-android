@@ -53,4 +53,34 @@ class StreamTest {
         stream.close()
         connection.close()
     }
+
+    @Test
+    fun echoEOF() = runBlocking {
+        val client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        val connection = createStreamConnection(client)!!
+        connection.connectAsync()
+        val stream = connection.createStream()
+        stream.open(42)
+        val toWrite = byteArrayOf(42, 32, 44, 45)
+        stream.writeAsync(toWrite)
+        stream.close()
+
+        try {
+            val result = stream.readAllAsync(4)
+            assertEquals(result.size, 4)
+            assertArrayEquals(toWrite, result)
+        } catch (e: NabtoEOFException) {
+            assert(false)
+        }
+
+        var gotException = false
+        try {
+            stream.readAllAsync(4)
+        } catch (e: NabtoEOFException) {
+            gotException = true
+        }
+
+        assertTrue(gotException)
+        connection.close()
+    }
 }

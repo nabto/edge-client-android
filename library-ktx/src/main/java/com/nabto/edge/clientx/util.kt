@@ -1,36 +1,57 @@
 package com.nabto.edge.clientx.internal
 import com.nabto.edge.client.NabtoCallback
+import com.nabto.edge.client.ErrorCodes
+import com.nabto.edge.client.NabtoException
+import com.nabto.edge.client.NabtoRuntimeException
+import com.nabto.edge.client.NabtoEOFException
 import kotlinx.coroutines.*
 
-// @TODO: Maybe we should use suspendCoroutine instead?
-suspend fun nabtoCoroutineWrapper(dispatcher: CoroutineDispatcher, code: (cb: NabtoCallback<Unit?>) -> Unit) {
-    return withContext(dispatcher) {
-        val job = Job()
-
-        // @TODO: This is kind of awkward, certain functions dont need to return anything so null is passed on the java side
-        // so we use Unit? as a nullable type on the kotlin side
-        val callback = object : NabtoCallback<Unit?> {
-            override fun run(arg: Unit?) {
-                job.complete()
-            }
-        }
-
-        code(callback)
-        job.join()
-    }
-}
-
+// nabtoCoroutineWrapperInternal should be used when the default error handling is not good enough
 // @TODO: This function uses experimental coroutines API (the return@withContext), maybe this can be handled in another way?
-suspend fun <T> nabtoCoroutineWrapperWithReturn(dispatcher: CoroutineDispatcher, code: (cb: NabtoCallback<T>) -> Unit): T {
+// @TODO: Maybe it should be named differently since external usage is allowed
+suspend fun <T> nabtoCoroutineWrapperInternal(
+    dispatcher: CoroutineDispatcher,
+    code: (cb: NabtoCallback<T?>) -> Unit
+): Pair<Int, T?> {
     return withContext(dispatcher) {
-        val job = CompletableDeferred<T>()
-        val callback = object : NabtoCallback<T> {
-            override fun run(obj: T) {
-                job.complete(obj)
+        val job = CompletableDeferred<Pair<Int, T?>>()
+        val callback = object : NabtoCallback<T?> {
+            override fun run(error: Int, obj: T?) {
+                job.complete(Pair(error, obj))
             }
         }
         code(callback)
         job.join()
         return@withContext job.getCompleted()
+    }
+}
+
+suspend fun nabtoCoroutineWrapper(
+    dispatcher: CoroutineDispatcher,
+    code: (cb: NabtoCallback<Unit?>) -> Unit
+) {
+    val (error, _) = nabtoCoroutineWrapperInternal<Unit>(dispatcher, code)
+    if (error != ErrorCodes.OK) {
+        throw nabtoErrorCodeToException(error)
+    }
+}
+
+suspend fun <T> nabtoCoroutineWrapperWithReturn(
+    dispatcher: CoroutineDispatcher,
+    code: (cb: NabtoCallback<T?>) -> Unit
+): T {
+    val (error, maybe_obj) = nabtoCoroutineWrapperInternal<T>(dispatcher, code)
+    if (error == ErrorCodes.OK) {
+        return maybe_obj!!
+    } else {
+        throw nabtoErrorCodeToException(error)
+    }
+}
+
+fun nabtoErrorCodeToException(error: Int): Exception {
+    val exception = com.nabto.edge.client.swig.NabtoException(error)
+    return when (error) {
+        ErrorCodes.END_OF_FILE -> NabtoEOFException(exception)
+        else -> NabtoRuntimeException(exception)
     }
 }
