@@ -1,4 +1,5 @@
 package com.nabto.edge.clientx.internal
+import java.util.Optional
 import com.nabto.edge.client.NabtoCallback
 import com.nabto.edge.client.ErrorCodes
 import com.nabto.edge.client.NabtoException
@@ -11,13 +12,13 @@ import kotlinx.coroutines.*
 // @TODO: Maybe it should be named differently since external usage is allowed
 suspend fun <T> nabtoCoroutineWrapperInternal(
     dispatcher: CoroutineDispatcher,
-    code: (cb: NabtoCallback<T?>) -> Unit
-): Pair<Int, T?> {
+    code: (cb: NabtoCallback<T>) -> Unit
+): Pair<Int, Optional<T>> {
     return withContext(dispatcher) {
-        val job = CompletableDeferred<Pair<Int, T?>>()
-        val callback = object : NabtoCallback<T?> {
-            override fun run(error: Int, obj: T?) {
-                job.complete(Pair(error, obj))
+        val job = CompletableDeferred<Pair<Int, Optional<T>>>()
+        val callback = object : NabtoCallback<T> {
+            override fun run(error: Int, opt: Optional<T>) {
+                job.complete(Pair(error, opt))
             }
         }
         code(callback)
@@ -28,7 +29,7 @@ suspend fun <T> nabtoCoroutineWrapperInternal(
 
 suspend fun nabtoCoroutineWrapper(
     dispatcher: CoroutineDispatcher,
-    code: (cb: NabtoCallback<Unit?>) -> Unit
+    code: (cb: NabtoCallback<Unit>) -> Unit
 ) {
     val (error, _) = nabtoCoroutineWrapperInternal<Unit>(dispatcher, code)
     if (error != ErrorCodes.OK) {
@@ -38,11 +39,11 @@ suspend fun nabtoCoroutineWrapper(
 
 suspend fun <T> nabtoCoroutineWrapperWithReturn(
     dispatcher: CoroutineDispatcher,
-    code: (cb: NabtoCallback<T?>) -> Unit
+    code: (cb: NabtoCallback<T>) -> Unit
 ): T {
-    val (error, maybe_obj) = nabtoCoroutineWrapperInternal<T>(dispatcher, code)
+    val (error, opt) = nabtoCoroutineWrapperInternal<T>(dispatcher, code)
     if (error == ErrorCodes.OK) {
-        return maybe_obj!!
+        return opt.get()
     } else {
         throw nabtoErrorCodeToException(error)
     }

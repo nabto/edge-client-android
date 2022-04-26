@@ -1,6 +1,7 @@
 package com.nabto.edge.client.impl;
-import com.nabto.edge.client.ErrorCodes;
 
+import java.util.Optional;
+import com.nabto.edge.client.ErrorCodes;
 import com.nabto.edge.client.NabtoEOFException;
 import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.swig.FutureBuffer;
@@ -22,11 +23,6 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
     }
 
     public void openCallback(int streamPort, NabtoCallback callback) {
-        com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
-            public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(status.getErrorCode(), null);
-            }
-        };
         try {
             stream.open(streamPort).callback(Util.makeFutureCallback(callback));
         } catch (com.nabto.edge.client.swig.NabtoException e) {
@@ -53,12 +49,12 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
                 public void run(com.nabto.edge.client.swig.Status status) {
                     if (status.getErrorCode() == ErrorCodes.OK) {
                         try {
-                            callback.run(ErrorCodes.OK, buffer.getResult());
+                            callback.run(ErrorCodes.OK, Optional.of(buffer.getResult()));
                         } catch (com.nabto.edge.client.swig.NabtoException e) {
                             throw new com.nabto.edge.client.NabtoRuntimeException(e);
                         }
                     } else {
-                        callback.run(status.getErrorCode(), null);
+                        callback.run(status.getErrorCode(), Optional.empty());
                     }
                 }
             };
@@ -91,12 +87,12 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
                 public void run(com.nabto.edge.client.swig.Status status) {
                     if (status.getErrorCode() == ErrorCodes.OK) {
                         try {
-                            callback.run(ErrorCodes.OK, buffer.getResult());
+                            callback.run(ErrorCodes.OK, Optional.of(buffer.getResult()));
                         } catch (com.nabto.edge.client.swig.NabtoException e) {
                             throw new com.nabto.edge.client.NabtoRuntimeException(e);
                         }
                     } else {
-                        callback.run(status.getErrorCode(), null);
+                        callback.run(status.getErrorCode(), Optional.empty());
                     }
                 }
             };
