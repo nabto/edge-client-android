@@ -53,6 +53,8 @@ public interface Coap {
 
     /**
      * Executes request asynchronously with a callback
+     *
+     * @param callback The callback that will be run once the request has been executed.
      */
     void executeCallback(NabtoCallback callback);
 

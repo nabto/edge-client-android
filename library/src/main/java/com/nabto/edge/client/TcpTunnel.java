@@ -31,6 +31,12 @@ public interface TcpTunnel {
 
     /**
      * Open this tunnel without blocking.
+     *
+     * @param service The service to connect to on the remote device (as defined in the device's
+     * configuration), e.g. "http", "http-admin", "ssh", "rtsp".
+     * @param localPort The local port to listen on. If 0 is specified, an ephemeral port is used,
+     * it can be retrieved with `getLocalPort()`.
+     * @param callback The callback that will be run once the tunnel is opened.
      */
     public void openCallback(String service, int localPort, NabtoCallback callback);
 
@@ -41,6 +47,8 @@ public interface TcpTunnel {
 
     /**
      * Close a tunnel without blocking.
+     *
+     * @param callback The callback that will be run once the tunnel is closed.
      */
     public void closeCallback(NabtoCallback callback);
 

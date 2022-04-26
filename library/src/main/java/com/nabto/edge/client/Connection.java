@@ -132,6 +132,8 @@ public interface Connection {
 
     /**
      * Connect a connection, run callback once connection is established.
+     *
+     * @param callback The callback that will be run once the operation is done.
      */
     public void connectCallback(NabtoCallback callback);
 

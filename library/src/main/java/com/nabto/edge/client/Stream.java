@@ -22,6 +22,10 @@ public interface Stream {
 
     /**
      * Open a stream without blocking.
+     *
+     * @param streamPort  The streamPort to use on the remote server, a
+     * streamPort is a demultiplexing id.
+     * @param callback The callback that will be run once the stream is opened.
      */
     public void openCallback(int streamPort, NabtoCallback callback);
 
@@ -39,6 +43,9 @@ public interface Stream {
 
     /**
      * Read some bytes from a stream without blocking.
+     *
+     * @param callback The callback that will be run when the bytes are ready.
+     * The callback status will have an EOF status if end of file is reached.
      */
     public void readSomeCallback(NabtoCallback<byte[]> callback) throws NabtoEOFException;
 
@@ -56,6 +63,10 @@ public interface Stream {
 
     /**
      * Read an exact amount of bytes from a stream without blocking.
+     *
+     * @param length  The amount of bytes to read.
+     * @param callback The callback that will be run when the bytes are ready.
+     * The callback status will have an EOF status if end of file is reached.
      */
     public void readAllCallback(int length, NabtoCallback<byte[]> callback) throws NabtoEOFException;
 
@@ -69,6 +80,9 @@ public interface Stream {
 
     /**
      * Write bytes to a stream without blocking.
+     *
+     * @param bytes  The bytes to write to the stream.
+     * @param callback The callback that will be run once the operation is done.
      */
     public void writeCallback(byte[] bytes, NabtoCallback callback);
 
@@ -84,6 +98,8 @@ public interface Stream {
 
     /**
      * Close the write direction of the stream without blocking.
+     *
+     * @param callback The callback that will be run once the stream is closed.
      */
     public void closeCallback(NabtoCallback callback);
 
