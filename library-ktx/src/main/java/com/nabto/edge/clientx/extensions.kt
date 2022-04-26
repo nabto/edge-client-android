@@ -48,7 +48,6 @@ suspend fun Stream.closeAsync() {
     })
 }
 
-// @TODO: Do we _really_ need to change this? It's not even a blocking function. See StreamImpl.java
 suspend fun Stream.abortAsync() {
     return withContext(Dispatchers.IO) {
         return@withContext this@abortAsync.abort()

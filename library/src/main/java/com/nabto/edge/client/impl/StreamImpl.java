@@ -28,7 +28,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
             }
         };
         try {
-            stream.open(streamPort).callback(cb);
+            stream.open(streamPort).callback(Util.makeFutureCallback(callback));
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
@@ -115,12 +115,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
     }
 
     public void writeCallback(byte[] bytes, NabtoCallback callback) {
-        com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
-            public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(status.getErrorCode(), null);
-            }
-        };
-        stream.write(bytes).callback(cb);
+        stream.write(bytes).callback(Util.makeFutureCallback(callback));
     }
 
     public void close() {
@@ -133,13 +128,8 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
 
     // @TODO: Perhaps we dont need a callback for this function? Like abort below, it could just be run without blocking or setting a callback
     public void closeCallback(NabtoCallback callback) {
-        com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
-            public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(status.getErrorCode(), null);
-            }
-        };
         try {
-            stream.close().callback(cb);
+            stream.close().callback(Util.makeFutureCallback(callback));
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }

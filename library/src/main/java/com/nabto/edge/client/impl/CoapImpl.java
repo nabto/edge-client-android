@@ -31,12 +31,7 @@ public class CoapImpl implements Coap {
 
     public void executeCallback(NabtoCallback callback)
     {
-        com.nabto.edge.client.swig.FutureCallback cb = new com.nabto.edge.client.swig.FutureCallback() {
-            public void run(com.nabto.edge.client.swig.Status status) {
-                callback.run(status.getErrorCode(), null);
-            }
-        };
-        coap.execute().callback(cb);
+        coap.execute().callback(Util.makeFutureCallback(callback));
     }
 
     public int getResponseStatusCode()
