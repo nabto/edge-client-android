@@ -30,9 +30,19 @@ public interface TcpTunnel {
     public void open(String service, int localPort);
 
     /**
+     * Open this tunnel without blocking.
+     */
+    public void openCallback(String service, int localPort, NabtoCallback callback);
+
+    /**
      * Close a tunnel, this function blocks until the tunnel is closed
      */
     public void close();
+
+    /**
+     * Close a tunnel without blocking.
+     */
+    public void closeCallback(NabtoCallback callback);
 
     /**
      * Get the local port whic the tunnel is bound to.

@@ -3,6 +3,7 @@ import com.nabto.edge.client.Connection
 import com.nabto.edge.client.Coap
 import com.nabto.edge.client.NabtoCallback
 import com.nabto.edge.client.Stream
+import com.nabto.edge.client.TcpTunnel
 import kotlinx.coroutines.*
 import com.nabto.edge.clientx.internal.*
 
@@ -48,8 +49,14 @@ suspend fun Stream.closeAsync() {
     })
 }
 
-suspend fun Stream.abortAsync() {
-    return withContext(Dispatchers.IO) {
-        return@withContext this@abortAsync.abort()
-    }
+suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
+    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+        this@openAsync.openCallback(service, localPort, callback)
+    })
+}
+
+suspend fun TcpTunnel.closeAsync() {
+    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+        this@closeAsync.closeCallback(callback)
+    })
 }
