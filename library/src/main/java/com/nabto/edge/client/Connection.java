@@ -5,7 +5,9 @@ package com.nabto.edge.client;
  * Connection API.
  *
  * Connection instances represents a Nabto Edge Direct connection between a client and a device.
- * The instance is used to create new reliable streams or CoAP sessions on top of a connection.
+ * The instance is used to create new reliable streams or CoAP sessions on top of a connection. The
+ * Connection object must be kept alive for the duration of all streams, tunnels, and CoAP sessions
+ * created from it.
  */
 public interface Connection {
     /**
@@ -71,7 +73,7 @@ public interface Connection {
      * @return the client fingerprint encoded as hex.
      */
     String getClientFingerprint();
-    
+
     /**
      * Get the connection type.
      * @return the connection type
@@ -96,13 +98,13 @@ public interface Connection {
     void endOfDirectCandidates();
 
     /**
-     * Create stream.
+     * Create stream. The returned Stream object must be kept alive while in use.
      * @return the created stream.
      */
     Stream createStream();
 
     /**
-     * Create a coap request/response object.
+     * Create a coap request/response object. The returned Coap object must be kep alive while in use.
      * @param method e.g. GET, POST or PUT
      * @param path the path e.g. /hello-world
      * @return the created coap object.
@@ -110,7 +112,7 @@ public interface Connection {
     Coap createCoap(String method, String path);
 
     /**
-     * Create a TCP tunnel.
+     * Create a TCP tunnel. The returned TcpTunnel object must be kept alive while in use.
      * @return the created tcp tunnel.
      */
     TcpTunnel createTcpTunnel();
@@ -130,7 +132,7 @@ public interface Connection {
 
     /**
      * Password authenticate a connectio.
-     * 
+     *
      * This function blocks until the exchange is done an throws an exception
      * if the password authentication fails.
      * @param username the username.

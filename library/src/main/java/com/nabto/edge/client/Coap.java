@@ -6,7 +6,8 @@ package com.nabto.edge.client;
  * The CoAP API allows exchange of CoAP message on top of a Nabto connection between a client and
  * device. This is conceptually similar to Nabto 4 RPC but much more robust and complete.
  *
- * Stream instances are created using the Connection.createCoap() factory method.
+ * Coap instances are created using the Connection.createCoap() factory method.
+ * The Coap object must be kept alive while in use.
  */
 public interface Coap {
 

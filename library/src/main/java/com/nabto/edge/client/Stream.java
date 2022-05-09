@@ -8,7 +8,8 @@ package com.nabto.edge.client;
  * met, the stream will be closed in such a way that it is detectable.
  *
  * Stream instances are created using the Connection.createStream() factory method.
-
+ * The Stream object must be kept alive while in use.
+ *
  */
 public interface Stream {
     /**

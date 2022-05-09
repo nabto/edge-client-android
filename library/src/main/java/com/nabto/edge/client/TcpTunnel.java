@@ -15,6 +15,7 @@ package com.nabto.edge.client;
  * client side to the TCP server on the device side.
  *
  * TCP Tunnel instances are created using the Connection.createTcpTunnel() factory method.
+ * The TcpTunnel object must be kept alive while in use.
  */
 public interface TcpTunnel {
 

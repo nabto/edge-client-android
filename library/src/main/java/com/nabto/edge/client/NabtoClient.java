@@ -11,7 +11,8 @@ import com.nabto.edge.client.impl.NabtoClientImpl;
  * This class is the Nabto Edge Client SDK main entry point.
  *
  * It allows you to create private keys to use to open a connection. And to create the actual
- * connection object used to start interaction with a Nabto Edge embedded device.
+ * connection object used to start interaction with a Nabto Edge embedded device. The Client object
+ * must be kept alive for the duration of all connections created from it.
  */
 public abstract class NabtoClient {
 
@@ -49,7 +50,7 @@ public abstract class NabtoClient {
 
     /**
      * Create a connection. A connection is between this client and a
-     * device.
+     * device. Returned object must be kept alive while in use.
      * @return the created connection.
      */
     public abstract Connection createConnection();
