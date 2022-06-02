@@ -20,7 +20,7 @@ public class IamImpl extends Iam {
         try {
             result = mapper.writeValueAsBytes(object);
         } catch (JsonProcessingException e) {
-            // @TODO: Log this error
+            throw new IamException(IamError.FAILED, "CBOR serialization failed.");
         }
         return result;
     }
@@ -32,7 +32,7 @@ public class IamImpl extends Iam {
         try {
             object = mapper.readValue(cbor, cls);
         } catch (IOException e) {
-            // @TODO: Log this error
+            throw new IamException(IamError.FAILED, "CBOR deserialization failed.");
         }
         return object;
     }
