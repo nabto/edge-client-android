@@ -119,6 +119,15 @@ public class IamTest {
         "buKVmisdxETM"
     );
 
+    private LocalDevice localMdnsDevice = new LocalDevice(
+        "pr-mdns",
+        "de-mdns",
+        "https://pr-fatqcwj9.clients.nabto.net",
+        "none",
+        "none",
+        ""
+    );
+
     private interface Function {
         void run();
     }
@@ -131,6 +140,9 @@ public class IamTest {
         } catch (Throwable exception) {
             e = exception;
         }
+        if (e == null) {
+            fail("Expected Exception to be thrown");
+        }
         assertEquals(expectedType, e.getClass());
         return (T)e;
     }
@@ -141,6 +153,9 @@ public class IamTest {
             fun.run();
         } catch (Throwable exception) {
             e = exception;
+        }
+        if (e == null) {
+            fail("Expected IamException to be thrown");
         }
         assertEquals(IamException.class, e.getClass());
         IamException iamEx = (IamException)e;
@@ -304,7 +319,11 @@ public class IamTest {
 
     @Test
     public void testCheckPairedUserNoIamSupport() {
-
+        Connection connection = connectToDevice(localMdnsDevice);
+        Iam iam = Iam.create();
+        assertIamError(IamError.IAM_NOT_SUPPORTED, () -> {
+            iam.isCurrentUserPaired(connection);
+        });
     }
 
     @Test
@@ -350,5 +369,49 @@ public class IamTest {
 
         iam.pairLocalOpen(connection, username);
         iam.updateUserDisplayName(connection, username, displayName);
+
+        IamUser user = iam.getCurrentUser(connection);
+        assertEquals(user.username, username);
+        assertEquals(user.displayName, displayName);
+    }
+
+    @Test
+    public void testDeleteUser() {
+
+    }
+
+    @Test
+    public void testCodableUser() {
+
+    }
+
+    @Test
+    public void testLocalInitialSuccess() {
+
+    }
+
+    @Test
+    public void testLocalInitialAlreadyPairedFail() {
+
+    }
+
+    @Test
+    public void testGetDeviceDetails() {
+
+    }
+
+    @Test
+    public void testGetPairingModes1() {
+
+    }
+
+    @Test
+    public void testGetPairingModes2() {
+
+    }
+
+    @Test
+    public void testGetPairingModes3() {
+
     }
 }

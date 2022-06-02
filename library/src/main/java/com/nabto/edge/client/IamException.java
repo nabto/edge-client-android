@@ -10,6 +10,11 @@ public class IamException extends RuntimeException {
         this.error = error;
     }
 
+    public IamException(IamError error, String msg) {
+        super(error.name() + " :: " + msg);
+        this.error = error;
+    }
+
     public IamError getError() {
         return error;
     }
