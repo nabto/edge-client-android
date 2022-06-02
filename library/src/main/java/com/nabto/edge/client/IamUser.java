@@ -25,7 +25,8 @@ public class IamUser {
         @JsonProperty(value = "DisplayName", required = false) String displayName,
         @JsonProperty(value = "Fingerprint", required = false) String fingerprint,
         @JsonProperty(value = "Sct",         required = false) String sct,
-        @JsonProperty(value = "Role",        required = false) String role) {
+        @JsonProperty(value = "Role",        required = false) String role
+    ) {
         this.username = username;
         this.displayName = displayName;
         this.fingerprint = fingerprint;

@@ -162,16 +162,16 @@ public class IamTest {
     @Test
     public void testPasswordOpenSuccess() {
         Connection connection = connectToDevice(localPairPasswordOpen);
-        Iam iam = Iam.create(connection);
-        iam.pairPasswordOpen(uniqueUser(), localPairPasswordOpen.password);
+        Iam iam = Iam.create();
+        iam.pairPasswordOpen(connection, uniqueUser(), localPairPasswordOpen.password);
     }
 
     @Test
     public void testPasswordOpenWrongPassword() {
         Connection connection = connectToDevice(localPairPasswordOpen);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
         NabtoRuntimeException e = assertThrows(NabtoRuntimeException.class, () -> {
-            iam.pairPasswordOpen(uniqueUser(), "i-am-a-clown-with-a-wrong-password");
+            iam.pairPasswordOpen(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password");
         });
         assertEquals(e.getErrorCode().getErrorCode(), ErrorCodes.UNAUTHORIZED);
     }
@@ -180,28 +180,28 @@ public class IamTest {
     public void testPasswordOpenBlockedByConfig() {
         LocalDevice dev = localPasswordPairingDisabledConfig;
         Connection connection = connectToDevice(dev);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
         assertIamError(IamError.BLOCKED_BY_DEVICE_CONFIGURATION, () -> {
-            iam.pairPasswordOpen(uniqueUser(), dev.password);
+            iam.pairPasswordOpen(connection, uniqueUser(), dev.password);
         });
     }
 
     @Test
     public void testLocalOpenSuccess() {
         Connection connection = connectToDevice(localPairLocalOpen);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
 
-        assertFalse(iam.isCurrentUserPaired());
-        iam.pairLocalOpen(uniqueUser());
-        assertTrue(iam.isCurrentUserPaired());
+        assertFalse(iam.isCurrentUserPaired(connection));
+        iam.pairLocalOpen(connection, uniqueUser());
+        assertTrue(iam.isCurrentUserPaired(connection));
     }
 
     @Test
     public void testLocalOpenInvalidUsername() {
         Connection connection = connectToDevice(localPairLocalOpen);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
         assertIamError(IamError.INVALID_INPUT, () -> {
-            iam.pairLocalOpen("Worst username in the history of usernames");
+            iam.pairLocalOpen(connection, "Worst username in the history of usernames");
         });
     }
 
@@ -209,20 +209,20 @@ public class IamTest {
     public void testLocalOpenUsernameAlreadyExists() {
         LocalDevice dev = localPairLocalOpen;
         Connection connection = connectToDevice(dev);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
         String username = uniqueUser();
-        iam.pairLocalOpen(username);
+        iam.pairLocalOpen(connection, username);
         assertIamError(IamError.USERNAME_EXISTS, () -> {
-            iam.pairLocalOpen(username);
+            iam.pairLocalOpen(connection, username);
         });
     }
 
     @Test
     public void testLocalOpenBlockedByConfig() {
         Connection connection = connectToDevice(localPasswordPairingDisabledConfig);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
         assertIamError(IamError.PAIRING_MODE_DISABLED, () -> {
-            iam.pairLocalOpen(uniqueUser());
+            iam.pairLocalOpen(connection, uniqueUser());
         });
     }
 
@@ -230,49 +230,48 @@ public class IamTest {
     public void testPasswordInviteSuccess() {
         LocalDevice dev = localPasswordInvite;
         Connection connection = connectToDevice(dev);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
 
         String admin = uniqueUser();
-        iam.pairPasswordOpen(admin, dev.password);
+        iam.pairPasswordOpen(connection, admin, dev.password);
         
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
         System.out.println(guest);
-        iam.createUser(guest, guestPassword, "Guest");
-        iam.getUser(guest);
+        iam.createUser(connection, guest, guestPassword, "Guest");
+        iam.getUser(connection, guest);
 
         // Reconnect as user instead of admin
         connection.close();
         connection = connectToDevice(dev);
-        iam = Iam.create(connection);
-        assertFalse(iam.isCurrentUserPaired());
-        iam.pairPasswordInvite(guest, guestPassword);
-        assertTrue(iam.isCurrentUserPaired());
+        iam = Iam.create();
+        assertFalse(iam.isCurrentUserPaired(connection));
+        iam.pairPasswordInvite(connection, guest, guestPassword);
+        assertTrue(iam.isCurrentUserPaired(connection));
     }
 
     @Test
     public void testPasswordInviteWrongUser() {
         LocalDevice dev = localPasswordInvite;
         Connection connection = connectToDevice(dev);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
 
         String admin = uniqueUser();
-        iam.pairPasswordOpen(admin, dev.password);
+        iam.pairPasswordOpen(connection, admin, dev.password);
 
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        System.out.println(guest);
-        iam.createUser(guest, guestPassword, "Guest");
-        iam.getUser(guest);
+        iam.createUser(connection, guest, guestPassword, "Guest");
+        iam.getUser(connection, guest);
 
         // Reconnect as user instead of admin
         connection.close();
-        connection = connectToDevice(dev);
-        // Have to make a new iam variable to capture in lambda, java is really great...
-        Iam iam2 = Iam.create(connection);
-        assertFalse(iam2.isCurrentUserPaired());
+        // Have to make a new variables to capture in lambda, java is really great...
+        Connection connectionUser = connectToDevice(dev);
+        Iam iamUser = Iam.create();
+        assertFalse(iamUser.isCurrentUserPaired(connectionUser));
         NabtoRuntimeException e = assertThrows(NabtoRuntimeException.class, () -> {
-            iam2.pairPasswordInvite("bonk", guestPassword);
+            iamUser.pairPasswordInvite(connectionUser, "bonk", guestPassword);
         });
         assertEquals(e.getErrorCode().getErrorCode(), ErrorCodes.UNAUTHORIZED);
     }
@@ -281,26 +280,25 @@ public class IamTest {
     public void testCreateUserBadRole() {
         LocalDevice dev = localPasswordInvite;
         Connection connection = connectToDevice(dev);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
 
         String admin = uniqueUser();
-        iam.pairPasswordOpen(admin, dev.password);
+        iam.pairPasswordOpen(connection, admin, dev.password);
 
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        System.out.println(guest);
         assertIamError(IamError.ROLE_DOES_NOT_EXIST, () -> {
-            iam.createUser(guest, guestPassword, "Clown"); 
+            iam.createUser(connection, guest, guestPassword, "Clown"); 
         });
     }
 
     @Test
     public void testCheckUnpairedUser() {
         Connection connection = connectToDevice(localPasswordInvite);
-        Iam iam = Iam.create(connection);
-        assertFalse(iam.isCurrentUserPaired());
+        Iam iam = Iam.create();
+        assertFalse(iam.isCurrentUserPaired(connection));
         assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
-            iam.getCurrentUser();
+            iam.getCurrentUser(connection);
         });
     }
 
@@ -313,33 +311,44 @@ public class IamTest {
     public void testCreateUserAndGetUser() {
         LocalDevice dev = localPasswordInvite;
         Connection connection = connectToDevice(dev);
-        Iam iam = Iam.create(connection);
+        Iam iam = Iam.create();
         String admin = uniqueUser();
-        iam.pairPasswordOpen(admin, dev.password);
+        iam.pairPasswordOpen(connection, admin, dev.password);
 
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        iam.createUser(guest, guestPassword, "Guest");
+        iam.createUser(connection, guest, guestPassword, "Guest");
 
         // Reconnect as user instead of admin
         connection.close();
-        connection = connectToDevice(dev);
-        Iam iamUser = Iam.create(connection);
-        assertFalse(iamUser.isCurrentUserPaired());
-        iamUser.pairPasswordInvite(guest, guestPassword);
-        assertTrue(iamUser.isCurrentUserPaired());
+        Connection connectionUser = connectToDevice(dev);
+        Iam iamUser = Iam.create();
+        assertFalse(iamUser.isCurrentUserPaired(connectionUser));
+        iamUser.pairPasswordInvite(connectionUser, guest, guestPassword);
+        assertTrue(iamUser.isCurrentUserPaired(connectionUser));
 
         // Guest is not allowed to GET admin
         assertIamError(IamError.BLOCKED_BY_DEVICE_CONFIGURATION, () -> {
-            iamUser.getUser(admin);
+            iamUser.getUser(connectionUser, admin);
         });
 
         // Guest can GET self
-        IamUser me = iamUser.getUser(guest);
+        IamUser me = iamUser.getUser(connectionUser, guest);
         assertNotNull(me);
         assertEquals(me.getUsername(), guest);
         assertEquals(me.getRole(), "Guest");
     }
 
-    
+    @Test
+    public void testSetDisplayName() {
+        LocalDevice dev = localPairLocalOpen;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+
+        String username = uniqueUser();
+        String displayName = uniqueUser();
+
+        iam.pairLocalOpen(connection, username);
+        iam.updateUserDisplayName(connection, username, displayName);
+    }
 }

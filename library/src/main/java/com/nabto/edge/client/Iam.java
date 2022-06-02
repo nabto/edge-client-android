@@ -12,37 +12,37 @@ public abstract class Iam {
         PASSWORD_INVITE
     }
 
-    public static Iam create(Connection connection) {
-        return new IamImpl(connection);
+    public static Iam create() {
+        return new IamImpl();
     }
 
-    public abstract void pairLocalOpen(String desiredUsername);
+    public abstract void pairLocalOpen(Connection connection, String desiredUsername);
 
-    public abstract void pairLocalInitial();
+    public abstract void pairLocalInitial(Connection connection);
 
-    public abstract void pairPasswordOpen(String desiredUsername, String password);
+    public abstract void pairPasswordOpen(Connection connection, String desiredUsername, String password);
 
-    public abstract void pairPasswordInvite(String username, String password);
+    public abstract void pairPasswordInvite(Connection connection, String username, String password);
 
-    public abstract PairingMode[] getAvailablePairingModes();
+    public abstract PairingMode[] getAvailablePairingModes(Connection connection);
 
-    public abstract IamDeviceDetails getDeviceDetails();
+    public abstract IamDeviceDetails getDeviceDetails(Connection connection);
 
-    public abstract boolean isCurrentUserPaired();
+    public abstract boolean isCurrentUserPaired(Connection connection);
 
-    public abstract IamUser getUser(String username);
+    public abstract IamUser getUser(Connection connection, String username);
     
-    public abstract IamUser getCurrentUser();
+    public abstract IamUser getCurrentUser(Connection connection);
 
-    public abstract void createUser(String username, String password, String role);
+    public abstract void createUser(Connection connection, String username, String password, String role);
 
-    public abstract void updateUserPassword(String username, String password);
+    public abstract void updateUserPassword(Connection connection, String username, String password);
     
-    public abstract void updateUserRole(String username, String role);
+    public abstract void updateUserRole(Connection connection, String username, String role);
 
-    public abstract void updateUserDisplayName(String username, String displayName);
+    public abstract void updateUserDisplayName(Connection connection, String username, String displayName);
 
-    public abstract void renameUser(String username, String newUsername);
+    public abstract void renameUser(Connection connection, String username, String newUsername);
 
-    public abstract void deleteUser(String username);
+    public abstract void deleteUser(Connection connection, String username);
 }
