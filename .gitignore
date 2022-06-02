@@ -28,3 +28,5 @@ local.properties
 /demo/.gradle/*
 */.gradle/*
 */.idea/*
+
+**/.DS_Store
