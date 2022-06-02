@@ -1,5 +1,9 @@
 package com.nabto.edge.client;
 
+import com.nabto.edge.client.Iam.PairingMode;
+
+import java.util.List;
+import java.util.Arrays;
 import java.util.UUID;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -25,6 +29,13 @@ import org.json.JSONObject;
 @RunWith(AndroidJUnit4.class)
 public class IamTest {
     private NabtoClient client;
+
+    private String localInitialAdminKey =
+        "-----BEGIN EC PRIVATE KEY-----\n" +
+        "MHcCAQEEIAl3ZURem5NMCTZA0OeTPcT7y6T2FHjHhmQz54UiH7mQoAoGCCqGSM49\n" + 
+        "AwEHoUQDQgAEbiabrII+WZ8ABD4VQpmLe3cSIWdQfrRbxXotx5yxwInfgLuDU+rq\n" +
+        "OIFReqTf5h+Nwp/jj00fnsII88n1YCveoQ==\n" +
+        "-----END EC PRIVATE KEY-----\n";
 
     @Before
     public void setup() {
@@ -167,6 +178,35 @@ public class IamTest {
         String pk = client.createPrivateKey();
         connection.updateOptions(dev.json(pk));
         connection.connect();
+        return connection;
+    }
+
+    private Connection connectToDeviceWithAdminKey(LocalDevice dev) {
+        Connection connection = client.createConnection();
+        connection.updateOptions(dev.json(localInitialAdminKey));
+        connection.connect();
+
+        Iam iam = Iam.create();
+        String initialUser = "admin";
+        String tmpUser = uniqueUser();
+        IamUser currentUser = null;
+        try {
+            currentUser = iam.getCurrentUser(connection);
+        } catch (Exception e) {
+            currentUser = null;
+        }
+
+        if (currentUser != null) {
+            assertEquals(currentUser.getUsername(), initialUser);
+            try {
+                iam.renameUser(connection, initialUser, tmpUser);
+                iam.createUser(connection, initialUser, "", "Administrator");
+                iam.deleteUser(connection, tmpUser);
+            } catch (Exception e) {
+                fail("Failed to reset LocalInitial pairing state");
+            }
+        }
+
         return connection;
     }
 
@@ -377,41 +417,102 @@ public class IamTest {
 
     @Test
     public void testDeleteUser() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
 
-    }
+        String admin = uniqueUser();
+        iam.pairPasswordOpen(connection, admin, dev.password);
+        assertTrue(iam.isCurrentUserPaired(connection));
 
-    @Test
-    public void testCodableUser() {
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        iam.createUser(connection, guest, guestPassword, "Guest");
 
+        IamUser guestUser = iam.getUser(connection, guest);
+        assertEquals(guestUser.getUsername(), guest);
+        assertEquals(guestUser.getRole(), "Guest");
+
+        assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
+            iam.deleteUser(connection, "nonexistent");
+        });
+
+        iam.deleteUser(connection, guest);
+
+        assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
+            iam.getUser(connection, guest);
+        });
     }
 
     @Test
     public void testLocalInitialSuccess() {
-
+        Connection connection = connectToDeviceWithAdminKey(localPairLocalInitial);
+        Iam iam = Iam.create();
+        assertFalse(iam.isCurrentUserPaired(connection));
+        iam.pairLocalInitial(connection);
+        assertTrue(iam.isCurrentUserPaired(connection));
     }
 
     @Test
     public void testLocalInitialAlreadyPairedFail() {
-
+        Connection connection = connectToDeviceWithAdminKey(localPairLocalInitial);
+        Iam iam = Iam.create();
+        assertFalse(iam.isCurrentUserPaired(connection));
+        iam.pairLocalInitial(connection);
+        assertTrue(iam.isCurrentUserPaired(connection));
+        assertIamError(IamError.INITIAL_USER_ALREADY_PAIRED, () -> {
+            iam.pairLocalInitial(connection);
+        });
     }
 
     @Test
     public void testGetDeviceDetails() {
-
+        LocalDevice dev = localPairLocalInitial;
+        Connection connection = connectToDeviceWithAdminKey(dev);
+        Iam iam = Iam.create();
+        IamDeviceDetails details = iam.getDeviceDetails(connection);
+        assertEquals(details.getProductId(), dev.productId);
+        assertEquals(details.getDeviceId(), dev.deviceId);
+        assertArrayEquals(details.getModes(), new String[] { "LocalInitial" });
     }
 
     @Test
     public void testGetPairingModes1() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
 
+        PairingMode[] modes = iam.getAvailablePairingModes(connection);
+        assertEquals(modes.length, 2);
+
+        List<PairingMode> modesList = Arrays.asList(modes);
+        assertTrue(modesList.contains(PairingMode.PASSWORD_INVITE));
+        assertTrue(modesList.contains(PairingMode.PASSWORD_OPEN));
     }
 
     @Test
     public void testGetPairingModes2() {
+        LocalDevice dev = localPairLocalInitial;
+        Connection connection = connectToDeviceWithAdminKey(dev);
+        Iam iam = Iam.create();
+        
+        PairingMode[] modes = iam.getAvailablePairingModes(connection);
+        assertEquals(modes.length, 1);
 
+        List<PairingMode> modesList = Arrays.asList(modes);
+        assertTrue(modesList.contains(PairingMode.LOCAL_INITIAL));
     }
 
     @Test
     public void testGetPairingModes3() {
+        LocalDevice dev = localPairLocalOpen;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
 
+        PairingMode[] modes = iam.getAvailablePairingModes(connection);
+        assertEquals(modes.length, 1);
+
+        List<PairingMode> modesList = Arrays.asList(modes);
+        assertTrue(modesList.contains(PairingMode.LOCAL_OPEN));
     }
 }
