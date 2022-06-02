@@ -1,7 +1,7 @@
 package com.nabto.edge.client;
 
 import org.jetbrains.annotations.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 
 public class IamDeviceDetails {
     @JsonProperty(value = "Modes", required = true)
@@ -22,13 +22,14 @@ public class IamDeviceDetails {
     @JsonProperty(value = "DeviceId", required = true)
     private String deviceId;
 
+    @JsonCreator
     public IamDeviceDetails(
-        @NotNull String[] modes,
-        @NotNull String nabtoVersion,
-        String appVersion,
-        String appName,
-        @NotNull String productId,
-        @NotNull String deviceId
+        @JsonProperty(value = "Modes",        required = true ) @NotNull String[] modes,
+        @JsonProperty(value = "NabtoVersion", required = false) @NotNull String nabtoVersion,
+        @JsonProperty(value = "AppVersion",   required = false) String appVersion,
+        @JsonProperty(value = "AppName",      required = false) String appName,
+        @JsonProperty(value = "ProductId",    required = false) @NotNull String productId,
+        @JsonProperty(value = "DeviceId",     required = false) @NotNull String deviceId
     ) {
         this.modes = modes;
         this.nabtoVersion = nabtoVersion;

@@ -1,25 +1,31 @@
 package com.nabto.edge.client;
 
 import org.jetbrains.annotations.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 
 public class IamUser {
     @JsonProperty(value = "Username", required = true)
-    private String username;
+    public String username;
 
-    @JsonProperty("DisplayName")
-    private String displayName;
+    @JsonProperty(value = "DisplayName", required = false)
+    public String displayName;
 
-    @JsonProperty("Fingerprint")
-    private String fingerprint;
+    @JsonProperty(value = "Fingerprint", required = false)
+    public String fingerprint;
 
-    @JsonProperty("Sct")
-    private String sct;
+    @JsonProperty(value = "Sct", required = false)
+    public String sct;
 
-    @JsonProperty("Role")
-    private String role;
+    @JsonProperty(value = "Role", required = false)
+    public String role;
 
-    public IamUser(@NotNull String username, String displayName, String fingerprint, String sct, String role) {
+    @JsonCreator
+    public IamUser(
+        @JsonProperty(value = "Username",    required = true ) @NotNull String username,
+        @JsonProperty(value = "DisplayName", required = false) String displayName,
+        @JsonProperty(value = "Fingerprint", required = false) String fingerprint,
+        @JsonProperty(value = "Sct",         required = false) String sct,
+        @JsonProperty(value = "Role",        required = false) String role) {
         this.username = username;
         this.displayName = displayName;
         this.fingerprint = fingerprint;

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import com.nabto.edge.client.*;
 import com.nabto.edge.client.Coap.ContentFormat;
@@ -30,6 +31,7 @@ public class IamImpl extends Iam {
 
     private <T> T decode(byte[] cbor, Class<T> cls) {
         ObjectMapper mapper = new CBORMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         T object = null;
         try {
             object = mapper.readValue(cbor, cls);

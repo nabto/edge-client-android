@@ -21,7 +21,7 @@ import org.json.JSONObject;
  *   ./gradlew library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.IamTest
  */
 
- 
+
 @RunWith(AndroidJUnit4.class)
 public class IamTest {
     private NabtoClient client;
@@ -251,6 +251,50 @@ public class IamTest {
     }
 
     @Test
+    public void testPasswordInviteWrongUser() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create(connection);
+
+        String admin = uniqueUser();
+        iam.pairPasswordOpen(admin, dev.password);
+
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        System.out.println(guest);
+        iam.createUser(guest, guestPassword, "Guest");
+        iam.getUser(guest);
+
+        // Reconnect as user instead of admin
+        connection.close();
+        connection = connectToDevice(dev);
+        // Have to make a new iam variable to capture in lambda, java is really great...
+        Iam iam2 = Iam.create(connection);
+        assertFalse(iam2.isCurrentUserPaired());
+        NabtoRuntimeException e = assertThrows(NabtoRuntimeException.class, () -> {
+            iam2.pairPasswordInvite("bonk", guestPassword);
+        });
+        assertEquals(e.getErrorCode().getErrorCode(), ErrorCodes.UNAUTHORIZED);
+    }
+
+    @Test
+    public void testCreateUserBadRole() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create(connection);
+
+        String admin = uniqueUser();
+        iam.pairPasswordOpen(admin, dev.password);
+
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        System.out.println(guest);
+        assertIamError(IamError.ROLE_DOES_NOT_EXIST, () -> {
+            iam.createUser(guest, guestPassword, "Clown"); 
+        });
+    }
+
+    @Test
     public void testCheckUnpairedUser() {
         Connection connection = connectToDevice(localPasswordInvite);
         Iam iam = Iam.create(connection);
@@ -259,4 +303,43 @@ public class IamTest {
             iam.getCurrentUser();
         });
     }
+
+    @Test
+    public void testCheckPairedUserNoIamSupport() {
+
+    }
+
+    @Test
+    public void testCreateUserAndGetUser() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create(connection);
+        String admin = uniqueUser();
+        iam.pairPasswordOpen(admin, dev.password);
+
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        iam.createUser(guest, guestPassword, "Guest");
+
+        // Reconnect as user instead of admin
+        connection.close();
+        connection = connectToDevice(dev);
+        Iam iamUser = Iam.create(connection);
+        assertFalse(iamUser.isCurrentUserPaired());
+        iamUser.pairPasswordInvite(guest, guestPassword);
+        assertTrue(iamUser.isCurrentUserPaired());
+
+        // Guest is not allowed to GET admin
+        assertIamError(IamError.BLOCKED_BY_DEVICE_CONFIGURATION, () -> {
+            iamUser.getUser(admin);
+        });
+
+        // Guest can GET self
+        IamUser me = iamUser.getUser(guest);
+        assertNotNull(me);
+        assertEquals(me.getUsername(), guest);
+        assertEquals(me.getRole(), "Guest");
+    }
+
+    
 }
