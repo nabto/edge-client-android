@@ -225,10 +225,9 @@ public class IamTest {
     public void testPasswordOpenWrongPassword() {
         Connection connection = connectToDevice(localPairPasswordOpen);
         Iam iam = Iam.create();
-        NabtoRuntimeException e = assertThrows(NabtoRuntimeException.class, () -> {
+        assertIamError(IamError.AUTHENTICATION_ERROR, () -> {
             iam.pairPasswordOpen(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password");
         });
-        assertEquals(e.getErrorCode().getErrorCode(), ErrorCodes.UNAUTHORIZED);
     }
 
     @Test
@@ -323,12 +322,10 @@ public class IamTest {
         connection.close();
         // Have to make a new variables to capture in lambda, java is really great...
         Connection connectionUser = connectToDevice(dev);
-        Iam iamUser = Iam.create();
-        assertFalse(iamUser.isCurrentUserPaired(connectionUser));
-        NabtoRuntimeException e = assertThrows(NabtoRuntimeException.class, () -> {
-            iamUser.pairPasswordInvite(connectionUser, "bonk", guestPassword);
+        assertFalse(iam.isCurrentUserPaired(connectionUser));
+        assertIamError(IamError.AUTHENTICATION_ERROR, () -> {
+            iam.pairPasswordInvite(connectionUser, "bonk", guestPassword);
         });
-        assertEquals(e.getErrorCode().getErrorCode(), ErrorCodes.UNAUTHORIZED);
     }
 
     @Test
@@ -381,18 +378,17 @@ public class IamTest {
         // Reconnect as user instead of admin
         connection.close();
         Connection connectionUser = connectToDevice(dev);
-        Iam iamUser = Iam.create();
-        assertFalse(iamUser.isCurrentUserPaired(connectionUser));
-        iamUser.pairPasswordInvite(connectionUser, guest, guestPassword);
-        assertTrue(iamUser.isCurrentUserPaired(connectionUser));
+        assertFalse(iam.isCurrentUserPaired(connectionUser));
+        iam.pairPasswordInvite(connectionUser, guest, guestPassword);
+        assertTrue(iam.isCurrentUserPaired(connectionUser));
 
         // Guest is not allowed to GET admin
         assertIamError(IamError.BLOCKED_BY_DEVICE_CONFIGURATION, () -> {
-            iamUser.getUser(connectionUser, admin);
+            iam.getUser(connectionUser, admin);
         });
 
         // Guest can GET self
-        IamUser me = iamUser.getUser(connectionUser, guest);
+        IamUser me = iam.getUser(connectionUser, guest);
         assertNotNull(me);
         assertEquals(me.getUsername(), guest);
         assertEquals(me.getRole(), "Guest");
@@ -514,5 +510,112 @@ public class IamTest {
 
         List<PairingMode> modesList = Arrays.asList(modes);
         assertTrue(modesList.contains(PairingMode.LOCAL_OPEN));
+    }
+
+    private String createAdminAndGuest(Connection connection, LocalDevice dev, String guestPassword) {
+        String admin = uniqueUser();
+        Iam iam = Iam.create();
+        iam.pairPasswordOpen(connection, admin, dev.password);
+
+        String user = uniqueUser();
+        iam.createUser(connection, user, guestPassword, "Guest");
+
+        return user;
+    }
+
+    @Test
+    public void testUpdateUserPassword() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newGuestPassword = "newguestpassword";
+
+        // Should fail
+        assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
+            iam.updateUserPassword(connection, "baduser", "sus");
+        });
+
+        // Shouldn't fail
+        iam.updateUserPassword(connection, user, newGuestPassword);
+
+        // Reconnect as user instead of admin
+        connection.close();
+        Connection connectionUser = connectToDevice(dev);
+        assertFalse(iam.isCurrentUserPaired(connectionUser));
+
+        assertIamError(IamError.AUTHENTICATION_ERROR, () -> {
+            iam.pairPasswordInvite(connectionUser, user, guestPassword);
+        });
+        iam.pairPasswordInvite(connectionUser, user, newGuestPassword);
+        assertTrue(iam.isCurrentUserPaired(connectionUser));
+    }
+
+    @Test
+    public void testUpdateUserRole() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newRole = "Standard";
+
+        // Should fail
+        assertIamError(IamError.ROLE_DOES_NOT_EXIST, () -> {
+            iam.updateUserRole(connection, user, "badrole");
+        });
+
+        // Shouldn't fail
+        iam.updateUserRole(connection, user, newRole);
+
+        IamUser userHandle = iam.getUser(connection, user);
+        assertEquals(userHandle.getRole(), newRole);
+    }
+
+    @Test
+    public void testUpdateUserDisplayName() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newDisplayName = "Morbius";
+
+        // Should fail
+        assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
+            iam.updateUserDisplayName(connection, "morb", newDisplayName);
+        });
+
+        // Shouldn't fail
+        iam.updateUserDisplayName(connection, user, newDisplayName);
+
+        IamUser userHandle = iam.getUser(connection, user);
+        assertEquals(userHandle.getDisplayName(), newDisplayName);
+    }
+
+    @Test
+    public void testRenameUser() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newUsername = uniqueUser();
+
+        // Should fail
+        assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
+            iam.renameUser(connection, "idontexist", newUsername);
+        });
+
+        // Shouldn't fail
+        iam.renameUser(connection, user, newUsername);
+
+        IamUser userHandle = iam.getUser(connection, newUsername);
+        assertEquals(userHandle.getUsername(), newUsername);
     }
 }

@@ -87,9 +87,21 @@ public class IamImpl extends Iam {
         }
     }
 
+    private void passwordAuthenticate(Connection connection, String username, String password) {
+        try {
+            connection.passwordAuthenticate(username, password);
+        } catch (NabtoRuntimeException e) {
+            if (e.getErrorCode().getErrorCode() == ErrorCodes.UNAUTHORIZED) {
+                throw error(IamError.AUTHENTICATION_ERROR);
+            } else {
+                throw e;
+            }
+        }
+    }
+
     public void pairPasswordOpen(Connection connection, String desiredUsername, String password) {
         byte[] cbor = encode(new IamUser(desiredUsername));
-        connection.passwordAuthenticate("", password);
+        passwordAuthenticate(connection, "", password);
         Coap coap = connection.createCoap("POST", "/iam/pairing/password-open");
         coap.setRequestPayload(ContentFormat.APPLICATION_CBOR, cbor);
         int status = execute(coap, connection);
@@ -104,7 +116,7 @@ public class IamImpl extends Iam {
     }
 
     public void pairPasswordInvite(Connection connection, String username, String password) {
-        connection.passwordAuthenticate(username, password);
+        passwordAuthenticate(connection, username, password);
         Coap coap = connection.createCoap("POST", "/iam/pairing/password-invite");
         int status = execute(coap, connection);
         switch (status) {
