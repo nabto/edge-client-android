@@ -1,6 +1,7 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply from: '../versioning.gradle'
+apply plugin: 'org.jetbrains.dokka'
 
 def getReleaseRepositoryUrl() {
     return 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
@@ -23,8 +24,9 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID_KTX
                 from components.release
-                artifact sourcesJar
-                artifact javadocJar
+                // artifact sourcesJar
+                // artifact javadocJar
+                artifact dokkaJavadocJar
                 pom {
                     name = POM_ARTIFACT_ID
                     description = POM_DESCRIPTION
@@ -80,18 +82,32 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    excludes = [ "**/*.md", "**/*.kt" ]
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    android.libraryVariants.all { variant ->
-        if (variant.name == 'release') {
-            owner.classpath += variant.javaCompileProvider.get().classpath
+// task javadoc(type: Javadoc) {
+//     source = android.sourceSets.main.java.srcDirs
+//     excludes = [ "**/*.md", "**/*.kt" ]
+//     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//     android.libraryVariants.all { variant ->
+//         if (variant.name == 'release') {
+//             owner.classpath += variant.javaCompileProvider.get().classpath
+//         }
+//     }
+// }
+
+// task javadocJar(type: Jar, dependsOn: javadoc) {
+//     classifier = 'javadoc'
+//     from javadoc.destinationDir
+// }
+
+dokkaJavadoc.configure {
+    outputDirectory.set(file("${buildDir}/dokka"))
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
         }
     }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task dokkaJavadocJar(type: Jar, dependsOn: dokkaJavadoc) {
     classifier = 'javadoc'
-    from javadoc.destinationDir
+    from file("${buildDir}/dokka")
 }
