@@ -24,7 +24,7 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID_KTX
                 from components.release
-                // artifact sourcesJar
+                artifact sourcesJar
                 // artifact javadocJar
                 artifact dokkaJavadocJar
                 pom {
