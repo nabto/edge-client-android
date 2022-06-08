@@ -1,4 +1,4 @@
-package com.nabto.edge.clientx.internal
+package com.nabto.edge.client.internal
 import java.util.Optional
 import com.nabto.edge.client.NabtoCallback
 import com.nabto.edge.client.ErrorCodes

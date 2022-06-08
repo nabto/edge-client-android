@@ -1,5 +1,5 @@
-package com.nabto.edge.clientx
-import com.nabto.edge.clientx.test.R
+package com.nabto.edge.client
+import com.nabto.edge.client.test.R
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,7 +11,7 @@ import kotlinx.coroutines.*
 import com.nabto.edge.client.NabtoClient
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.NabtoEOFException
-import com.nabto.edge.clientx.*
+import com.nabto.edge.client.*
 import org.json.JSONException
 import org.json.JSONObject
 

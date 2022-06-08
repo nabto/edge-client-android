@@ -30,3 +30,4 @@ local.properties
 */.idea/*
 
 **/.DS_Store
+/iam-util/build/

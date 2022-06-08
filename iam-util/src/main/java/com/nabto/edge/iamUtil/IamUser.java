@@ -1,4 +1,4 @@
-package com.nabto.edge.iamUtil;
+package com.nabto.edge.iamutil;
 
 import org.jetbrains.annotations.*;
 import com.fasterxml.jackson.annotation.*;

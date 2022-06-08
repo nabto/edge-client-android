@@ -1,4 +1,4 @@
-package com.nabto.edge.iamUtil;
+package com.nabto.edge.iamutil;
 
 import android.content.res.Resources;
 

@@ -1,4 +1,4 @@
-package com.nabto.edge.iamUtil;
+package com.nabto.edge.iamutil;
 
 public enum IamError {
     BLOCKED_BY_DEVICE_CONFIGURATION,

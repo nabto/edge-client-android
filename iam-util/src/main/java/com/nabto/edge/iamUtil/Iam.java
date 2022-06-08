@@ -1,6 +1,6 @@
-package com.nabto.edge.iamUtil;
+package com.nabto.edge.iamutil;
 
-import com.nabto.edge.iamUtil.impl.IamImpl;
+import com.nabto.edge.iamutil.impl.IamImpl;
 import com.nabto.edge.client.Connection;
 
 /**
@@ -179,7 +179,6 @@ public abstract class Iam {
      * `IAM:CreateUser` action is not allowed for the requesting role)
      * @throws ROLE_DOES_NOT_EXIST the specified role does not exist in the device IAM configuration
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
-     * @return an IamUser instance describing the current user
      */
     public abstract void createUser(Connection connection, String username, String password, String role);
 

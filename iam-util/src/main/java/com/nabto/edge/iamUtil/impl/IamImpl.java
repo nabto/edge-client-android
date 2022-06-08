@@ -1,4 +1,4 @@
-package com.nabto.edge.iamUtil.impl;
+package com.nabto.edge.iamutil.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
-import com.nabto.edge.iamUtil.*;
+import com.nabto.edge.iamutil.*;
 import com.nabto.edge.client.Coap.ContentFormat;
 import com.nabto.edge.client.Coap;
 import com.nabto.edge.client.NabtoRuntimeException;
