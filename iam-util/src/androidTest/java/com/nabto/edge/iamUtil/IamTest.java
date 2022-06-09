@@ -1,6 +1,8 @@
-package com.nabto.edge.client;
+package com.nabto.edge.iamutil;
 
-import com.nabto.edge.client.Iam.PairingMode;
+import com.nabto.edge.iamutil.Iam.PairingMode;
+import com.nabto.edge.client.NabtoClient;
+import com.nabto.edge.client.Connection;
 
 import java.util.List;
 import java.util.Arrays;
@@ -32,7 +34,7 @@ public class IamTest {
 
     private String localInitialAdminKey =
         "-----BEGIN EC PRIVATE KEY-----\n" +
-        "MHcCAQEEIAl3ZURem5NMCTZA0OeTPcT7y6T2FHjHhmQz54UiH7mQoAoGCCqGSM49\n" + 
+        "MHcCAQEEIAl3ZURem5NMCTZA0OeTPcT7y6T2FHjHhmQz54UiH7mQoAoGCCqGSM49\n" +
         "AwEHoUQDQgAEbiabrII+WZ8ABD4VQpmLe3cSIWdQfrRbxXotx5yxwInfgLuDU+rq\n" +
         "OIFReqTf5h+Nwp/jj00fnsII88n1YCveoQ==\n" +
         "-----END EC PRIVATE KEY-----\n";
@@ -288,7 +290,7 @@ public class IamTest {
 
         String admin = uniqueUser();
         iam.pairPasswordOpen(connection, admin, dev.password);
-        
+
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
         System.out.println(guest);
@@ -340,7 +342,7 @@ public class IamTest {
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
         assertIamError(IamError.ROLE_DOES_NOT_EXIST, () -> {
-            iam.createUser(connection, guest, guestPassword, "Clown"); 
+            iam.createUser(connection, guest, guestPassword, "Clown");
         });
     }
 
@@ -491,7 +493,7 @@ public class IamTest {
         LocalDevice dev = localPairLocalInitial;
         Connection connection = connectToDeviceWithAdminKey(dev);
         Iam iam = Iam.create();
-        
+
         PairingMode[] modes = iam.getAvailablePairingModes(connection);
         assertEquals(modes.length, 1);
 

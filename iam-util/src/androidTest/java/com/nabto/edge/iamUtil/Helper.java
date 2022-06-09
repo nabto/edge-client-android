@@ -4,8 +4,9 @@ import android.content.res.Resources;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.nabto.edge.client.test.R;
+import com.nabto.edge.iamutil.test.R;
 import com.nabto.edge.client.*;
+import com.nabto.edge.iamutil.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
