@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.NabtoClient
-import com.nabto.edge.clientx.*
+import com.nabto.edge.client.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
