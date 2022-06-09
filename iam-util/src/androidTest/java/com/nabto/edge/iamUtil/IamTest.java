@@ -23,8 +23,9 @@ import org.json.JSONObject;
  * IMPORTANT: If you run the tests without the following, they will all fail with NabtoChannelException!!
  * use run_all.sh to start up the local devices
  *   ./local_test_device/run_all.sh
+ * IMPORTANT: the run_all.sh script only runs on macos
  * Then run the tests in a separate terminal
- *   ./gradlew library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.IamTest
+ *   ./gradlew iam-util:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.iamutil.IamTest
  */
 
 
