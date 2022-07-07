@@ -1,5 +1,5 @@
-package com.nabto.edge.client
-import com.nabto.edge.client.test.R
+package com.nabto.edge.client.ktx
+import com.nabto.edge.client.ktx.test.R
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry

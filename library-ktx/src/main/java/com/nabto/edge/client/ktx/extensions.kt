@@ -1,11 +1,11 @@
-package com.nabto.edge.client
+package com.nabto.edge.client.ktx
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.Coap
 import com.nabto.edge.client.NabtoCallback
 import com.nabto.edge.client.Stream
 import com.nabto.edge.client.TcpTunnel
 import kotlinx.coroutines.*
-import com.nabto.edge.client.internal.*
+import com.nabto.edge.client.ktx.internal.*
 
 suspend fun Connection.connectAsync() {
     return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
