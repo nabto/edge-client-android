@@ -3,6 +3,9 @@ package com.nabto.edge.iamutil;
 import org.jetbrains.annotations.*;
 import com.fasterxml.jackson.annotation.*;
 
+/**
+ * This struct contains information about a user on a Nabto Edge Embedded device.
+ */
 public class IamUser {
     @JsonProperty(value = "Username", required = true)
     public String username;
@@ -34,31 +37,50 @@ public class IamUser {
         this.role = role;
     }
 
+    /**
+     * Create an IamUser instance with the specified username.
+     * @param username The username of this user
+     */
     public IamUser(@NotNull String username) {
         this(username, null, null, null, null);
     }
 
     @NotNull
+    /**
+     * The username of this IAM user.
+     */
     public String getUsername() {
         return username;
     }
 
     @Nullable
+    /**
+     * The display name of this IAM user.
+     */
     public String getDisplayName() {
         return displayName;
     }
 
     @Nullable
+    /**
+     * The public key fingerprint of this IAM user.
+     */
     public String getFingerprint() {
         return fingerprint;
     }
 
     @Nullable
+    /**
+     * A server connect token for this user.
+     */
     public String getSct() {
         return sct;
     }
 
     @Nullable
+    /**
+     * The role of this user.
+     */
     public String getRole() {
         return role;
     }
