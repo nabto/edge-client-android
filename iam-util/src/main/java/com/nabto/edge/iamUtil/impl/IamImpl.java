@@ -15,33 +15,6 @@ import com.nabto.edge.client.Connection;
 import com.nabto.edge.client.NabtoCallback;
 
 public class IamImpl extends Iam {
-    public IamImpl() { }
-
-    private int execute(Coap coap, Connection connection) {
-        coap.execute();
-        int status = coap.getResponseStatusCode();
-        if (status == 404) {
-            // Probe /iam/pairing to see if the device supports IAM
-            Coap probe = connection.createCoap("GET", "/iam/pairing");
-            probe.execute();
-            int probeStatus = probe.getResponseStatusCode();
-            if (probeStatus != 205 && probeStatus != 403) {
-                throw error(IamError.IAM_NOT_SUPPORTED);
-            }
-        }
-        return status;
-    }
-
-    // @TODO: Deprecate
-    private IamException failed(int status) {
-        return new IamException(IamError.FAILED, "got unexpected status code " + status);
-    }
-
-    // @TODO: Deprecate
-    private IamException error(IamError error) {
-        return new IamException(error);
-    }
-
     public void pairLocalOpen(Connection connection, String desiredUsername) {
         IamComposer composer = new IamComposer();
         composer
@@ -108,7 +81,7 @@ public class IamImpl extends Iam {
             connection.passwordAuthenticate(username, password);
         } catch (NabtoRuntimeException e) {
             if (e.getErrorCode().getErrorCode() == ErrorCodes.UNAUTHORIZED) {
-                throw error(IamError.AUTHENTICATION_ERROR);
+                throw new IamException(IamError.AUTHENTICATION_ERROR);
             } else {
                 throw e;
             }
