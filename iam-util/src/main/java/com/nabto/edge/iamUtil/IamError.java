@@ -5,6 +5,11 @@ package com.nabto.edge.iamutil;
  */
 public enum IamError {
     /**
+     * No error, mainly used in IamCallback
+     */
+    NONE,
+
+    /**
      * The device configuration does not support the requested operation.
      */
     BLOCKED_BY_DEVICE_CONFIGURATION,

@@ -132,6 +132,8 @@ public abstract class Iam {
      */
     public abstract IamDeviceDetails getDeviceDetails(Connection connection);
 
+    public abstract void getDeviceDetailsCallback(Connection connection, IamCallback<IamDeviceDetails> cb);
+
     /**
      * Query if the current user is paired or not on a specific device.
      *
@@ -140,6 +142,8 @@ public abstract class Iam {
      * @return true iff the current user is paired with the device
      */
     public abstract boolean isCurrentUserPaired(Connection connection);
+
+    public abstract void isCurrentUserPairedCallback(Connection connection, IamCallback<Boolean> cb);
 
     /**
      * Get details about a specific user.

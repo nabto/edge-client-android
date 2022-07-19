@@ -7,6 +7,7 @@ import com.nabto.edge.client.Connection;
 import java.util.List;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -254,6 +255,38 @@ public class IamTest {
     }
 
     @Test
+    public void testLocalOpenCallbackSuccess() {
+        Connection connection = connectToDevice(localPairLocalOpen);
+        Iam iam = Iam.create();
+
+        CompletableFuture<Boolean> future1 = new CompletableFuture<>();
+        iam.isCurrentUserPairedCallback(connection, (ec, arg) -> {
+            future1.complete(arg.get());
+        });
+
+        try {
+            boolean result = future1.get();
+            assertFalse(result);
+        } catch (Exception e) {
+            fail("Asynchronous test failed with exception " + e.toString());
+        }
+
+        iam.pairLocalOpen(connection, uniqueUser());
+
+        CompletableFuture<Boolean> future2 = new CompletableFuture<>();
+        iam.isCurrentUserPairedCallback(connection, (ec, arg) -> {
+            future2.complete(arg.get());
+        });
+
+        try {
+            boolean result = future2.get();
+            assertTrue(result);
+        } catch (Exception e) {
+            fail("Asynchronous test failed with exception " + e.toString());
+        }
+    }
+
+    @Test
     public void testLocalOpenInvalidUsername() {
         Connection connection = connectToDevice(localPairLocalOpen);
         Iam iam = Iam.create();
@@ -473,6 +506,28 @@ public class IamTest {
         assertEquals(details.getProductId(), dev.productId);
         assertEquals(details.getDeviceId(), dev.deviceId);
         assertArrayEquals(details.getModes(), new String[] { "LocalInitial" });
+    }
+
+    @Test
+    public void testGetDeviceDetailsCallback() {
+        LocalDevice dev = localPairLocalInitial;
+        Connection connection = connectToDeviceWithAdminKey(dev);
+        Iam iam = Iam.create();
+
+        CompletableFuture<IamDeviceDetails> future = new CompletableFuture<>();
+        iam.getDeviceDetailsCallback(connection, (error, value) -> {
+            assertEquals(error, IamError.NONE);
+            future.complete(value.get());
+        });
+
+        try {
+            IamDeviceDetails details = future.get();
+            assertEquals(details.getProductId(), dev.productId);
+            assertEquals(details.getDeviceId(), dev.deviceId);
+            assertArrayEquals(details.getModes(), new String[] { "LocalInitial" });
+        } catch (Exception e) {
+            fail("Asynchronous test failed with exception " + e.toString());
+        }
     }
 
     @Test
