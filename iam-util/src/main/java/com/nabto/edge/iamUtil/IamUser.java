@@ -39,7 +39,7 @@ public class IamUser {
 
     /**
      * Create an IamUser instance with the specified username.
-     * @param username The username of this user
+     * @param username The username of this user.
      */
     public IamUser(@NotNull String username) {
         this(username, null, null, null, null);
@@ -47,7 +47,8 @@ public class IamUser {
 
     @NotNull
     /**
-     * The username of this IAM user.
+     * Get the username of this IAM user.
+     * @return the username of the IAM user.
      */
     public String getUsername() {
         return username;
@@ -55,7 +56,8 @@ public class IamUser {
 
     @Nullable
     /**
-     * The display name of this IAM user.
+     * Get the display name of this IAM user.
+     * @return The display name of the IAM user. May return null if there is no display name.
      */
     public String getDisplayName() {
         return displayName;
@@ -63,7 +65,8 @@ public class IamUser {
 
     @Nullable
     /**
-     * The public key fingerprint of this IAM user.
+     * Get the public key fingerprint of this IAM user.
+     * @return The public key fingerprint of the IAM user. May return null.
      */
     public String getFingerprint() {
         return fingerprint;
@@ -71,7 +74,8 @@ public class IamUser {
 
     @Nullable
     /**
-     * A server connect token for this user.
+     * Get the server connect token for this user.
+     * @return The server connect token of the IAM user. May return null.
      */
     public String getSct() {
         return sct;
@@ -79,7 +83,8 @@ public class IamUser {
 
     @Nullable
     /**
-     * The role of this user.
+     * Get the role of this user.
+     * @return The role of the IAM user. May return null.
      */
     public String getRole() {
         return role;
