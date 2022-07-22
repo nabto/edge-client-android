@@ -10,7 +10,7 @@ import com.nabto.edge.iamutil.*;
 import com.nabto.edge.client.*;
 import com.nabto.edge.client.Coap.ContentFormat;
 
-public class IamImpl extends Iam {
+public class IamImpl extends IamUtil {
     public void pairLocalOpen(Connection connection, String desiredUsername) {
         IamComposer composer = new IamComposer();
         composer
@@ -71,7 +71,6 @@ public class IamImpl extends Iam {
             .execute();
     }
 
-    // @TODO: Callback versions of these
     private void passwordAuthenticate(Connection connection, String username, String password) {
         try {
             connection.passwordAuthenticate(username, password);
@@ -165,7 +164,7 @@ public class IamImpl extends Iam {
     }
 
     public PairingMode[] getAvailablePairingModes(Connection connection) {
-        IamDeviceDetails details = getDeviceDetails(connection);
+        DeviceDetails details = getDeviceDetails(connection);
         ArrayList<PairingMode> list = new ArrayList<>();
         for (String stringMode : details.getModes()) {
             PairingMode mode;
@@ -181,9 +180,9 @@ public class IamImpl extends Iam {
         return list.toArray(new PairingMode[list.size()]);
     }
 
-    public IamDeviceDetails getDeviceDetails(Connection connection) {
+    public DeviceDetails getDeviceDetails(Connection connection) {
         IamComposer composer = new IamComposer();
-        IamDeviceDetails details = composer
+        DeviceDetails details = composer
             .start(connection, IamPath.GET_DEVICE_DETAILS)
             .withMap(new Object[][] {
                 {205, IamError.NONE},
@@ -192,15 +191,15 @@ public class IamImpl extends Iam {
             })
             .execute(false)
             .maybeThrow()
-            .decodePayload(IamDeviceDetails.class);
+            .decodePayload(DeviceDetails.class);
         return details;
     }
 
-    public void getDeviceDetailsCallback(Connection connection, IamCallback<IamDeviceDetails> cb) {
-        IamComposerAsync<IamDeviceDetails> composer = new IamComposerAsync<>();
+    public void getDeviceDetailsCallback(Connection connection, IamCallback<DeviceDetails> cb) {
+        IamComposerAsync<DeviceDetails> composer = new IamComposerAsync<>();
         composer
             .start(connection, IamPath.GET_DEVICE_DETAILS)
-            .withResultType(IamDeviceDetails.class)
+            .withResultType(DeviceDetails.class)
             .withUserCallback(cb)
             .withMap(new Object[][] {
                 {205, IamError.NONE},

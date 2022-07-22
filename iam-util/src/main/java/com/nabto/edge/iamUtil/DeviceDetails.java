@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.*;
 /**
  * This class contains detailed information about a Nabto Edge Embedded device.
  */
-public class IamDeviceDetails {
+public class DeviceDetails {
     @JsonProperty(value = "Modes", required = true)
     private String[] modes;
 
@@ -30,7 +30,7 @@ public class IamDeviceDetails {
     /**
      * Create an instance.
      */
-    public IamDeviceDetails(
+    public DeviceDetails(
         @JsonProperty(value = "Modes",        required = true ) @NotNull String[] modes,
         @JsonProperty(value = "NabtoVersion", required = false) @NotNull String nabtoVersion,
         @JsonProperty(value = "AppVersion",   required = false) String appVersion,

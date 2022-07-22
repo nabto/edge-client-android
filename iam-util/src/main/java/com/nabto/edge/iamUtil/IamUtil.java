@@ -17,15 +17,8 @@ import com.nabto.edge.client.Connection;
  * Note that the device's IAM configuration must allow invocation of the different functions and the pairing modes must
  * be enabled at runtime. Read more about that in the general IAM intro here: https://docs.nabto.com/developer/guides/concepts/iam/intro.html
  */
-public abstract class Iam {
-    public enum PairingMode {
-        LOCAL_OPEN,
-        LOCAL_INITIAL,
-        PASSWORD_OPEN,
-        PASSWORD_INVITE
-    }
-
-    public static Iam create() {
+public abstract class IamUtil {
+    public static IamUtil create() {
         return new IamImpl();
     }
 
@@ -138,9 +131,9 @@ public abstract class Iam {
      * `IAM:GetPairing` action is not set for the Unpaired role)
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
      */
-    public abstract IamDeviceDetails getDeviceDetails(Connection connection);
+    public abstract DeviceDetails getDeviceDetails(Connection connection);
 
-    public abstract void getDeviceDetailsCallback(Connection connection, IamCallback<IamDeviceDetails> cb);
+    public abstract void getDeviceDetailsCallback(Connection connection, IamCallback<DeviceDetails> cb);
 
     /**
      * Query if the current user is paired or not on a specific device.
