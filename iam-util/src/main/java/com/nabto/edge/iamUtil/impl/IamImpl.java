@@ -346,8 +346,9 @@ public class IamImpl extends Iam {
             .withPayload(new IamUser(username))
             .withMap(new Object[][] {
                 {201, IamError.NONE},
+                {400, IamError.INVALID_INPUT},
                 {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.USERNAME_EXISTS}
+                {409, IamError.USERNAME_EXISTS}
             })
             .execute()
             .maybeThrow();
@@ -361,10 +362,12 @@ public class IamImpl extends Iam {
         composer
             .start(connection, IamPath.CREATE_USER)
             .withUserCallback(cb)
+            .withPayload(new IamUser(username))
             .withMap(new Object[][] {
                 {201, IamError.NONE},
+                {400, IamError.INVALID_INPUT},
                 {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.USERNAME_EXISTS}
+                {409, IamError.USERNAME_EXISTS}
             })
             .then(connection, IamPath.UPDATE_USER, username, "password")
             .withPayload(password)

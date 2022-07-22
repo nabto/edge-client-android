@@ -643,6 +643,7 @@ public class IamTest {
             assertEquals(ec, IamError.ROLE_DOES_NOT_EXIST);
             resolve();
         });
+        await();
     }
 
     @Test

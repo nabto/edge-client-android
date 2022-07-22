@@ -19,6 +19,7 @@ public class IamComposerAsync<T> {
     private Map<Integer, T> resultMap = null;
     private Class<T> resultType = null;
     private IamCallback<T> userCallback;
+    private IamPath path;
 
     // In a composer chain only the last element has first != null
     // So when execute() is called on the last element, it can rewind to the first
@@ -35,6 +36,7 @@ public class IamComposerAsync<T> {
     }
 
     public IamComposerAsync start(Connection conn, IamPath path, String... args) {
+        this.path = path;
         coap = IamImplUtil.createCoap(conn, path, args);
         probe = conn.createCoap("GET", "/iam/pairing");
         return this;
@@ -106,8 +108,9 @@ public class IamComposerAsync<T> {
 
     public IamComposerAsync execute(boolean withProbe) {
         if (first != null) {
+            IamComposerAsync<T> temp = first;
             first = null;
-            first.execute();
+            temp.execute();
             return this;
         }
 
