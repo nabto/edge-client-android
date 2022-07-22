@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.SynchronousQueue;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -35,6 +37,7 @@ import org.json.JSONObject;
 public class IamTest {
     private NabtoClient client;
     private Connection connection;
+    private SynchronousQueue<Integer> _queue;
 
     private String localInitialAdminKey =
         "-----BEGIN EC PRIVATE KEY-----\n" +
@@ -43,10 +46,27 @@ public class IamTest {
         "OIFReqTf5h+Nwp/jj00fnsII88n1YCveoQ==\n" +
         "-----END EC PRIVATE KEY-----\n";
 
+    private void resolve() {
+        try {
+            _queue.take();
+        } catch (Exception e) {
+            fail("Failed to resolve()");
+        }
+    }
+
+    private void await() {
+        try {
+            _queue.put(0);
+        } catch (Exception e) {
+            fail("Failed to await()");
+        }
+    }
+
     @Before
     public void setup() {
         client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         connection = null;
+        _queue = new SynchronousQueue<>();
     }
 
     private void cleanup(Connection conn) {
@@ -341,47 +361,23 @@ public class IamTest {
         Iam iam = Iam.create();
         CompletableFuture future = new CompletableFuture();
 
-        iam.pairLocalOpenCallback(connection, uniqueUser(), (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            future.complete(null);
+        iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
+            assertEquals(ec0, IamError.NONE);
+            assertFalse(res0.get());
+            iam.pairLocalOpenCallback(connection, uniqueUser(), (ec1, res1) -> {
+                assertEquals(ec1, IamError.NONE);
+                iam.isCurrentUserPairedCallback(connection, (ec2, res2) -> {
+                    assertEquals(ec2, IamError.NONE);
+                    assertTrue(res2.get());
+                    future.complete(null);
+                });
+            });
         });
 
         try {
             future.get();
         } catch (Exception e) {
             fail("Future.get() failed");
-        }
-    }
-
-    @Test
-    public void testLocalOpenCallbackSuccess() {
-        connection = connectToDevice(localPairLocalOpen);
-        Iam iam = Iam.create();
-
-        CompletableFuture<Boolean> future1 = new CompletableFuture<>();
-        iam.isCurrentUserPairedCallback(connection, (ec, arg) -> {
-            future1.complete(arg.get());
-        });
-
-        try {
-            boolean result = future1.get();
-            assertFalse(result);
-        } catch (Exception e) {
-            fail("Asynchronous test failed with exception " + e.toString());
-        }
-
-        iam.pairLocalOpen(connection, uniqueUser());
-
-        CompletableFuture<Boolean> future2 = new CompletableFuture<>();
-        iam.isCurrentUserPairedCallback(connection, (ec, arg) -> {
-            future2.complete(arg.get());
-        });
-
-        try {
-            boolean result = future2.get();
-            assertTrue(result);
-        } catch (Exception e) {
-            fail("Asynchronous test failed with exception " + e.toString());
         }
     }
 
@@ -485,17 +481,62 @@ public class IamTest {
 
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        System.out.println(guest);
         iam.createUser(connection, guest, guestPassword, "Guest");
         iam.getUser(connection, guest);
 
         // Reconnect as user instead of admin
-        connection.close();
+        cleanup(connection);
         connection = connectToDevice(dev);
-        iam = Iam.create();
         assertFalse(iam.isCurrentUserPaired(connection));
         iam.pairPasswordInvite(connection, guest, guestPassword);
         assertTrue(iam.isCurrentUserPaired(connection));
+    }
+
+    @Test
+    public void testPasswordInviteSuccessCallback() {
+        LocalDevice dev = localPasswordInvite;
+        connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+        
+        String admin = uniqueUser();
+        iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+        iam.getUserCallback(connection, guest, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+
+        // Reconnect as user instead of admin
+        cleanup(connection);
+        connection = connectToDevice(dev);
+        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertFalse(res.get());
+            resolve();
+        });
+        await();
+        iam.pairPasswordInviteCallback(connection, guest, guestPassword, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertTrue(res.get());
+            resolve();
+        });
+        await();
     }
 
     @Test
@@ -524,6 +565,50 @@ public class IamTest {
     }
 
     @Test
+    public void testPasswordInviteWrongUserCallback() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+
+        String admin = uniqueUser();
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+
+        iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+        iam.getUserCallback(connection, guest, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        // Reconnect as user instead of admin
+        cleanup(connection);
+        // Have to make a new variables to capture in lambda, java is really great...
+        Connection connectionUser = connectToDevice(dev);
+        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
+            assertFalse(res.get());
+            resolve();
+        });
+        await();
+        iam.pairPasswordInviteCallback(connectionUser, "bonk", guestPassword, (ec, res) -> {
+            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
+            resolve();
+        });
+        await();
+        cleanup(connectionUser);
+    }
+
+    @Test
     public void testCreateUserBadRole() {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
@@ -536,6 +621,27 @@ public class IamTest {
         String guestPassword = "guestpassword";
         assertIamError(IamError.ROLE_DOES_NOT_EXIST, () -> {
             iam.createUser(connection, guest, guestPassword, "Clown");
+        });
+    }
+
+    @Test
+    public void testCreateUserBadRoleCallback() {
+        LocalDevice dev = localPasswordInvite;
+        connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+
+        String admin = uniqueUser();
+        iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        iam.createUserCallback(connection, guest, guestPassword, "Clown", (ec, res) -> {
+            assertEquals(ec, IamError.ROLE_DOES_NOT_EXIST);
+            resolve();
         });
     }
 
@@ -631,6 +737,59 @@ public class IamTest {
     }
 
     @Test
+    public void testCreateUserAndGetUserCallback() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+        String admin = uniqueUser();
+        
+        iam.pairPasswordOpen(connection, admin, dev.password);
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        iam.createUser(connection, guest, guestPassword, "Guest");
+
+        // Reconnect as user instead of admin
+        cleanup(connection);
+        Connection connectionUser = connectToDevice(dev);
+        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertFalse(res.get());
+            resolve();
+        });
+        await();
+        iam.pairPasswordInviteCallback(connectionUser, guest, guestPassword, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertTrue(res.get());
+            resolve();
+        });
+        await();
+
+        // Guest cannot GET admin
+        iam.getUserCallback(connectionUser, admin, (ec, res) -> {
+            assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
+            resolve();
+        });
+        await();
+
+        // Guest can GET self
+        iam.getUserCallback(connectionUser, guest, (ec, opt) -> {
+            assertEquals(ec, IamError.NONE);
+            IamUser me = opt.get();
+            assertEquals(me.getUsername(), guest);
+            assertEquals(me.getRole(), "Guest");
+            resolve();
+        });
+        await();
+
+        cleanup(connectionUser);
+    }
+
+    @Test
     public void testSetDisplayName() {
         LocalDevice dev = localPairLocalOpen;
         connection = connectToDevice(dev);
@@ -645,6 +804,32 @@ public class IamTest {
         IamUser user = iam.getCurrentUser(connection);
         assertEquals(user.username, username);
         assertEquals(user.displayName, displayName);
+    }
+
+    @Test
+    public void testSetDisplayNameCallback() {
+        LocalDevice dev = localPairLocalOpen;
+        connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+
+        String username = uniqueUser();
+        String displayName = uniqueUser();
+
+        iam.pairLocalOpen(connection, username);
+        iam.updateUserDisplayNameCallback(connection, username, displayName, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.getCurrentUserCallback(connection, (ec, opt) -> {
+            assertEquals(ec, IamError.NONE);
+            IamUser user = opt.get();
+            assertEquals(user.username, username);
+            assertEquals(user.displayName, displayName);
+            resolve();
+        });
+        await();
     }
 
     @Test
@@ -670,6 +855,41 @@ public class IamTest {
         });
 
         iam.deleteUser(connection, guest);
+
+        assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
+            iam.getUser(connection, guest);
+        });
+    }
+
+    @Test
+    public void testDeleteUserCallback() {
+        LocalDevice dev = localPasswordInvite;
+        connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+
+        String admin = uniqueUser();
+        iam.pairPasswordOpen(connection, admin, dev.password);
+        assertTrue(iam.isCurrentUserPaired(connection));
+
+        String guest = uniqueUser();
+        String guestPassword = "guestpassword";
+        iam.createUser(connection, guest, guestPassword, "Guest");
+
+        IamUser guestUser = iam.getUser(connection, guest);
+        assertEquals(guestUser.getUsername(), guest);
+        assertEquals(guestUser.getRole(), "Guest");
+
+        iam.deleteUserCallback(connection, "nonexistent", (ec, res) -> {
+            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
+            resolve();
+        });
+        await();
+
+        iam.deleteUserCallback(connection, guest, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
 
         assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
             iam.getUser(connection, guest);
@@ -721,6 +941,37 @@ public class IamTest {
         assertIamError(IamError.INITIAL_USER_ALREADY_PAIRED, () -> {
             iam.pairLocalInitial(connection);
         });
+    }
+
+    @Test
+    public void testLocalInitialAlreadyPairedFailCallback() {
+        connection = connectToDeviceWithAdminKey(localPairLocalInitial);
+        Iam iam = Iam.create();
+        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertFalse(res.get());
+            resolve();
+        });
+        await();
+
+        iam.pairLocalInitialCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertTrue(res.get());
+            resolve();
+        });
+        await();
+
+        iam.pairLocalInitialCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.INITIAL_USER_ALREADY_PAIRED);
+            resolve();
+        });
+        await();
     }
 
     @Test
@@ -839,6 +1090,61 @@ public class IamTest {
     }
 
     @Test
+    public void testUpdateUserPasswordCallback() {
+        LocalDevice dev = localPasswordInvite;
+        Connection connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newGuestPassword = "newguestpassword";
+
+        // Should fail
+        iam.updateUserPasswordCallback(connection, "baduser", "sus", (ec, res) -> {
+            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
+            resolve();
+        });
+        await();
+
+        iam.updateUserPasswordCallback(connection, user, newGuestPassword, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        // Reconnect as user instead of admin
+        cleanup(connection);
+        Connection connectionUser = connectToDevice(dev);
+        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertFalse(res.get());
+            resolve();
+        });
+        await();
+
+        iam.pairPasswordInviteCallback(connectionUser, user, guestPassword, (ec, res) -> {
+            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
+            resolve();
+        });
+        await();
+
+        iam.pairPasswordInviteCallback(connectionUser, user, newGuestPassword, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            assertTrue(res.get());
+            resolve();
+        });
+        await();
+
+        cleanup(connectionUser);
+    }
+
+    @Test
     public void testUpdateUserRole() {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
@@ -858,6 +1164,39 @@ public class IamTest {
 
         IamUser userHandle = iam.getUser(connection, user);
         assertEquals(userHandle.getRole(), newRole);
+    }
+
+    @Test
+    public void testUpdateUserRoleCallback() {
+        LocalDevice dev = localPasswordInvite;
+        connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newRole = "Standard";
+
+        // Should fail
+        iam.updateUserRoleCallback(connection, user, "badrole", (ec, res) -> {
+            assertEquals(ec, IamError.ROLE_DOES_NOT_EXIST);
+            resolve();
+        });
+        await();
+
+        // Shouldn't fail
+        iam.updateUserRoleCallback(connection, user, newRole, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.getUserCallback(connection, user, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            IamUser userHandle = res.get();
+            assertEquals(userHandle.getRole(), newRole);
+            resolve();
+        });
+        await();
     }
 
     @Test
@@ -883,6 +1222,39 @@ public class IamTest {
     }
 
     @Test
+    public void testUpdateUserDisplayNameCallback() {
+        LocalDevice dev = localPasswordInvite;
+        connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newDisplayName = "Morbius";
+
+        // Should fail
+        iam.updateUserDisplayNameCallback(connection, "morb", newDisplayName, (ec, res) -> {
+            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
+            resolve();
+        });
+        await();
+
+        // Shouldn't fail
+        iam.updateUserDisplayNameCallback(connection, user, newDisplayName, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.getUserCallback(connection, user, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            IamUser userHandle = res.get();
+            assertEquals(userHandle.getDisplayName(), newDisplayName);
+            resolve();
+        });
+        await();
+    }
+
+    @Test
     public void testRenameUser() {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
@@ -902,5 +1274,38 @@ public class IamTest {
 
         IamUser userHandle = iam.getUser(connection, newUsername);
         assertEquals(userHandle.getUsername(), newUsername);
+    }
+
+    @Test
+    public void testRenameUserCallback() {
+        LocalDevice dev = localPasswordInvite;
+        connection = connectToDevice(dev);
+        String guestPassword = "guestpassword";
+        Iam iam = Iam.create();
+
+        String user = createAdminAndGuest(connection, dev, guestPassword);
+        String newUsername = uniqueUser();
+
+        // Should fail
+        iam.renameUserCallback(connection, "idontexist", newUsername, (ec, res) -> {
+            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
+            resolve();
+        });
+        await();
+
+        // Shouldn't fail
+        iam.renameUserCallback(connection, user, newUsername, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            resolve();
+        });
+        await();
+
+        iam.getUserCallback(connection, newUsername, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            IamUser userHandle = res.get();
+            assertEquals(userHandle.getUsername(), newUsername);
+            resolve();
+        });
+        await();
     }
 }
