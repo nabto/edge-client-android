@@ -2,6 +2,7 @@ package com.nabto.edge.iamutil;
 
 import com.nabto.edge.iamutil.Iam.PairingMode;
 import com.nabto.edge.client.*;
+import com.nabto.edge.client.impl.ConnectionImpl;
 
 import java.util.List;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.Before;
+import org.junit.After;
 
 import static org.junit.Assert.*;
 
@@ -32,6 +34,7 @@ import org.json.JSONObject;
 @RunWith(AndroidJUnit4.class)
 public class IamTest {
     private NabtoClient client;
+    private Connection connection;
 
     private String localInitialAdminKey =
         "-----BEGIN EC PRIVATE KEY-----\n" +
@@ -43,6 +46,26 @@ public class IamTest {
     @Before
     public void setup() {
         client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        connection = null;
+    }
+
+    private void cleanup(Connection conn) {
+        // We need to manually call finalize() because GC will not always run between tests.
+        // In ConnectionImpl finalize() is used to release wifi and multicast locks.
+        // If there are a lot of tests and GC isn't called often enough then tests will fail as we
+        // acquire too many wifi or multicast locks from having too many Connection objects that havent been
+        // garbage collected.
+        conn.close();
+        ((ConnectionImpl)conn).finalize();
+    }
+
+    @After
+    public void teardown() {
+        if (connection != null) {
+            cleanup(connection);
+            connection = null;
+        }
+        System.gc();
     }
 
     class LocalDevice {
@@ -180,7 +203,11 @@ public class IamTest {
         Connection connection = client.createConnection();
         String pk = client.createPrivateKey();
         connection.updateOptions(dev.json(pk));
-        connection.connect();
+        try {
+            connection.connect();
+        } catch (NabtoNoChannelsException e) {
+            fail(e.getLocalChannelErrorCode().getName());
+        }
         return connection;
     }
 
@@ -219,14 +246,14 @@ public class IamTest {
 
     @Test
     public void testPasswordOpenSuccess() {
-        Connection connection = connectToDevice(localPairPasswordOpen);
+        connection = connectToDevice(localPairPasswordOpen);
         Iam iam = Iam.create();
         iam.pairPasswordOpen(connection, uniqueUser(), localPairPasswordOpen.password);
     }
 
     @Test
     public void testPasswordOpenSuccessCallback() {
-        Connection connection = connectToDevice(localPairPasswordOpen);
+        connection = connectToDevice(localPairPasswordOpen);
         Iam iam = Iam.create();
         CompletableFuture future = new CompletableFuture();
 
@@ -244,7 +271,7 @@ public class IamTest {
 
     @Test
     public void testPasswordOpenWrongPassword() {
-        Connection connection = connectToDevice(localPairPasswordOpen);
+        connection = connectToDevice(localPairPasswordOpen);
         Iam iam = Iam.create();
         assertIamError(IamError.AUTHENTICATION_ERROR, () -> {
             iam.pairPasswordOpen(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password");
@@ -253,7 +280,7 @@ public class IamTest {
 
     @Test
     public void testPasswordOpenWrongPasswordCallback() {
-        Connection connection = connectToDevice(localPairPasswordOpen);
+        connection = connectToDevice(localPairPasswordOpen);
         Iam iam = Iam.create();
         CompletableFuture future = new CompletableFuture();
 
@@ -272,7 +299,7 @@ public class IamTest {
     @Test
     public void testPasswordOpenBlockedByConfig() {
         LocalDevice dev = localPasswordPairingDisabledConfig;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
         assertIamError(IamError.BLOCKED_BY_DEVICE_CONFIGURATION, () -> {
             iam.pairPasswordOpen(connection, uniqueUser(), dev.password);
@@ -282,7 +309,7 @@ public class IamTest {
     @Test
     public void testPasswordOpenBlockedByConfigCallback() {
         LocalDevice dev = localPasswordPairingDisabledConfig;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
         CompletableFuture future = new CompletableFuture();
 
@@ -300,7 +327,7 @@ public class IamTest {
 
     @Test
     public void testLocalOpenSuccess() {
-        Connection connection = connectToDevice(localPairLocalOpen);
+        connection = connectToDevice(localPairLocalOpen);
         Iam iam = Iam.create();
 
         assertFalse(iam.isCurrentUserPaired(connection));
@@ -310,7 +337,7 @@ public class IamTest {
 
     @Test
     public void testLocalOpenSuccessCallback() {
-        Connection connection = connectToDevice(localPairLocalOpen);
+        connection = connectToDevice(localPairLocalOpen);
         Iam iam = Iam.create();
         CompletableFuture future = new CompletableFuture();
 
@@ -328,7 +355,7 @@ public class IamTest {
 
     @Test
     public void testLocalOpenCallbackSuccess() {
-        Connection connection = connectToDevice(localPairLocalOpen);
+        connection = connectToDevice(localPairLocalOpen);
         Iam iam = Iam.create();
 
         CompletableFuture<Boolean> future1 = new CompletableFuture<>();
@@ -360,7 +387,7 @@ public class IamTest {
 
     @Test
     public void testLocalOpenInvalidUsername() {
-        Connection connection = connectToDevice(localPairLocalOpen);
+        connection = connectToDevice(localPairLocalOpen);
         Iam iam = Iam.create();
         assertIamError(IamError.INVALID_INPUT, () -> {
             iam.pairLocalOpen(connection, "Worst username in the history of usernames");
@@ -368,9 +395,27 @@ public class IamTest {
     }
 
     @Test
+    public void testLocalOpenInvalidUsernameCallback() {
+        connection = connectToDevice(localPairLocalOpen);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.pairLocalOpenCallback(connection, "Worst username in the history of usernames", (ec, res) -> {
+            assertEquals(ec, IamError.INVALID_INPUT);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testLocalOpenUsernameAlreadyExists() {
         LocalDevice dev = localPairLocalOpen;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
         String username = uniqueUser();
         iam.pairLocalOpen(connection, username);
@@ -380,8 +425,31 @@ public class IamTest {
     }
 
     @Test
+    public void testLocalOpenUsernameAlreadyExistsCallback() {
+        LocalDevice dev = localPairLocalOpen;
+        connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+        String username = uniqueUser();
+        CompletableFuture future = new CompletableFuture();
+
+
+        iam.pairLocalOpenCallback(connection, username, (_ec, _res) -> {
+            iam.pairLocalOpenCallback(connection, username, (ec, res) -> {
+                assertEquals(ec, IamError.USERNAME_EXISTS);
+                future.complete(null);
+            });
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testLocalOpenBlockedByConfig() {
-        Connection connection = connectToDevice(localPasswordPairingDisabledConfig);
+        connection = connectToDevice(localPasswordPairingDisabledConfig);
         Iam iam = Iam.create();
         assertIamError(IamError.PAIRING_MODE_DISABLED, () -> {
             iam.pairLocalOpen(connection, uniqueUser());
@@ -389,9 +457,27 @@ public class IamTest {
     }
 
     @Test
+    public void testLocalOpenBlockedByConfigCallback() {
+        connection = connectToDevice(localPasswordPairingDisabledConfig);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.pairLocalOpenCallback(connection, uniqueUser(), (ec, res) -> {
+            assertEquals(ec, IamError.PAIRING_MODE_DISABLED);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testPasswordInviteSuccess() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
 
         String admin = uniqueUser();
@@ -427,19 +513,20 @@ public class IamTest {
         iam.getUser(connection, guest);
 
         // Reconnect as user instead of admin
-        connection.close();
+        cleanup(connection);
         // Have to make a new variables to capture in lambda, java is really great...
         Connection connectionUser = connectToDevice(dev);
         assertFalse(iam.isCurrentUserPaired(connectionUser));
         assertIamError(IamError.AUTHENTICATION_ERROR, () -> {
             iam.pairPasswordInvite(connectionUser, "bonk", guestPassword);
         });
+        cleanup(connectionUser);
     }
 
     @Test
     public void testCreateUserBadRole() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
 
         String admin = uniqueUser();
@@ -454,7 +541,7 @@ public class IamTest {
 
     @Test
     public void testCheckUnpairedUser() {
-        Connection connection = connectToDevice(localPasswordInvite);
+        connection = connectToDevice(localPasswordInvite);
         Iam iam = Iam.create();
         assertFalse(iam.isCurrentUserPaired(connection));
         assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
@@ -463,12 +550,51 @@ public class IamTest {
     }
 
     @Test
+    public void testCheckUnpairedUserCallback() {
+        connection = connectToDevice(localPasswordInvite);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
+            assertFalse(res0.get());
+            iam.getCurrentUserCallback(connection, (ec1, res1) -> {
+                assertEquals(ec1, IamError.USER_DOES_NOT_EXIST);
+                future.complete(null);
+            });
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testCheckPairedUserNoIamSupport() {
-        Connection connection = connectToDevice(localMdnsDevice);
+        connection = connectToDevice(localMdnsDevice);
         Iam iam = Iam.create();
         assertIamError(IamError.IAM_NOT_SUPPORTED, () -> {
             iam.isCurrentUserPaired(connection);
         });
+    }
+
+    @Test
+    public void testCheckPairedUserNoIamSupportCallback() {
+        connection = connectToDevice(localMdnsDevice);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+            assertEquals(ec, IamError.IAM_NOT_SUPPORTED);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
     }
 
     @Test
@@ -484,7 +610,7 @@ public class IamTest {
         iam.createUser(connection, guest, guestPassword, "Guest");
 
         // Reconnect as user instead of admin
-        connection.close();
+        cleanup(connection);
         Connection connectionUser = connectToDevice(dev);
         assertFalse(iam.isCurrentUserPaired(connectionUser));
         iam.pairPasswordInvite(connectionUser, guest, guestPassword);
@@ -500,12 +626,14 @@ public class IamTest {
         assertNotNull(me);
         assertEquals(me.getUsername(), guest);
         assertEquals(me.getRole(), "Guest");
+
+        cleanup(connectionUser);
     }
 
     @Test
     public void testSetDisplayName() {
         LocalDevice dev = localPairLocalOpen;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
 
         String username = uniqueUser();
@@ -522,7 +650,7 @@ public class IamTest {
     @Test
     public void testDeleteUser() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
 
         String admin = uniqueUser();
@@ -550,7 +678,7 @@ public class IamTest {
 
     @Test
     public void testLocalInitialSuccess() {
-        Connection connection = connectToDeviceWithAdminKey(localPairLocalInitial);
+        connection = connectToDeviceWithAdminKey(localPairLocalInitial);
         Iam iam = Iam.create();
         assertFalse(iam.isCurrentUserPaired(connection));
         iam.pairLocalInitial(connection);
@@ -558,8 +686,34 @@ public class IamTest {
     }
 
     @Test
+    public void testLocalInitialSuccessCallback() {
+        connection = connectToDeviceWithAdminKey(localPairLocalInitial);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
+            assertEquals(ec0, IamError.NONE);
+            assertFalse(res0.get());
+            iam.pairLocalInitialCallback(connection, (ec1, res1) -> {
+                assertEquals(ec1, IamError.NONE);
+                iam.isCurrentUserPairedCallback(connection, (ec2, res2) -> {
+                    assertEquals(ec2, IamError.NONE);
+                    assertTrue(res2.get());
+                    future.complete(null);
+                });
+            });
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testLocalInitialAlreadyPairedFail() {
-        Connection connection = connectToDeviceWithAdminKey(localPairLocalInitial);
+        connection = connectToDeviceWithAdminKey(localPairLocalInitial);
         Iam iam = Iam.create();
         assertFalse(iam.isCurrentUserPaired(connection));
         iam.pairLocalInitial(connection);
@@ -572,7 +726,7 @@ public class IamTest {
     @Test
     public void testGetDeviceDetails() {
         LocalDevice dev = localPairLocalInitial;
-        Connection connection = connectToDeviceWithAdminKey(dev);
+        connection = connectToDeviceWithAdminKey(dev);
         Iam iam = Iam.create();
         IamDeviceDetails details = iam.getDeviceDetails(connection);
         assertEquals(details.getProductId(), dev.productId);
@@ -583,7 +737,7 @@ public class IamTest {
     @Test
     public void testGetDeviceDetailsCallback() {
         LocalDevice dev = localPairLocalInitial;
-        Connection connection = connectToDeviceWithAdminKey(dev);
+        connection = connectToDeviceWithAdminKey(dev);
         Iam iam = Iam.create();
 
         CompletableFuture<IamDeviceDetails> future = new CompletableFuture<>();
@@ -605,7 +759,7 @@ public class IamTest {
     @Test
     public void testGetPairingModes1() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
 
         PairingMode[] modes = iam.getAvailablePairingModes(connection);
@@ -619,7 +773,7 @@ public class IamTest {
     @Test
     public void testGetPairingModes2() {
         LocalDevice dev = localPairLocalInitial;
-        Connection connection = connectToDeviceWithAdminKey(dev);
+        connection = connectToDeviceWithAdminKey(dev);
         Iam iam = Iam.create();
 
         PairingMode[] modes = iam.getAvailablePairingModes(connection);
@@ -632,7 +786,7 @@ public class IamTest {
     @Test
     public void testGetPairingModes3() {
         LocalDevice dev = localPairLocalOpen;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         Iam iam = Iam.create();
 
         PairingMode[] modes = iam.getAvailablePairingModes(connection);
@@ -672,7 +826,7 @@ public class IamTest {
         iam.updateUserPassword(connection, user, newGuestPassword);
 
         // Reconnect as user instead of admin
-        connection.close();
+        cleanup(connection);
         Connection connectionUser = connectToDevice(dev);
         assertFalse(iam.isCurrentUserPaired(connectionUser));
 
@@ -681,12 +835,13 @@ public class IamTest {
         });
         iam.pairPasswordInvite(connectionUser, user, newGuestPassword);
         assertTrue(iam.isCurrentUserPaired(connectionUser));
+        cleanup(connectionUser);
     }
 
     @Test
     public void testUpdateUserRole() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
         Iam iam = Iam.create();
 
@@ -708,7 +863,7 @@ public class IamTest {
     @Test
     public void testUpdateUserDisplayName() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
         Iam iam = Iam.create();
 
@@ -730,7 +885,7 @@ public class IamTest {
     @Test
     public void testRenameUser() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
+        connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
         Iam iam = Iam.create();
 
