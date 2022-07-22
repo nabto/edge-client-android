@@ -147,9 +147,6 @@ public class ConnectionImpl implements Connection {
         connection.connect().callback(Util.makeFutureCallback(callback));
     }
 
-    /**
-     * Blocking close
-     */
     public void passwordAuthenticate(String username, String password) {
         try {
             connection.passwordAuthenticate(username, password).waitForResult();
@@ -158,6 +155,9 @@ public class ConnectionImpl implements Connection {
         }
     }
 
+    public void passwordAuthenticateCallback(String username, String password, NabtoCallback callback) {
+        connection.passwordAuthenticate(username, password).callback(Util.makeFutureCallback(callback));
+    }
 
     public Coap createCoap(String method, String path) {
         return new CoapImpl(connection.createCoap(method, path));

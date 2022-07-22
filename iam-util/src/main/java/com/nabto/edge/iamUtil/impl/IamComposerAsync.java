@@ -20,10 +20,31 @@ public class IamComposerAsync<T> {
     private Class<T> resultType = null;
     private IamCallback<T> userCallback;
 
+    // In a composer chain only the last element has first != null
+    // So when execute() is called on the last element, it can rewind to the first
+    // composer in the chain and start from there.
+    private IamComposerAsync<T> first;
+    private IamComposerAsync<T> next = null;
+
+    public IamComposerAsync() {
+        this(null);
+    }
+
+    public IamComposerAsync(IamComposerAsync<T> first) {
+        this.first = first;
+    }
+
     public IamComposerAsync start(Connection conn, IamPath path, String... args) {
         coap = IamImplUtil.createCoap(conn, path, args);
         probe = conn.createCoap("GET", "/iam/pairing");
         return this;
+    }
+
+    public IamComposerAsync then(Connection conn, IamPath path, String... args) {
+        IamComposerAsync<T> result = new IamComposerAsync<>(first != null ? first : this);
+        this.first = null;
+        this.next = result;
+        return result.start(conn, path, args).withUserCallback(userCallback);
     }
 
     public IamComposerAsync withPayload(Object payload) {
@@ -67,7 +88,10 @@ public class IamComposerAsync<T> {
         int status = coap.getResponseStatusCode();
         IamError err = errorMap.getOrDefault(status, IamError.FAILED);
         if (err == IamError.NONE) {
-            if (resultType != null) {
+            if (next != null)
+            {
+                next.execute();
+            } else if (resultType != null) {
                 T decodedPayload = IamImplUtil.decode(coap.getResponsePayload(), resultType);
                 userCallback.run(err, Optional.of(decodedPayload));
             } else if (resultMap != null) {
@@ -81,6 +105,12 @@ public class IamComposerAsync<T> {
     }
 
     public IamComposerAsync execute(boolean withProbe) {
+        if (first != null) {
+            first = null;
+            first.execute();
+            return this;
+        }
+
         NabtoCallback<Void> coapCallback = (errorCode, arg) -> {
             if (errorCode != ErrorCodes.OK) {
                 userCallback.run(IamError.FAILED, Optional.empty());

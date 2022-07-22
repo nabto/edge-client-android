@@ -1,8 +1,7 @@
 package com.nabto.edge.iamutil;
 
 import com.nabto.edge.iamutil.Iam.PairingMode;
-import com.nabto.edge.client.NabtoClient;
-import com.nabto.edge.client.Connection;
+import com.nabto.edge.client.*;
 
 import java.util.List;
 import java.util.Arrays;
@@ -226,12 +225,48 @@ public class IamTest {
     }
 
     @Test
+    public void testPasswordOpenSuccessCallback() {
+        Connection connection = connectToDevice(localPairPasswordOpen);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.pairPasswordOpenCallback(connection, uniqueUser(), localPairPasswordOpen.password, (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testPasswordOpenWrongPassword() {
         Connection connection = connectToDevice(localPairPasswordOpen);
         Iam iam = Iam.create();
         assertIamError(IamError.AUTHENTICATION_ERROR, () -> {
             iam.pairPasswordOpen(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password");
         });
+    }
+
+    @Test
+    public void testPasswordOpenWrongPasswordCallback() {
+        Connection connection = connectToDevice(localPairPasswordOpen);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.pairPasswordOpenCallback(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password", (ec, res) -> {
+            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
     }
 
     @Test
@@ -245,6 +280,25 @@ public class IamTest {
     }
 
     @Test
+    public void testPasswordOpenBlockedByConfigCallback() {
+        LocalDevice dev = localPasswordPairingDisabledConfig;
+        Connection connection = connectToDevice(dev);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.pairPasswordOpenCallback(connection, uniqueUser(), dev.password, (ec, res) -> {
+            assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
+    }
+
+    @Test
     public void testLocalOpenSuccess() {
         Connection connection = connectToDevice(localPairLocalOpen);
         Iam iam = Iam.create();
@@ -252,6 +306,24 @@ public class IamTest {
         assertFalse(iam.isCurrentUserPaired(connection));
         iam.pairLocalOpen(connection, uniqueUser());
         assertTrue(iam.isCurrentUserPaired(connection));
+    }
+
+    @Test
+    public void testLocalOpenSuccessCallback() {
+        Connection connection = connectToDevice(localPairLocalOpen);
+        Iam iam = Iam.create();
+        CompletableFuture future = new CompletableFuture();
+
+        iam.pairLocalOpenCallback(connection, uniqueUser(), (ec, res) -> {
+            assertEquals(ec, IamError.NONE);
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (Exception e) {
+            fail("Future.get() failed");
+        }
     }
 
     @Test

@@ -49,6 +49,8 @@ public abstract class Iam {
      */
     public abstract void pairLocalOpen(Connection connection, String desiredUsername);
 
+    public abstract void pairLocalOpenCallback(Connection connection, String desiredUsername, IamCallback cb);
+
     /**
      * Perform Local Initial pairing, assigning the default initial username configured on the device (typically "admin").
      *
@@ -66,6 +68,8 @@ public abstract class Iam {
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
      */
     public abstract void pairLocalInitial(Connection connection);
+
+    public abstract void pairLocalInitialCallback(Connection connection, IamCallback cb);
 
     /**
      * Perform Password Open pairing, requesting the specified username and authenticating using the specified password.
@@ -90,6 +94,8 @@ public abstract class Iam {
      */
     public abstract void pairPasswordOpen(Connection connection, String desiredUsername, String password);
 
+    public abstract void pairPasswordOpenCallback(Connection connection, String desiredUsername, String password, IamCallback cb);
+
     /**
      * Perform Password Invite pairing, authenticating with the specified username and password.
      *
@@ -109,6 +115,8 @@ public abstract class Iam {
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
      */
     public abstract void pairPasswordInvite(Connection connection, String username, String password);
+
+    public abstract void pairPasswordInviteCallback(Connection connection, String username, String password, IamCallback cb);
 
     /**
      * Retrieve a list of the available pairing modes on the device.
@@ -158,6 +166,8 @@ public abstract class Iam {
      */
     public abstract IamUser getUser(Connection connection, String username);
 
+    public abstract void getUserCallback(Connection connection, String username, IamCallback<IamUser> cb);
+
     /**
      * Get details about the user that has opened the current connection to the device.
      *
@@ -168,6 +178,8 @@ public abstract class Iam {
      * @return an IamUser instance describing the current user
      */
     public abstract IamUser getCurrentUser(Connection connection);
+
+    public abstract void getCurrentUserCallback(Connection connection, IamCallback<IamUser> cb);
 
     /**
      * Create an IAM user on device.
@@ -186,6 +198,8 @@ public abstract class Iam {
      */
     public abstract void createUser(Connection connection, String username, String password, String role);
 
+    public abstract void createUserCallback(Connection connection, String username, String password, String role, IamCallback cb);
+
     /**
      * Update an IAM user's password on device.
      *
@@ -197,6 +211,8 @@ public abstract class Iam {
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
      */
     public abstract void updateUserPassword(Connection connection, String username, String password);
+
+    public abstract void updateUserPasswordCallback(Connection connection, String username, String password, IamCallback cb);
 
     /**
      * Update an IAM user's role on device.
@@ -218,6 +234,8 @@ public abstract class Iam {
      */
     public abstract void updateUserRole(Connection connection, String username, String role);
 
+    public abstract void updateUserRoleCallback(Connection connection, String username, String role, IamCallback cb);
+
     /**
      * Update an IAM user's display name on device.
      *
@@ -230,6 +248,8 @@ public abstract class Iam {
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
      */
     public abstract void updateUserDisplayName(Connection connection, String username, String displayName);
+
+    public abstract void updateUserDisplayNameCallback(Connection connection, String username, String displayName, IamCallback cb);
 
     /**
      * Update an IAM user's username on device.
@@ -245,6 +265,8 @@ public abstract class Iam {
      */
     public abstract void renameUser(Connection connection, String username, String newUsername);
 
+    public abstract void renameUserCallback(Connection connection, String username, String newUsername, IamCallback cb);
+
     /**
      * Delete the specified user from device.
      *
@@ -256,4 +278,6 @@ public abstract class Iam {
      * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
      */
     public abstract void deleteUser(Connection connection, String username);
+
+    public abstract void deleteUserCallback(Connection connection, String username, IamCallback cb);
 }

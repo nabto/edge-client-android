@@ -138,7 +138,7 @@ public interface Connection {
     public void connectCallback(NabtoCallback callback);
 
     /**
-     * Password authenticate a connectio.
+     * Password authenticate a connection.
      *
      * This function blocks until the exchange is done an throws an exception
      * if the password authentication fails.
@@ -146,6 +146,15 @@ public interface Connection {
      * @param password the password
      */
     void passwordAuthenticate(String username, String password);
+
+    /**
+     * Password authenticate a connection, run callback once connectio is established.
+     *
+     * @param username The username.
+     * @param password The password.
+     * @param callback The callback that will be run once the operation is done.
+     */
+    void passwordAuthenticateCallback(String username, String password, NabtoCallback callback);
 
     /**
      * Add a listener for connection events.

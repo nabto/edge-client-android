@@ -7,12 +7,8 @@ import java.lang.Runnable;
 import java.lang.IllegalArgumentException;
 
 import com.nabto.edge.iamutil.*;
+import com.nabto.edge.client.*;
 import com.nabto.edge.client.Coap.ContentFormat;
-import com.nabto.edge.client.Coap;
-import com.nabto.edge.client.NabtoRuntimeException;
-import com.nabto.edge.client.ErrorCodes;
-import com.nabto.edge.client.Connection;
-import com.nabto.edge.client.NabtoCallback;
 
 public class IamImpl extends Iam {
     public void pairLocalOpen(Connection connection, String desiredUsername) {
@@ -105,6 +101,32 @@ public class IamImpl extends Iam {
             .maybeThrow();
     }
 
+    public void pairPasswordOpenCallback(Connection connection, String desiredUsername, String password, IamCallback cb) {
+        connection.passwordAuthenticateCallback("", password, (ec, arg) -> {
+            if (ec != ErrorCodes.OK) {
+                if (ec == ErrorCodes.UNAUTHORIZED) {
+                    cb.run(IamError.AUTHENTICATION_ERROR, Optional.empty());
+                } else {
+                    cb.run(IamError.FAILED, Optional.empty());
+                }
+                return;
+            }
+            IamComposerAsync composer = new IamComposerAsync();
+            composer
+                .start(connection, IamPath.PAIR_PASSWORD_OPEN)
+                .withUserCallback(cb)
+                .withPayload(new IamUser(desiredUsername))
+                .withMap(new Object[][] {
+                    {201, IamError.NONE},
+                    {400, IamError.INVALID_INPUT},
+                    {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                    {404, IamError.PAIRING_MODE_DISABLED},
+                    {409, IamError.USERNAME_EXISTS}
+                })
+                .execute();
+        });
+    }
+
     public void pairPasswordInvite(Connection connection, String username, String password) {
         passwordAuthenticate(connection, username, password);
         IamComposer composer = new IamComposer();
@@ -117,6 +139,29 @@ public class IamImpl extends Iam {
             })
             .execute()
             .maybeThrow();
+    }
+
+    public void pairPasswordInviteCallback(Connection connection, String username, String password, IamCallback cb) {
+        connection.passwordAuthenticateCallback(username, password, (ec, arg) -> {
+            if (ec != ErrorCodes.OK) {
+                if (ec == ErrorCodes.UNAUTHORIZED) {
+                    cb.run(IamError.AUTHENTICATION_ERROR, Optional.empty());
+                } else {
+                    cb.run(IamError.FAILED, Optional.empty());
+                }
+                return;
+            }
+            IamComposerAsync composer = new IamComposerAsync();
+            composer
+                .start(connection, IamPath.PAIR_PASSWORD_INVITE)
+                .withUserCallback(cb)
+                .withMap(new Object[][] {
+                    {201, IamError.NONE},
+                    {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                    {404, IamError.PAIRING_MODE_DISABLED}
+                })
+                .execute();
+        });
     }
 
     public PairingMode[] getAvailablePairingModes(Connection connection) {
@@ -245,8 +290,7 @@ public class IamImpl extends Iam {
         return user;
     }
 
-    public void getCurrentUserCallback(Connection connection, IamCallback<IamUser> cb)
-    {
+    public void getCurrentUserCallback(Connection connection, IamCallback<IamUser> cb) {
         IamComposerAsync<IamUser> composer = new IamComposerAsync<>();
         composer
             .start(connection, IamPath.GET_ME)
@@ -280,6 +324,21 @@ public class IamImpl extends Iam {
             .maybeThrow();
     }
 
+    private void updateUserCallback(Connection connection, String username, String key, String value, IamError error404, IamCallback cb) {
+        IamComposerAsync composer = new IamComposerAsync();
+        composer
+            .start(connection, IamPath.UPDATE_USER, username, key)
+            .withUserCallback(cb)
+            .withPayload(value)
+            .withMap(new Object[][] {
+                {204, IamError.NONE},
+                {400, IamError.INVALID_INPUT},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                {404, error404}
+            })
+            .execute();
+    }
+
     public void createUser(Connection connection, String username, String password, String role) {
         IamComposer composer = new IamComposer();
         composer
@@ -296,20 +355,66 @@ public class IamImpl extends Iam {
         updateUser(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST);
     }
 
+    public void createUserCallback(Connection connection, String username, String password, String role, IamCallback cb)
+    {
+        IamComposerAsync composer = new IamComposerAsync();
+        composer
+            .start(connection, IamPath.CREATE_USER)
+            .withUserCallback(cb)
+            .withMap(new Object[][] {
+                {201, IamError.NONE},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                {404, IamError.USERNAME_EXISTS}
+            })
+            .then(connection, IamPath.UPDATE_USER, username, "password")
+            .withPayload(password)
+            .withMap(new Object[][] {
+                {204, IamError.NONE},
+                {400, IamError.INVALID_INPUT},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                {404, IamError.USER_DOES_NOT_EXIST}
+            })
+            .then(connection, IamPath.UPDATE_USER, username, "role")
+            .withPayload(role)
+            .withMap(new Object[][] {
+                {204, IamError.NONE},
+                {400, IamError.INVALID_INPUT},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                {404, IamError.ROLE_DOES_NOT_EXIST}
+            })
+            .execute();
+    }
+
     public void updateUserPassword(Connection connection, String username, String password) {
         updateUser(connection, username, "password", password, IamError.USER_DOES_NOT_EXIST);
+    }
+
+    public void updateUserPasswordCallback(Connection connection, String username, String password, IamCallback cb) {
+        updateUserCallback(connection, username, "password", password, IamError.USER_DOES_NOT_EXIST, cb);
     }
 
     public void updateUserRole(Connection connection, String username, String role) {
         updateUser(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST);
     }
 
+    public void updateUserRoleCallback(Connection connection, String username, String role, IamCallback cb) {
+        updateUserCallback(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST, cb);
+    }
+
     public void updateUserDisplayName(Connection connection, String username, String displayName) {
         updateUser(connection, username, "display-name", displayName, IamError.USER_DOES_NOT_EXIST);
     }
 
+    public void updateUserDisplayNameCallback(Connection connection, String username, String displayName, IamCallback cb) {
+        updateUserCallback(connection, username, "display-name", displayName, IamError.USER_DOES_NOT_EXIST, cb);
+    }
+
     public void renameUser(Connection connection, String username, String newUsername) {
         updateUser(connection, username, "username", newUsername, IamError.USER_DOES_NOT_EXIST);
+    }
+
+    public void renameUserCallback(Connection connection, String username, String newUsername, IamCallback cb) {
+        updateUserCallback(connection, username, "username", newUsername, IamError.USER_DOES_NOT_EXIST, cb);
     }
 
     public void deleteUser(Connection connection, String username) {
@@ -323,5 +428,18 @@ public class IamImpl extends Iam {
             })
             .execute()
             .maybeThrow();
+    }
+
+    public void deleteUserCallback(Connection connection, String username, IamCallback cb) {
+        IamComposerAsync composer = new IamComposerAsync();
+        composer
+            .start(connection, IamPath.DELETE_USER, username)
+            .withUserCallback(cb)
+            .withMap(new Object[][] {
+                {202, IamError.NONE},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                {404, IamError.USER_DOES_NOT_EXIST}
+            })
+            .execute();
     }
 }
