@@ -1,62 +1,144 @@
 package com.nabto.edge.client.ktx
-import com.nabto.edge.client.Connection
-import com.nabto.edge.client.Coap
-import com.nabto.edge.client.NabtoCallback
-import com.nabto.edge.client.Stream
-import com.nabto.edge.client.TcpTunnel
+import java.util.Optional
+import com.nabto.edge.client.*
 import kotlinx.coroutines.*
-import com.nabto.edge.client.ktx.internal.*
+import kotlin.coroutines.Continuation
 
+private suspend fun <T> nabtoCoroutineWrapper(
+    register: (cb: NabtoCallback<T>) -> Unit
+): Optional<T> = suspendCancellableCoroutine<Optional<T>> { continuation ->
+    val callback = { error: Int, opt: Optional<T> ->
+        if (error == ErrorCodes.OK) {
+            continuation.resumeWith(Result.success(opt))
+        } else {
+            val exception = com.nabto.edge.client.swig.NabtoException(error)
+            val cause = when (error) {
+                ErrorCodes.END_OF_FILE -> NabtoEOFException(exception)
+                // @TODO: We should make a NabtoNoChannelsException here
+                //        Not sure how to get the local and remote error codes...
+                //        They are internal to the ConnectionImpl class
+                ErrorCodes.NO_CHANNELS -> NabtoRuntimeException(exception)
+                else -> NabtoRuntimeException(exception)
+            }
+            continuation.resumeWith(Result.failure(cause))
+        }
+    }
+    register(callback)
+}
+
+/**
+ * Connect a Connection object.
+ * 
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the connection is established.
+ */
 suspend fun Connection.connectAsync() {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@connectAsync.connectCallback(callback)
     })
 }
 
+/**
+ * Execute a CoAP protocol.
+ * 
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the CoAP result is ready.
+ */
 suspend fun Coap.executeAsync() {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@executeAsync.executeCallback(callback)
     })
 }
 
+/**
+ * Open a Stream.
+ * 
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the Stream is open.
+ *
+ * @param[port] The stream port to use on the remote server, a streamport is a demultiplexing id.
+ */
 suspend fun Stream.openAsync(port: Int) {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@openAsync.openCallback(port, callback)
     })
 }
 
+/**
+ * Read some bytes from a stream.
+ * 
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the bytes have been read and returned.
+ *
+ * @return A byte array that was read from the stream.
+ */
 suspend fun Stream.readSomeAsync(): ByteArray {
-    return nabtoCoroutineWrapperWithReturn<ByteArray>(Dispatchers.IO, { callback ->
+    return nabtoCoroutineWrapper<ByteArray>({ callback ->
         this@readSomeAsync.readSomeCallback(callback)
-    })
+    }).get()
 }
 
+/**
+ * Read an exact amount of bytes from a stream.
+ * 
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the bytes have been read and returned.
+ *
+ * @param[length] The amount of to read.
+ * @return A byte array that was read from the stream.
+ */
 suspend fun Stream.readAllAsync(length: Int): ByteArray {
-    return nabtoCoroutineWrapperWithReturn<ByteArray>(Dispatchers.IO, { callback ->
+    return nabtoCoroutineWrapper<ByteArray>({ callback ->
         this@readAllAsync.readAllCallback(length, callback)
-    })
+    }).get()
 }
 
+/**
+ * Write bytes to a stream.
+ * 
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the bytes have been written.
+ *
+ * @param[bytes] Byte array to be written to the stream.
+ */
 suspend fun Stream.writeAsync(bytes: ByteArray) {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@writeAsync.writeCallback(bytes, callback)
     })
 }
 
+/**
+ * Close a stream.
+ *
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the Stream is closed.
+ */
 suspend fun Stream.closeAsync() {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@closeAsync.closeCallback(callback)
     })
 }
 
+/**
+ * Open a tunnel. 
+ *
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the TcpTunnel is open.
+ */
 suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@openAsync.openCallback(service, localPort, callback)
     })
 }
 
+/**
+ * Close a tunnel. 
+ *
+ * This is meant to be used in a coroutine to suspend execution of said coroutine
+ * until the TcpTunnel is closed.
+ */
 suspend fun TcpTunnel.closeAsync() {
-    return nabtoCoroutineWrapper(Dispatchers.IO, { callback ->
+    nabtoCoroutineWrapper<Unit>({ callback ->
         this@closeAsync.closeCallback(callback)
     })
 }
