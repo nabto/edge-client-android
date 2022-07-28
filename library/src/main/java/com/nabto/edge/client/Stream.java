@@ -15,6 +15,13 @@ public interface Stream {
     /**
      * Open a stream. This function blocks until the stream is opened.
      *
+     * May throw a NabtoRuntimeException with one of the following error codes:
+     * ```
+     * STOPPED if the stream could not be created, e.g. the handshake is
+     * stopped/aborted or the connection or client context is stopped.
+     * NOT_CONNECTED if the connection is not established yet.
+     * ```
+     * 
      * @param streamPort  The streamPort to use on the remote server, a
      * streamPort is a demultiplexing id.
      */
@@ -22,6 +29,7 @@ public interface Stream {
 
     /**
      * Open a stream without blocking.
+     * See Stream.open() for error codes.
      *
      * @param streamPort  The streamPort to use on the remote server, a
      * streamPort is a demultiplexing id.
@@ -35,6 +43,12 @@ public interface Stream {
      * This function blocks until stream is read or the stream is
      * closed or end of file. If end of file is reached or the stream
      * is aborted an exception is thrown.
+     * 
+     * May throw a NabtoRuntimeException with one of the following error codes:
+     * ```
+     * STOPPED if the stream is stopped.
+     * OPERATION_IN_PROGRESS if another read is in progress.
+     * ```
      *
      * @return bytes read.
      * @throws NabtoEOFException if eof is reached
@@ -43,6 +57,7 @@ public interface Stream {
 
     /**
      * Read some bytes from a stream without blocking.
+     * See Stream.readSome() for error codes.
      *
      * @param callback The callback that will be run when the bytes are ready.
      * The callback status will have an EOF status if end of file is reached.
@@ -54,6 +69,12 @@ public interface Stream {
      *
      * This function blocks until the bytes is read.
      *
+     * May throw a NabtoRuntimeException with one of the following error codes:
+     * ```
+     * STOPPED if the stream is stopped.
+     * OPERATION_IN_PROGRESS if another read is in progress.
+     * ```
+     * 
      * @param length  The amount of bytes to read.
      * @return Bytes read, less than length bytes can be returned if
      * @throws NabtoEOFException if eof is reached.
@@ -63,6 +84,7 @@ public interface Stream {
 
     /**
      * Read an exact amount of bytes from a stream without blocking.
+     * See Stream.readAll() for error codes.
      *
      * @param length  The amount of bytes to read.
      * @param callback The callback that will be run when the bytes are ready.
@@ -93,11 +115,19 @@ public interface Stream {
      *
      * A call to close does not affect the read direction of the
      * stream.
+     * 
+     * May throw a NabtoRuntimeException with one of the following error codes:
+     * ```
+     * STOPPED if the stream is stopped.
+     * OPERATION_IN_PROGRESS if a stream close or stream write is in progress.
+     * INVALID_STATE if the stream is not yet opened.
+     * ```
      */
     public void close();
 
     /**
      * Close the write direction of the stream without blocking.
+     * See Stream.close() for error codes.
      *
      * @param callback The callback that will be run once the stream is closed.
      */
@@ -106,6 +136,8 @@ public interface Stream {
     /**
      * Abort a stream. If for some reason the stream just need to be
      * closed, abort will do it for but the write and read direction.
+     * 
+     * @deprecated use Stream.close()
      */
     public void abort();
 }
