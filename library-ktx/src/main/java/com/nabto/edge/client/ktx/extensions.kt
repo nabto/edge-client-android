@@ -27,10 +27,10 @@ private suspend fun <T> nabtoCoroutineWrapper(
 }
 
 /**
- * Connect a Connection object.
- * 
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the connection is established.
+ * Open a connection as described for Connection.connect().
+ *
+ * This function is meant to be used in a Kotlin coroutine to suspend execution until the connection
+ * is established or an error occurs.
  */
 suspend fun Connection.connectAsync() {
     nabtoCoroutineWrapper<Unit>({ callback ->
@@ -39,10 +39,10 @@ suspend fun Connection.connectAsync() {
 }
 
 /**
- * Execute a CoAP protocol.
- * 
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the CoAP result is ready.
+ * Execute a CoAP request.
+ *
+ * This function is meant to be used in a Kotlin coroutine to suspend execution until the CoAP
+ * result is ready or an error occurs.
  */
 suspend fun Coap.executeAsync() {
     nabtoCoroutineWrapper<Unit>({ callback ->
@@ -52,9 +52,9 @@ suspend fun Coap.executeAsync() {
 
 /**
  * Open a Stream.
- * 
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the Stream is open.
+ *
+ * This function is meant to be used in a Kotlin coroutine to suspend execution until the stream is
+ * open or an error occurs.
  *
  * @param[port] The stream port to use on the remote server, a streamport is a demultiplexing id.
  */
@@ -66,9 +66,9 @@ suspend fun Stream.openAsync(port: Int) {
 
 /**
  * Read some bytes from a stream.
- * 
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the bytes have been read and returned.
+ *
+ * This function is meant to be used in a Kotlin coroutine to suspend execution until the bytes have
+ * been read or an error occurs.
  *
  * @return A byte array that was read from the stream.
  */
@@ -80,9 +80,9 @@ suspend fun Stream.readSomeAsync(): ByteArray {
 
 /**
  * Read an exact amount of bytes from a stream.
- * 
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the bytes have been read and returned.
+ *
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the bytes have been
+ * read and returned.
  *
  * @param[length] The amount of to read.
  * @return A byte array that was read from the stream.
@@ -95,9 +95,9 @@ suspend fun Stream.readAllAsync(length: Int): ByteArray {
 
 /**
  * Write bytes to a stream.
- * 
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the bytes have been written.
+ *
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the bytes have been
+ * written.
  *
  * @param[bytes] Byte array to be written to the stream.
  */
@@ -110,8 +110,7 @@ suspend fun Stream.writeAsync(bytes: ByteArray) {
 /**
  * Close a stream.
  *
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the Stream is closed.
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the Stream is closed.
  */
 suspend fun Stream.closeAsync() {
     nabtoCoroutineWrapper<Unit>({ callback ->
@@ -120,10 +119,9 @@ suspend fun Stream.closeAsync() {
 }
 
 /**
- * Open a tunnel. 
+ * Open a tunnel.
  *
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the TcpTunnel is open.
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is open.
  */
 suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
     nabtoCoroutineWrapper<Unit>({ callback ->
@@ -132,10 +130,9 @@ suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
 }
 
 /**
- * Close a tunnel. 
+ * Close a tunnel.
  *
- * This is meant to be used in a coroutine to suspend execution of said coroutine
- * until the TcpTunnel is closed.
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is closed.
  */
 suspend fun TcpTunnel.closeAsync() {
     nabtoCoroutineWrapper<Unit>({ callback ->
