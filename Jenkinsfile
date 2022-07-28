@@ -14,6 +14,8 @@ pipeline {
                 sh "./library/generate_swig.sh"
                 sh "./gradlew :library:build --rerun-tasks"
                 sh "./gradlew :library-ktx:build --rerun-tasks"
+                sh "./gradlew :iam-util:build --rerun-tasks"
+                sh "./gradlew :iam-util-ktx:build --rerun-tasks"
             }
         }
         stage('Deploy') {

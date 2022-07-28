@@ -1,0 +1,97 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply from: '../versioning.gradle'
+apply plugin: 'org.jetbrains.dokka'
+
+def getReleaseRepositoryUrl() {
+    return 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+}
+
+def getSnapshotRepositoryUrl() {
+    return 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+}
+
+afterEvaluate { project ->
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = GROUP
+                if (isReleaseVersion()) {
+                    version = buildVersionName()
+                } else {
+                    // this makes it possible to specify the master-SNAPSHOT
+                    version = gitBranch + "-SNAPSHOT"
+                }
+                artifactId = POM_ARTIFACT_ID_KTX
+                from components.release
+                artifact sourcesJar
+                // artifact javadocJar
+                artifact dokkaJavadocJar
+                pom {
+                    name = POM_ARTIFACT_ID
+                    description = POM_DESCRIPTION
+                    url = POM_URL
+                    licenses {
+                        license {
+                            name = POM_LICENSE_NAME
+                            url = POM_LICENSE_URL
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = POM_DEVELOPER_ID
+                            name = POM_DEVELOPER_NAME
+                            email = POM_DEVELOPER_EMAIL
+                        }
+                    }
+                    scm {
+                        connection = POM_SCM_CONNECTION
+                        developerConnection = POM_SCM_DEV_CONNECTION
+                        url = POM_SCM_URL
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+
+                url = isReleaseVersion() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
+                credentials {
+                    username = OSSRH_USERNAME
+                    password = OSSRH_PASSWORD
+                }
+            }
+        }
+
+    }
+    signing {
+        def signingPassword = GPG_SIGNING_PASSWORD
+        def signingKey = new String(Base64.decoder.decode(GPG_SIGNING_KEY_BASE64))
+        if (signingPassword.empty || signingKey.empty) {
+            project.logger.info("missing signing password or key so skipping the signing of the artifacts.")
+            return
+        }
+        project.logger.info('password: ' + signingKey)
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.mavenJava
+    }
+}
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+dokkaJavadoc.configure {
+    outputDirectory.set(file("${buildDir}/dokka"))
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
+        }
+    }
+}
+
+task dokkaJavadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from file("${buildDir}/dokka")
+}
