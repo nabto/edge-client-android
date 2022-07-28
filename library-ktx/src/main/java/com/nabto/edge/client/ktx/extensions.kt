@@ -121,7 +121,7 @@ suspend fun Stream.closeAsync() {
 /**
  * Open a tunnel.
  *
- * This is meant to be used in a coroutine to suspend execution until the TcpTunnel is open.
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is open.
  */
 suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
     nabtoCoroutineWrapper<Unit>({ callback ->
@@ -132,7 +132,7 @@ suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
 /**
  * Close a tunnel.
  *
- * This is meant to be used in a coroutine to suspend execution until the TcpTunnel is closed.
+ * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is closed.
  */
 suspend fun TcpTunnel.closeAsync() {
     nabtoCoroutineWrapper<Unit>({ callback ->
