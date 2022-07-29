@@ -4,7 +4,7 @@ import kotlinx.coroutines.*
 import com.nabto.edge.iamutil.*
 import com.nabto.edge.client.Connection
 
-private suspend fun <T> iamWrapper(
+internal suspend fun <T> iamWrapper(
     register: (cb: IamCallback<T>) -> Unit
 ): Optional<T> = suspendCancellableCoroutine<Optional<T>> { continuation ->
     val callback = { error: IamError, opt: Optional<T> ->

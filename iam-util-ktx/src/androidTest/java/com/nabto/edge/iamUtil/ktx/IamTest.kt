@@ -6,11 +6,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.Assert.*
 import kotlinx.coroutines.*
+import com.nabto.edge.iamutil.*
 
 import java.lang.Thread
 import java.util.concurrent.LinkedBlockingQueue
 
 import android.util.Log
+import java.util.Optional
 
 @RunWith(AndroidJUnit4::class)
 class IamTest {
@@ -23,25 +25,9 @@ class IamTest {
     @Test
     fun testSuspendCancellableCoroutine() {
         data class Item(
-            val callback: (fail: Boolean) -> Unit,
-            val fail: Boolean
+            val callback: IamCallback<Unit>,
+            val error: IamError
         )
-
-        class FakeException : Exception() {}
-
-        suspend fun awaitResult(
-            register: (cb: (fail: Boolean) -> Unit) -> Unit
-        ) = suspendCancellableCoroutine<Unit> { continuation ->
-            val callback = { fail: Boolean ->
-                if (!fail) {
-                    continuation.resumeWith(Result.success(Unit));
-                }
-                else {
-                    continuation.resumeWith(Result.failure(FakeException()));
-                }
-            }
-            register(callback)
-        }
 
         val queue = LinkedBlockingQueue<Item>(10)
 
@@ -52,7 +38,7 @@ class IamTest {
                     val item = queue.take()
                     // simulate working for a bit by sleeping
                     Thread.sleep(1000)
-                    item.callback(item.fail)
+                    item.callback.run(item.error, Optional.empty())
                 }
             } catch (e: InterruptedException) {
                 // Do nothing and just let the thread die.
@@ -60,9 +46,10 @@ class IamTest {
         }
         thread.start()
 
-        suspend fun someAsyncFunction(shouldFail: Boolean = false) {
-            awaitResult { callback ->
-                queue.put(Item(callback, shouldFail))
+        // All the functions in extensions.kt use iamWrapper in a similar way.
+        suspend fun someAsyncFunction(error: IamError = IamError.NONE) {
+            iamWrapper<Unit> { callback ->
+                queue.put(Item(callback, error))
             }
         }
 
@@ -92,13 +79,13 @@ class IamTest {
         // Test that an exception gets thrown correctly
         runBlocking {
             launch {
-                var exceptionWasThrown = false
+                var error = IamError.NONE
                 try {
-                    someAsyncFunction(true)
-                } catch (e: FakeException) {
-                    exceptionWasThrown = true
+                    someAsyncFunction(IamError.FAILED)
+                } catch (e: IamException) {
+                    error = e.error
                 }
-                assertTrue(exceptionWasThrown)
+                assertEquals(error, IamError.FAILED)
             }
         }
 
