@@ -70,7 +70,7 @@ public interface Coap {
      * Return status code returned from the server e.g. 204.
      *
      * Throws a NabtoRuntimeException with a INVALID_STATE error code.
-     * if there’s no response yet.
+     * if there's no response yet.
      * 
      * @return the status code, e.g. 204
      */
