@@ -24,7 +24,7 @@ suspend fun createConnection(client : NabtoClient): Connection? {
     options.put("PrivateKey", client.createPrivateKey())
 
     connection?.updateOptions(options.toString())
-    connection?.connectAsync()
+    connection?.awaitConnect()
     return connection
 }
 

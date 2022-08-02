@@ -38,13 +38,13 @@ internal suspend fun <T> iamWrapper(
  * @throws PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.pairLocalOpenAsync(
+suspend fun IamUtil.awaitPairLocalOpen(
     connection: Connection, 
     desiredUsername: String,
 ) {
-    iamWrapper<Unit>({ callback ->
-        this@pairLocalOpenAsync.pairLocalOpenCallback(connection, desiredUsername, callback)
-    })
+    iamWrapper<Unit> { callback ->
+        this@awaitPairLocalOpen.pairLocalOpenCallback(connection, desiredUsername, callback)
+    }
 }
 
 /**
@@ -65,12 +65,12 @@ suspend fun IamUtil.pairLocalOpenAsync(
  * @throws PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime.
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.pairLocalInitialAsync(
+suspend fun IamUtil.awaitPairLocalInitial(
     connection: Connection,
 ) {
-    iamWrapper<Unit>({ callback ->
-        this@pairLocalInitialAsync.pairLocalInitialCallback(connection, callback)
-    })
+    iamWrapper<Unit> { callback ->
+        this@awaitPairLocalInitial.pairLocalInitialCallback(connection, callback)
+    }
 }
 
 /**
@@ -96,14 +96,14 @@ suspend fun IamUtil.pairLocalInitialAsync(
  * @throws PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.pairPasswordOpenAsync(
+suspend fun IamUtil.awaitPairPasswordOpen(
     connection: Connection,
     desiredUsername: String,
     password: String,
 ) {
-    iamWrapper<Unit>({ callback -> 
-        this@pairPasswordOpenAsync.pairPasswordOpenCallback(connection, desiredUsername, password, callback)
-    })
+    iamWrapper<Unit> { callback -> 
+        this@awaitPairPasswordOpen.pairPasswordOpenCallback(connection, desiredUsername, password, callback)
+    }
 }
 
 /**
@@ -126,14 +126,14 @@ suspend fun IamUtil.pairPasswordOpenAsync(
  * @throws PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.pairPasswordInviteAsync(
+suspend fun IamUtil.awaitPairPasswordInvite(
     connection: Connection,
     username: String,
     password: String
 ) {
-    iamWrapper<Unit>({ callback -> 
-        this@pairPasswordInviteAsync.pairPasswordInviteCallback(connection, username, password, callback)
-    })
+    iamWrapper<Unit> { callback -> 
+        this@awaitPairPasswordInvite.pairPasswordInviteCallback(connection, username, password, callback)
+    }
 }
 
 /**
@@ -147,11 +147,11 @@ suspend fun IamUtil.pairPasswordInviteAsync(
  * `IAM:GetPairing` action is not set for the Unpaired role)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.getDeviceDetailsAsync(
+suspend fun IamUtil.awaitGetDeviceDetails(
     connection: Connection
 ): DeviceDetails {
     return iamWrapper<DeviceDetails>({ callback ->
-        this@getDeviceDetailsAsync.getDeviceDetailsCallback(connection, callback)
+        this@awaitGetDeviceDetails.getDeviceDetailsCallback(connection, callback)
     }).get()
 }
 
@@ -164,11 +164,11 @@ suspend fun IamUtil.getDeviceDetailsAsync(
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  * @return true iff the current user is paired with the device
  */
-suspend fun IamUtil.isCurrentUserPairedAsync(
+suspend fun IamUtil.awaitIsCurrentUserPaired(
     connection: Connection
 ): Boolean {
     return iamWrapper<Boolean>({ callback -> 
-        this.isCurrentUserPairedCallback(connection, callback)
+        this@awaitIsCurrentUserPaired.isCurrentUserPairedCallback(connection, callback)
     }).get()
 }
 
@@ -185,12 +185,12 @@ suspend fun IamUtil.isCurrentUserPairedAsync(
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  * @return an IamUser instance describing the requested user
  */
-suspend fun IamUtil.getUserAsync(
+suspend fun IamUtil.awaitGetUser(
     connection: Connection,
     username: String
 ): IamUser {
     return iamWrapper<IamUser>({ callback -> 
-        this@getUserAsync.getUserCallback(connection, username, callback)
+        this@awaitGetUser.getUserCallback(connection, username, callback)
     }).get()
 }
 
@@ -205,11 +205,11 @@ suspend fun IamUtil.getUserAsync(
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  * @return an IamUser instance describing the current user
  */
-suspend fun IamUtil.getCurrentUserAsync(
+suspend fun IamUtil.awaitGetCurrentUser(
     connection: Connection,
 ): IamUser {
     return iamWrapper<IamUser>({ callback -> 
-        this@getCurrentUserAsync.getCurrentUserCallback(connection, callback)
+        this@awaitGetCurrentUser.getCurrentUserCallback(connection, callback)
     }).get()
 }
 
@@ -230,15 +230,15 @@ suspend fun IamUtil.getCurrentUserAsync(
  * @throws ROLE_DOES_NOT_EXIST the specified role does not exist in the device IAM configuration
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.createUserAsync(
+suspend fun IamUtil.awaitCreateUser(
     connection: Connection,
     username: String,
     password: String,
     role: String
 ) {
-    iamWrapper<Unit>({ callback -> 
-        this@createUserAsync.createUserCallback(connection, username, password, role, callback);
-    })
+    iamWrapper<Unit> { callback -> 
+        this@awaitCreateUser.createUserCallback(connection, username, password, role, callback);
+    }
 }
 
 /**
@@ -253,14 +253,14 @@ suspend fun IamUtil.createUserAsync(
  * `IAM:SetUserPassword` action is not allowed for the requesting role for the `IAM:Username` user)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.updateUserPasswordAsync(
+suspend fun IamUtil.awaitUpdateUserPassword(
     connection: Connection,
     username: String,
     password: String,
 ) {
-    iamWrapper<Unit>({ callback ->
-        this@updateUserPasswordAsync.updateUserPasswordCallback(connection, username, password, callback)
-    })
+    iamWrapper<Unit> { callback ->
+        this@awaitUpdateUserPassword.updateUserPasswordCallback(connection, username, password, callback)
+    }
 }
 
 /**
@@ -283,14 +283,14 @@ suspend fun IamUtil.updateUserPasswordAsync(
  * `IAM:SetUserRole` action is not allowed for the requesting role for the `IAM:Username` user)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.updateUserRoleAsync(
+suspend fun IamUtil.awaitUpdateUserRole(
     connection: Connection,
     username: String,
     role: String,
 ) {
-    iamWrapper<Unit>({ callback ->
-        this@updateUserRoleAsync.updateUserRoleCallback(connection, username, role, callback)
-    })
+    iamWrapper<Unit> { callback ->
+        this@awaitUpdateUserRole.updateUserRoleCallback(connection, username, role, callback)
+    }
 }
 
 /**
@@ -306,14 +306,14 @@ suspend fun IamUtil.updateUserRoleAsync(
  * `IAM:SetUserDisplayName` action is not allowed for the requesting role for the `IAM:Username` user)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.updateUserDisplayNameAsync(
+suspend fun IamUtil.awaitUpdateUserDisplayName(
     connection: Connection,
     username: String,
     displayName: String,
 ) {
-    iamWrapper<Unit>({ callback -> 
-        this@updateUserDisplayNameAsync.updateUserDisplayNameCallback(connection, username, displayName, callback)
-    })
+    iamWrapper<Unit> { callback -> 
+        this@awaitUpdateUserDisplayName.updateUserDisplayNameCallback(connection, username, displayName, callback)
+    }
 }
 
 /**
@@ -330,14 +330,14 @@ suspend fun IamUtil.updateUserDisplayNameAsync(
  * `IAM:SetUserUsername` action is not allowed for the requesting role for the `IAM:Username` user)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.renameUserAsync(
+suspend fun IamUtil.awaitRenameUser(
     connection: Connection,
     username: String,
     newUsername: String,
 ) {
-    iamWrapper<Unit>({ callback -> 
-        this@renameUserAsync.renameUserCallback(connection, username, newUsername, callback)
-    })
+    iamWrapper<Unit> { callback -> 
+        this@awaitRenameUser.renameUserCallback(connection, username, newUsername, callback)
+    }
 }
 
 /**
@@ -352,11 +352,11 @@ suspend fun IamUtil.renameUserAsync(
  * `IAM:DeleteUser` action for the `IAM:Username` attribute is not allowed for the requesting role)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
-suspend fun IamUtil.deleteUserAsync(
+suspend fun IamUtil.awaitDeleteUser(
     connection: Connection,
     username: String,
 ) {
-    iamWrapper<Unit>({ callback ->
-        this@deleteUserAsync.deleteUserCallback(connection, username, callback)
-    })
+    iamWrapper<Unit> { callback ->
+        this@awaitDeleteUser.deleteUserCallback(connection, username, callback)
+    }
 }

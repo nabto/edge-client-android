@@ -32,10 +32,10 @@ private suspend fun <T> nabtoCoroutineWrapper(
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the connection
  * is established or an error occurs.
  */
-suspend fun Connection.connectAsync() {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@connectAsync.connectCallback(callback)
-    })
+suspend fun Connection.awaitConnect() {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitConnect.connectCallback(callback)
+    }
 }
 
 /**
@@ -44,10 +44,10 @@ suspend fun Connection.connectAsync() {
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the CoAP
  * result is ready or an error occurs.
  */
-suspend fun Coap.executeAsync() {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@executeAsync.executeCallback(callback)
-    })
+suspend fun Coap.awaitExecute() {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitExecute.executeCallback(callback)
+    }
 }
 
 /**
@@ -58,10 +58,10 @@ suspend fun Coap.executeAsync() {
  *
  * @param[port] The stream port to use on the remote server, a streamport is a demultiplexing id.
  */
-suspend fun Stream.openAsync(port: Int) {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@openAsync.openCallback(port, callback)
-    })
+suspend fun Stream.awaitOpen(port: Int) {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitOpen.openCallback(port, callback)
+    }
 }
 
 /**
@@ -72,9 +72,9 @@ suspend fun Stream.openAsync(port: Int) {
  *
  * @return A byte array that was read from the stream.
  */
-suspend fun Stream.readSomeAsync(): ByteArray {
+suspend fun Stream.awaitReadSome(): ByteArray {
     return nabtoCoroutineWrapper<ByteArray>({ callback ->
-        this@readSomeAsync.readSomeCallback(callback)
+        this@awaitReadSome.readSomeCallback(callback)
     }).get()
 }
 
@@ -87,9 +87,9 @@ suspend fun Stream.readSomeAsync(): ByteArray {
  * @param[length] The amount of to read.
  * @return A byte array that was read from the stream.
  */
-suspend fun Stream.readAllAsync(length: Int): ByteArray {
+suspend fun Stream.awaitReadAll(length: Int): ByteArray {
     return nabtoCoroutineWrapper<ByteArray>({ callback ->
-        this@readAllAsync.readAllCallback(length, callback)
+        this@awaitReadAll.readAllCallback(length, callback)
     }).get()
 }
 
@@ -101,10 +101,10 @@ suspend fun Stream.readAllAsync(length: Int): ByteArray {
  *
  * @param[bytes] Byte array to be written to the stream.
  */
-suspend fun Stream.writeAsync(bytes: ByteArray) {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@writeAsync.writeCallback(bytes, callback)
-    })
+suspend fun Stream.awaitWrite(bytes: ByteArray) {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitWrite.writeCallback(bytes, callback)
+    }
 }
 
 /**
@@ -112,10 +112,10 @@ suspend fun Stream.writeAsync(bytes: ByteArray) {
  *
  * This is meant to be used in a Kotlin coroutine to suspend execution until the Stream is closed.
  */
-suspend fun Stream.closeAsync() {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@closeAsync.closeCallback(callback)
-    })
+suspend fun Stream.awaitClose() {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitClose.closeCallback(callback)
+    }
 }
 
 /**
@@ -123,10 +123,10 @@ suspend fun Stream.closeAsync() {
  *
  * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is open.
  */
-suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@openAsync.openCallback(service, localPort, callback)
-    })
+suspend fun TcpTunnel.awaitOpen(service: String, localPort: Int) {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitOpen.openCallback(service, localPort, callback)
+    }
 }
 
 /**
@@ -134,8 +134,8 @@ suspend fun TcpTunnel.openAsync(service: String, localPort: Int) {
  *
  * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is closed.
  */
-suspend fun TcpTunnel.closeAsync() {
-    nabtoCoroutineWrapper<Unit>({ callback ->
-        this@closeAsync.closeCallback(callback)
-    })
+suspend fun TcpTunnel.awaitClose() {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitClose.closeCallback(callback)
+    }
 }
