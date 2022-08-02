@@ -1,5 +1,7 @@
 package com.nabto.edge.client.impl;
 
+import com.nabto.edge.client.NabtoCallback;
+
 public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
 
     com.nabto.edge.client.swig.TcpTunnel tcpTunnel;
@@ -17,9 +19,26 @@ public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
         }
     }
 
+    public void openCallback(String service, int localPort, NabtoCallback callback)
+    {
+        try {
+            tcpTunnel.open(service, localPort).callback(Util.makeFutureCallback(callback));
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
     public void close() {
         try {
             tcpTunnel.close().waitForResult();
+        } catch (com.nabto.edge.client.swig.NabtoException e) {
+            throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
+    public void closeCallback(NabtoCallback callback) {
+        try {
+            tcpTunnel.close().callback(Util.makeFutureCallback(callback));
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }

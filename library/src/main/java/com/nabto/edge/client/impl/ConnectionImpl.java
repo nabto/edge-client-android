@@ -9,6 +9,7 @@ import com.nabto.edge.client.ErrorCodes;
 import com.nabto.edge.client.NabtoNoChannelsException;
 import com.nabto.edge.client.Stream;
 import com.nabto.edge.client.TcpTunnel;
+import com.nabto.edge.client.NabtoCallback;
 
 import java.util.HashMap;
 
@@ -142,9 +143,10 @@ public class ConnectionImpl implements Connection {
         }
     }
 
-    /**
-     * Blocking close
-     */
+    public void connectCallback(NabtoCallback callback) {
+        connection.connect().callback(Util.makeFutureCallback(callback));
+    }
+
     public void passwordAuthenticate(String username, String password) {
         try {
             connection.passwordAuthenticate(username, password).waitForResult();
@@ -153,6 +155,9 @@ public class ConnectionImpl implements Connection {
         }
     }
 
+    public void passwordAuthenticateCallback(String username, String password, NabtoCallback callback) {
+        connection.passwordAuthenticate(username, password).callback(Util.makeFutureCallback(callback));
+    }
 
     public Coap createCoap(String method, String path) {
         return new CoapImpl(connection.createCoap(method, path));

@@ -22,6 +22,14 @@ public interface TcpTunnel {
     /**
      * Open this tunnel. Blocks until the tunnel is ready to use or an error occurs.
      *
+     * May throw a NabtoRuntimeException with one of the following error codes:
+     * ```
+     * NOT_FOUND if requesting an unknown service
+     * FORBIDDEN if target device did not allow opening a tunnel to specified service for the current client
+     * STOPPED if the tunnel is stopped.
+     * NOT_CONNECTED if the connection is not established yet.
+     * ```
+     * 
      * @param service The service to connect to on the remote device (as defined in the device's
      * configuration), e.g. "http", "http-admin", "ssh", "rtsp".
      * @param localPort The local port to listen on. If 0 is specified, an ephemeral port is used,
@@ -30,14 +38,36 @@ public interface TcpTunnel {
     public void open(String service, int localPort);
 
     /**
+     * Open this tunnel without blocking.
+     * See TcpTunnel.open() for error codes.
+     *
+     * @param service The service to connect to on the remote device (as defined in the device's
+     * configuration), e.g. "http", "http-admin", "ssh", "rtsp".
+     * @param localPort The local port to listen on. If 0 is specified, an ephemeral port is used,
+     * it can be retrieved with `getLocalPort()`.
+     * @param callback The callback that will be run once the tunnel is opened.
+     */
+    public void openCallback(String service, int localPort, NabtoCallback callback);
+
+    /**
      * Close a tunnel, this function blocks until the tunnel is closed
      */
     public void close();
 
     /**
-     * Get the local port whic the tunnel is bound to.
-     * If the tunnel is not opened an exception is thrown
+     * Close a tunnel without blocking.
      *
+     * @param callback The callback that will be run once the tunnel is closed.
+     */
+    public void closeCallback(NabtoCallback callback);
+
+    /**
+     * Get the local port whic the tunnel is bound to.
+     * 
+     * Throws a NabtoRuntimeException with a INVALID_STATE error code
+     * if the tunnel is not opened.
+     * 
+     * 
      * @return the local port number used.
      */
     public int getLocalPort();

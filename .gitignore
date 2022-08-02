@@ -4,6 +4,9 @@
 
 *.iml
 
+# Ignore any folder called build
+**/build/
+
 /library/src/main/java/com/nabto/edge/client/swig/*.java
 /library/src/main/java/com/nabto/client/jni/*.java
 /library/src/swig/nabto_client_wrap.cpp
@@ -17,13 +20,11 @@
 
 /build/*
 /.gradle/
-/library/build
 local.properties
-
-
-/demo/build/*
-/demo/heatpump/build/*
 
 /demo/.gradle/*
 */.gradle/*
 */.idea/*
+
+**/.DS_Store
+tags

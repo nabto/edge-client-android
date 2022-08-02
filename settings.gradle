@@ -7,3 +7,6 @@ dependencyResolutionManagement {
 }
 
 include ':library'
+include ':library-ktx'
+include ':iam-util'
+include ':iam-util-ktx'
