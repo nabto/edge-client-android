@@ -11,6 +11,7 @@ pipeline {
 
             steps {
                 checkout scm
+                sh "echo test if I can execute this"
                 sh "./library/generate_swig.sh"
                 sh "./gradlew :library:build --rerun-tasks"
                 sh "./gradlew :library-ktx:build --rerun-tasks"
