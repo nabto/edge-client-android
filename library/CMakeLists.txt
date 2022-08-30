@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10)
 set(libressltar ${CMAKE_CURRENT_BINARY_DIR}/libressl.tar.gz)
 set(libressldir ${CMAKE_CURRENT_BINARY_DIR}/libressl-2.9.1)
 
+message(here we are)
+
 if(NOT EXISTS ${libressldir})
   if (NOT EXISTS ${libressltar})
     file(DOWNLOAD https://downloads.nabto.com/assets/3rdparty-source/libressl/libressl-2.9.1.tar.gz ${libressltar}
