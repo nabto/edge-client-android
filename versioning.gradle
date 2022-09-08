@@ -10,7 +10,7 @@ ext {
     }
 
     buildVersionName = { ->
-        if (gitTag) {
+        if (isReleaseVersion()) {
             gitTag.substring(1)
         } else {
             "0.0.0" + "-branch." + gitBranch + ".commits." + gitCount + "+" + gitHash + gitDirty
@@ -18,6 +18,6 @@ ext {
     }
 
     isReleaseVersion = { ->
-        !gitTag.isEmpty()
+        !gitTag.isEmpty() && gitDirty.isEmpty()
     }
 }
