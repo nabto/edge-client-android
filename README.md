@@ -147,13 +147,21 @@ The app must be able to connect to a local nabto-device on an ipv4 only local ne
 
 Scope: connectedAndroidTest on a real device with given network
 
-./gradlew :jni:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.client.jni.ConnectionTest#connectLocal
+Make sure the test device and phone is on the same network.
+
+run a test device: `./local_test_device/simple_mdns_device pr-test de-test foo bar baz`
+
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ConnectionTest#connectLocal
 
 ### Test Conn 4.
 
 The app must be able to connect to a local nabto-device on an ipv6 only local network.
 
 Scope: connectedAndroidTest on a real device with given network
+
+join ipv6only network on both laptop and phone. Currently our embedded sdk test
+devices has a problem with ipv6 and mdns so this probably fails.
+
 
 ### Test Conn 5.
 
@@ -163,3 +171,11 @@ by default no traffic is sent to that network.
 The app must be able to connect to a local nabto-device on a network without internet access on a android-device which has internet access via 3/4/5g
 
 Scope: connectedAndroidTest on a real device with given network
+
+prerequisite: embedded sdk device and android joins an ipv4 network without internet access
+
+run a test device: `./local_test_device/simple_mdns_device pr-test de-test foo bar baz`
+
+This is TODO since gradle does not seem to function without internet.
+
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ConnectionTest#connectLocal
