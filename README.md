@@ -127,6 +127,8 @@ Scope: connectedAndroidTest
 The app must be able to get the version of the nabto core library.
 The app must be able to get the version of the nabto wrapper library.
 
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ClientTest#nabtoVersion
+
 
 ## Connectivity
 
@@ -179,3 +181,12 @@ run a test device: `./local_test_device/simple_mdns_device pr-test de-test foo b
 This is TODO since gradle does not seem to function without internet.
 
 ./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ConnectionTest#connectLocal
+
+
+### Test Conn 6.
+
+The client can scan for mdns devices, subtypes and get txt records.
+
+./local_test_device/simple_mdns_device pr-test de-test testsubtype testkey testvalue
+
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.MdnsTest
