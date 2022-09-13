@@ -151,7 +151,7 @@ Scope: connectedAndroidTest on a real device with given network
 
 Make sure the test device and phone is on the same network.
 
-run a test device: `./local_test_device/simple_mdns_device pr-test de-test foo bar baz`
+run a test device: `./start_local_test_device.sh`
 
 ./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ConnectionTest#connectLocal
 
@@ -176,7 +176,7 @@ Scope: connectedAndroidTest on a real device with given network
 
 prerequisite: embedded sdk device and android joins an ipv4 network without internet access
 
-run a test device: `./local_test_device/simple_mdns_device pr-test de-test foo bar baz`
+run a test device: `./start_local_test_device.sh`
 
 This is TODO since gradle does not seem to function without internet.
 
@@ -187,6 +187,6 @@ This is TODO since gradle does not seem to function without internet.
 
 The client can scan for mdns devices, subtypes and get txt records.
 
-./local_test_device/simple_mdns_device pr-test de-test testsubtype testkey testvalue
+`./start_local_test_device.sh`
 
 ./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.MdnsTest
