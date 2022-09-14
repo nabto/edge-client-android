@@ -32,7 +32,7 @@ The base64 key can be created by `gpg --armor --export-secret-keys keyid | base6
 
 `./gradlew publish`
 
-Tagged releases will be sent to the staging repository at sonatype https://https://s01.oss.sonatype.org/ Where they manually needs to be promoted as releases before they can be found in maven central.
+Tagged releases will be sent to the staging repository at sonatype https://s01.oss.sonatype.org/ Where they manually needs to be promoted as releases before they can be found in maven central.
 
 Non release builds aka snapshots can be found at https://s01.oss.sonatype.org/content/repositories/snapshots/com/nabto/edge/client/library/
 
