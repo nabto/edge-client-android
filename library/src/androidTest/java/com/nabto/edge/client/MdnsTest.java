@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.nabto.edge.client.MdnsScanner;
 import com.nabto.edge.client.test.R;
 
 import org.junit.Test;
@@ -61,7 +62,6 @@ public class MdnsTest {
 
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
 
-        LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
         client.addMdnsResultListener(rl);
 
@@ -70,13 +70,13 @@ public class MdnsTest {
 
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
+
     @Test(expected = Test.None.class)
     public void mdnsScanSubtype() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
 
-        LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
         client.addMdnsResultListener(rl,"testsubtype");
 
@@ -91,12 +91,61 @@ public class MdnsTest {
 
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
 
-        LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
         client.addMdnsResultListener(rl,"testsubtype");
 
         String productId = resources.getString(R.string.local_product_id);
         String deviceId = resources.getString(R.string.local_device_id);
+        MdnsResult mr = rl.waitForDevice(productId, deviceId);
+        assertNotEquals(mr, null);
+        Map<String,String> txtItems = mr.getTxtItems();
+        assertTrue(txtItems.get("testkey").equals("testvalue"));
+    }
+
+
+    @Test(expected = Test.None.class)
+    public void mdnsScannerTest() throws Exception {
+        Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+
+        MdnsScanner scanner = client.createMdnsScanner();
+        ResultListener rl = new ResultListener();
+        client.addMdnsResultListener(rl);
+
+        String productId = resources.getString(R.string.local_product_id);
+        String deviceId = resources.getString(R.string.local_device_id);
+
+        assertNotEquals(rl.waitForDevice(productId, deviceId), null);
+    }
+
+
+    @Test(expected = Test.None.class)
+    public void mdnsScannerTestSubtype() throws Exception {
+        Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+
+        MdnsScanner scanner = client.createMdnsScanner("testsubtype");
+        ResultListener rl = new ResultListener();
+        client.addMdnsResultListener(rl);
+
+        String productId = resources.getString(R.string.local_product_id);
+        String deviceId = resources.getString(R.string.local_device_id);
+
+        assertNotEquals(rl.waitForDevice(productId, deviceId), null);
+    }
+
+    @Test(expected = Test.None.class)
+    public void mdnsScannerTestTxtItems() throws Exception {
+        Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+
+        MdnsScanner scanner = client.createMdnsScanner("testsubtype");
+        ResultListener rl = new ResultListener();
+        client.addMdnsResultListener(rl);
+
+        String productId = resources.getString(R.string.local_product_id);
+        String deviceId = resources.getString(R.string.local_device_id);
+
         MdnsResult mr = rl.waitForDevice(productId, deviceId);
         assertNotEquals(mr, null);
         Map<String,String> txtItems = mr.getTxtItems();

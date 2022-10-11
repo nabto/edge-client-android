@@ -9,6 +9,7 @@ import android.net.wifi.WifiManager;
 import com.nabto.edge.client.NabtoClient;
 import com.nabto.edge.client.Connection;
 import com.nabto.edge.client.MdnsResultListener;
+import com.nabto.edge.client.MdnsScanner;
 
 import java.util.HashMap;
 
@@ -63,6 +64,17 @@ public class NabtoClientImpl extends NabtoClient {
 
     void setWifiNetwork(Network network) {
         context.setAndroidWifiNetworkHandle(BigInteger.valueOf(network.getNetworkHandle()));
+    }
+
+
+    @Override
+    public MdnsScanner createMdnsScanner() {
+        return new MdnsScannerImpl(this, "");
+    }
+
+    @Override
+    public MdnsScanner createMdnsScanner(String subtype) {
+        return new MdnsScannerImpl(this, subtype);
     }
 
     @Override

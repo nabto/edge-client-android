@@ -5,6 +5,7 @@ import java.math.BigInteger;
 
 import android.content.Context;
 
+import com.nabto.edge.client.MdnsScanner;
 import com.nabto.edge.client.impl.NabtoClientImpl;
 
 /**
@@ -54,6 +55,9 @@ public abstract class NabtoClient {
      * @return the created connection.
      */
     public abstract Connection createConnection();
+
+    public abstract MdnsScanner createMdnsScanner();
+    public abstract MdnsScanner createMdnsScanner(String subtype);
 
     /**
      * Add a listener for mdns results.
