@@ -320,6 +320,35 @@ public class IamImpl extends IamUtil {
             .execute();
     }
 
+    @Override
+    public String[] getAvailableRoles(Connection connection) {
+        IamComposer composer = new IamComposer();
+        String[] result = composer
+            .start(connection, IamPath.GET_ROLES)
+            .withMap(new Object[][] {
+                {205, IamError.NONE},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION}
+            })
+            .execute()
+            .maybeThrow()
+            .decodePayload(String[].class);
+        return result;
+    }
+
+    @Override
+    public void getAvailableRolesCallback(Connection connection, IamCallback<String[]> cb) {
+        IamComposerAsync<String[]> composer = new IamComposerAsync<>();
+        composer
+            .start(connection, IamPath.GET_ROLES)
+            .withResultType(String[].class)
+            .withUserCallback(cb)
+            .withMap(new Object[][] {
+                {205, IamError.NONE},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION}
+            })
+            .execute();
+    }
+
     private void updateUser(Connection connection, String username, String key, String value, IamError error404) {
         // @TODO: 404 has different semantics depending on what went wrong
         //        E.g. it could mean the user doesnt exist, the role doesnt exist...

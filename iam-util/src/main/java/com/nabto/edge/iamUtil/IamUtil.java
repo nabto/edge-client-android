@@ -280,6 +280,9 @@ public abstract class IamUtil {
      */
     public abstract void getCurrentUserCallback(Connection connection, IamCallback<IamUser> cb);
 
+    public abstract String[] getAvailableRoles(Connection connection);
+    public abstract void getAvailableRolesCallback(Connection connection, IamCallback<String[]> cb);
+
     /**
      * Create an IAM user on device.
      * 
