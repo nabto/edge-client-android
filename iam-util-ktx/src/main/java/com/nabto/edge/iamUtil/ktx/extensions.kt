@@ -155,6 +155,14 @@ suspend fun IamUtil.awaitGetDeviceDetails(
     }).get()
 }
 
+suspend fun IamUtil.awaitGetAvailableRoles(
+    connection: Connection
+): Array<String> {
+    return iamWrapper<Array<String>>({ callback ->
+        this@awaitGetAvailableRoles.getAvailableRolesCallback(connection, callback)
+    }).get()
+}
+
 /**
  * Query if the current user is paired or not on a specific device.
  * 
