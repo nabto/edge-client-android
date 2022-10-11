@@ -56,7 +56,18 @@ public abstract class NabtoClient {
      */
     public abstract Connection createConnection();
 
+    /**
+     * Create an MdnsScanner to scan for devices using mDNS.
+     * Fundamentally just uses the NabtoClient.addMdnsResultListener method.
+     */
     public abstract MdnsScanner createMdnsScanner();
+
+    /**
+     * Create an MdnsScanner to scan for devices using mDNS with a specific subtype.
+     * Fundamentally just uses the NabtoClient.addMdnsResultListener method.
+     *
+     * @param subtype The subtype to scan for.
+     */
     public abstract MdnsScanner createMdnsScanner(String subtype);
 
     /**
