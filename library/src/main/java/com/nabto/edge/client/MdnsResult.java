@@ -7,9 +7,15 @@ public interface MdnsResult {
     /**
      * Action which is associated with a result. This is used together
      * with the service instance name to manipulate the list of device.
+     *
+     * - `ADD`: Adding a new result
+     * - `UPDATE`: Updating existing result
+     * - `REMOVE`: Removing existing result
      */
     enum Action {
-        ADD, UPDATE, REMOVE
+        ADD,
+        UPDATE,
+        REMOVE
     }
 
     /**

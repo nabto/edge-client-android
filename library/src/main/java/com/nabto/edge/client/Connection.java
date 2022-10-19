@@ -11,7 +11,10 @@ package com.nabto.edge.client;
  */
 public interface Connection {
     /**
-     * Connection type
+     * Connection types
+     *
+     * - `RELAY`: Relay connection through a Nabto Basestation
+     * - `DIRECT`: Direct connection either local or p2p
      */
     public enum Type {
         RELAY,
@@ -64,8 +67,8 @@ public interface Connection {
      * Return the fingerprint of the device public key as a hex string.
      *
      * @return The device fungerprint encoded as hex
-     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not connected
-     * @throws NabtoRuntimeException with error code STOPPED if the connection is closed or stopped
+     * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not connected
+     * @throws NabtoRuntimeException with error code `STOPPED` if the connection is closed or stopped
      */
     String getDeviceFingerprint();
 
@@ -73,7 +76,7 @@ public interface Connection {
      * Get the fingerprint of the clients public key as a hex string.
      *
      * @return The client fingerprint encoded as hex.
-     * @throws NabtoRuntimeException with error code INVALID_STATE if no private key is configured
+     * @throws NabtoRuntimeException with error code `INVALID_STATE` if no private key is configured
      */
     String getClientFingerprint();
 
@@ -81,8 +84,8 @@ public interface Connection {
      * Get the connection type.
      *
      * @return The connection type
-     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not connected
-     * @throws NabtoRuntimeException with error code STOPPED if the connection is closed or stopped
+     * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not connected
+     * @throws NabtoRuntimeException with error code `STOPPED` if the connection is closed or stopped
      */
     Type getType();
 
@@ -131,9 +134,9 @@ public interface Connection {
     /**
      * Close a connection.
      *
-     * @throws NabtoRuntimeException with error code OPERATION_IN_PROGRESS if another close is in progreess.
-     * @throws NabtoRuntimeException with error code STOPPED if the connection is closed or stopped or a parent object is stopped.
-     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not established yet.
+     * @throws NabtoRuntimeException with error code `OPERATION_IN_PROGRESS` if another close is in progreess.
+     * @throws NabtoRuntimeException with error code `STOPPED` if the connection is closed or stopped or a parent object is stopped.
+     * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not established yet.
      */
     void close();
 
@@ -143,7 +146,7 @@ public interface Connection {
      * This function blocks until a connection is established or an
      * exception is thrown.
      *
-     * @throws NabtoRuntimeException with error code STOPPED if the client instance was stopped
+     * @throws NabtoRuntimeException with error code `STOPPED` if the client instance was stopped
      * @throws NabtoNoChannelsException if a connection could not be established.
      */
     void connect();
@@ -164,12 +167,12 @@ public interface Connection {
      *
      * @param username the username.
      * @param password the password
-     * @throws NabtoRuntimeException with error code UNAUTHORIZED if the username or password is invalid
-     * @throws NabtoRuntimeException with error code NOT_FOUND if the password authentication feature is not available on the device
-     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not open
-     * @throws NabtoRuntimeException with error code OPERATION_IN_PROGRESS if a password authentication request is already in progress on the connection
-     * @throws NabtoRuntimeException with error code TOO_MANY_REQUESTS if too many password attempts has been made
-     * @throws NabtoRuntimeException with error code STOPPED if the client is stopped
+     * @throws NabtoRuntimeException with error code `UNAUTHORIZED` if the username or password is invalid
+     * @throws NabtoRuntimeException with error code `NOT_FOUND` if the password authentication feature is not available on the device
+     * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not open
+     * @throws NabtoRuntimeException with error code `OPERATION_IN_PROGRESS` if a password authentication request is already in progress on the connection
+     * @throws NabtoRuntimeException with error code `TOO_MANY_REQUESTS` if too many password attempts has been made
+     * @throws NabtoRuntimeException with error code `STOPPED` if the client is stopped
      */
     void passwordAuthenticate(String username, String password);
 
