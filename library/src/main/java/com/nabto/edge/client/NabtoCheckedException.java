@@ -13,6 +13,8 @@ public class NabtoCheckedException extends Exception implements NabtoException {
 
     /**
      * Access the underlying Nabto Edge Client SDK error code.
+     *
+     * @return The underlying Nabto Edge Client SDK error code.
      */
     public ErrorCode getErrorCode() {
         return new ErrorCode(origin.status().getErrorCode());

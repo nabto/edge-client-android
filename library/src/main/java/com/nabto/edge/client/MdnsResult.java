@@ -13,35 +13,41 @@ public interface MdnsResult {
     }
 
     /**
-     * Get the device id. If not set the empty string is returned.
-     * @return the device id.
+     * Get the device ID. If not set the empty string is returned.
+     *
+     * @return The device ID.
      */
     String getDeviceId();
 
     /**
-     * Get the product id, if not set the empty string is returned.
-     * @return the product id
+     * Get the product ID, if not set the empty string is returned.
+     *
+     * @return The product ID
      */
     String getProductId();
 
     /**
-     * Get the service instance name. This is used to distinguish results.
-     * If the application is maintaning a list of mdns results the Service
+     * Get the service instance name used to distinguish results.
+     *
+     * If the application is maintaning a list of mDNS results the Service
      * instance name is used as the key. The action ADD, UPDATE,
      * REMOVE is then used to see how the list should be manipulated.
-     * @return the service instance name string.
+     *
+     * @return The service instance name string.
      */
     String getServiceInstanceName();
 
     /**
-     * Txt Items as a map, if there's no txt items the map is empty.
-     * @return the txt items as a map
+     * Txt Items as a map, if there's no TXT items the map is empty.
+     *
+     * @return The TXT items as a map
      */
     java.util.Map<String, String> getTxtItems();
 
     /**
-     * Return the action associated with the mdns result
-     * @return the action.
+     * Return the action associated with the mdns result.
+     *
+     * @return The action.
      */
     Action getAction();
 }

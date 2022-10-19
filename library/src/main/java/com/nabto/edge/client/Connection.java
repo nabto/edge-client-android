@@ -36,21 +36,16 @@ public interface Connection {
      *
      * The following options are supported:
      *
-     * ```
-     * ProductId
-     * DeviceId
-     * PrivateKey
-     * ServerUrl
-     * ServerKey
-     * ServerJwtToken
-     * ServerConnectToken
-     * AppName
-     * AppVersion
-     * ```
-     * 
-     * Throws a NabtoRuntimeException with an INVALID_ARGUMENT error code
-     * if the input is invalid.
-     * 
+     * - `ProductId`
+     * - `DeviceId`
+     * - `PrivateKey`
+     * - `ServerUrl`
+     * - `ServerKey`
+     * - `ServerJwtToken`
+     * - `ServerConnectToken`
+     * - `AppName`
+     * - `AppVersion`
+     *
      * @param json a string of valid json.
      */
     void updateOptions(String json);
@@ -58,44 +53,36 @@ public interface Connection {
     /**
      * Get connection options as a JSON document.
      *
-     * Throws a NabtoRuntimeException with a FAILED error code
-     * if the options could not be retrieved for some reason.
-     * 
-     * See nabto_client_connection_get_options for reference.
-     * @return the current options encoded as a json object.
+     * The returned document is similar to that accepted by `updateOptions()`
+     * except the private key is not exposed.
+     *
+     * @return The current options encoded as a json object.
      */
     String getOptions();
 
     /**
      * Return the fingerprint of the device public key as a hex string.
-     * 
-     * Throws a NabtoRuntimeException with a INVALID_STATE error code
-     * if the connection is not connected
      *
-     * @return the device fungerprint encoded as hex
+     * @return The device fungerprint encoded as hex
+     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not connected
+     * @throws NabtoRuntimeException with error code STOPPED if the connection is closed or stopped
      */
     String getDeviceFingerprint();
 
     /**
      * Get the fingerprint of the clients public key as a hex string.
-     * 
-     * Throws a NabtoRuntimeException with a INVALID_STATE error code
-     * if the connection is not connected
-     * 
-     * @return the client fingerprint encoded as hex.
+     *
+     * @return The client fingerprint encoded as hex.
+     * @throws NabtoRuntimeException with error code INVALID_STATE if no private key is configured
      */
     String getClientFingerprint();
 
     /**
      * Get the connection type.
-     * 
-     * May throw a NabtoRuntimeException with one of the following error codes:
-     * ```
-     * NOT_CONNECTED if the connection is not connected yet.
-     * STOPPED if the connection is stopped or closed.
-     * ```
-     * 
-     * @return the connection type
+     *
+     * @return The connection type
+     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not connected
+     * @throws NabtoRuntimeException with error code STOPPED if the connection is closed or stopped
      */
     Type getType();
 
@@ -105,50 +92,48 @@ public interface Connection {
     void enableDirectCandidates();
 
     /**
-     * Add a diect candidate.
-     * 
-     * Throws a NabtoRuntimeException with a INVALID_ARGUMENT error code
-     * if the arguments is obviously invalid. e.g. using port number 0
-     * 
-     * @param host the hest either as ip or a resolveable name.
-     * @param port the port.
+     * Add a direct candidate.
+     *
+     * @param host The host either as IP or a resolveable hostname.
+     * @param port A valid port number.
      */
     void addDirectCandidate(String host, int port);
 
     /**
-     * Mark the end of direct candidates,
+     * Mark the end of direct candidates indicating that no more candidates will
+     * be added to the connection.
      */
     void endOfDirectCandidates();
 
     /**
      * Create stream. The returned Stream object must be kept alive while in use.
-     * @return the created stream.
+     *
+     * @return The created stream.
      */
     Stream createStream();
 
     /**
-     * Create a coap request/response object. The returned Coap object must be kep alive while in use.
-     * @param method e.g. GET, POST or PUT
-     * @param path the path e.g. /hello-world
+     * Create a coap request/response object. The returned Coap object must be kept alive while in use.
+     *
+     * @param method CoAP request method e.g. GET, POST or PUT
+     * @param path CoAP request path e.g. /hello-world
      * @return the created coap object.
      */
     Coap createCoap(String method, String path);
 
     /**
      * Create a TCP tunnel. The returned TcpTunnel object must be kept alive while in use.
-     * @return the created tcp tunnel.
+     *
+     * @return The created TCP tunnel.
      */
     TcpTunnel createTcpTunnel();
 
     /**
      * Close a connection.
-     * 
-     * May throw a NabtoRuntimeException with one of the following error codes:
-     * ```
-     * OPERATION_IN_PROGRESS if another close is in progreess.
-     * STOPPED if the connection is closed or stopped or a parent object is stopped.
-     * NOT_CONNECTED if the connection is not established yet.
-     * ```
+     *
+     * @throws NabtoRuntimeException with error code OPERATION_IN_PROGRESS if another close is in progreess.
+     * @throws NabtoRuntimeException with error code STOPPED if the connection is closed or stopped or a parent object is stopped.
+     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not established yet.
      */
     void close();
 
@@ -156,40 +141,10 @@ public interface Connection {
      * Connect a connection.
      *
      * This function blocks until a connection is established or an
-     * exception is thrown. If connecting fails for some reason, a NabtoRuntimeException will be thrown.
-     * Use NabtoRuntimeException.getErrorCode() for further info.
-     * 
-     * The error code may be one of the following:
-     * 
-     * ```
-     * UNAUTHORIZED if the authentication options do not match the basestation configuration
-     * TOKEN_REJECTED if the basestation could not validate the specified token
-     * STOPPED if the client instance was stopped
-     * ```
-     * 
-     * Throws a NabtoNoChannelsException if all parameters input were accepted but a connection could not be
-     * established. Details about what went wrong are available in the exception as
+     * exception is thrown.
      *
-     * ```
-     * NabtoNoChannelsException.getLocalChannelErrorCode()
-     * NabtoNoChannelsException.getRemoteChannelErrorCode()
-     * NabtoNoChannelsException.getDirectCandidatesChannelErrorCode()
-     * ```
-     * 
-     * The remote channel error code will be one of the following:
-     * 
-     * ```
-     * NOT_ATTACHED if the target remote device is not attached to the basestation
-     * FORBIDDEN if the basestation request is rejected
-     * NONE if remote relay was not enabled
-     * ```
-     * 
-     * The local channel error code will be one of the following:
-     * 
-     * ```
-     * NONE if mDNS discovery was not enabled
-     * NOT_FOUND if no local device was found
-     * ```
+     * @throws NabtoRuntimeException with error code STOPPED if the client instance was stopped
+     * @throws NabtoNoChannelsException if a connection could not be established.
      */
     void connect();
 
@@ -205,22 +160,16 @@ public interface Connection {
      * Password authenticate a connection.
      *
      * This function blocks until the exchange is done or an exception
-     * is thrown. If authentication fails for some reason, a NabtoRuntimeException will be thrown.
-     * Use NabtoRuntimeException.getErrorCode() for further info.
-     * 
-     * The error code may be one of the following:
-     * 
-     * ```
-     * UNAUTHORIZED if the username or password is invalid
-     * NOT_FOUND if the password authentication feature is not available on the device
-     * NOT_CONNECTED if the connection is not open
-     * OPERATION_IN_PROGRESS if a password authentication request is already in progress on the connection
-     * TOO_MANY_REQUESTS if too many password attempts has been made
-     * STOPPED if the client is stopped
-     * ```
-     * 
+     * is thrown.
+     *
      * @param username the username.
      * @param password the password
+     * @throws NabtoRuntimeException with error code UNAUTHORIZED if the username or password is invalid
+     * @throws NabtoRuntimeException with error code NOT_FOUND if the password authentication feature is not available on the device
+     * @throws NabtoRuntimeException with error code NOT_CONNECTED if the connection is not open
+     * @throws NabtoRuntimeException with error code OPERATION_IN_PROGRESS if a password authentication request is already in progress on the connection
+     * @throws NabtoRuntimeException with error code TOO_MANY_REQUESTS if too many password attempts has been made
+     * @throws NabtoRuntimeException with error code STOPPED if the client is stopped
      */
     void passwordAuthenticate(String username, String password);
 
@@ -236,15 +185,15 @@ public interface Connection {
 
     /**
      * Add a listener for connection events.
+     *
      * @param connectionEventsCallback the connection events callback to add
      */
     void addConnectionEventsListener(ConnectionEventsCallback connectionEventsCallback);
 
     /**
      * Remove a listener for connection events.
+     *
      * @param connectionEventsCallback the connection events callback to remove.
      */
     void removeConnectionEventsListener(ConnectionEventsCallback connectionEventsCallback);
-
-
 }

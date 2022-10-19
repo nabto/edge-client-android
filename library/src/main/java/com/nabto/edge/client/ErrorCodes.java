@@ -125,13 +125,48 @@ public class ErrorCodes {
      */
     public static int NOT_ATTACHED = com.nabto.edge.client.swig.Status.getNOT_ATTACHED();
 
+    /**
+     * The basestation rejected a connection due to invalid SCT or JWT
+     */
     public static int TOKEN_REJECTED = com.nabto.edge.client.swig.Status.getTOKEN_REJECTED();
+
+    /**
+     * An operation would have blocked a thread that should not be blocked
+     */
     public static int COULD_BLOCK = com.nabto.edge.client.swig.Status.getCOULD_BLOCK();
+
+    /**
+     * A request was did not have proper authorization
+     */
     public static int UNAUTHORIZED = com.nabto.edge.client.swig.Status.getUNAUTHORIZED();
+
+    /**
+     * A request was rejected due to rate limiting
+     */
     public static int TOO_MANY_REQUESTS = com.nabto.edge.client.swig.Status.getTOO_MANY_REQUESTS();
+
+    /**
+     * The basestation rejected a connection due to unknown product ID
+     */
     public static int UNKNOWN_PRODUCT_ID = com.nabto.edge.client.swig.Status.getUNKNOWN_PRODUCT_ID();
+
+    /**
+     * The basestation rejected a connection due to unknown device ID
+     */
     public static int UNKNOWN_DEVICE_ID = com.nabto.edge.client.swig.Status.getUNKNOWN_DEVICE_ID();
+
+    /**
+     * The basestation rejected a connection due to unknown server key
+     */
     public static int UNKNOWN_SERVER_KEY = com.nabto.edge.client.swig.Status.getUNKNOWN_SERVER_KEY();
+
+    /**
+     * A connection was refused by the network
+     */
     public static int CONNECTION_REFUSED = com.nabto.edge.client.swig.Status.getCONNECTION_REFUSED();
+
+    /**
+     * An internal error occured
+     */
     public static int INTERNAL_ERROR = com.nabto.edge.client.swig.Status.getINTERNAL_ERROR();
 }
