@@ -22,18 +22,13 @@ public interface TcpTunnel {
     /**
      * Open this tunnel. Blocks until the tunnel is ready to use or an error occurs.
      *
-     * May throw a NabtoRuntimeException with one of the following error codes:
-     * ```
-     * NOT_FOUND if requesting an unknown service
-     * FORBIDDEN if target device did not allow opening a tunnel to specified service for the current client
-     * STOPPED if the tunnel is stopped.
-     * NOT_CONNECTED if the connection is not established yet.
-     * ```
-     * 
      * @param service The service to connect to on the remote device (as defined in the device's
      * configuration), e.g. "http", "http-admin", "ssh", "rtsp".
      * @param localPort The local port to listen on. If 0 is specified, an ephemeral port is used,
      * it can be retrieved with `getLocalPort()`.
+     * @throws NabtoRuntimeException with error code `FORBIDDEN` if the device did not allow opening the tunnel.
+     * @throws NabtoRuntimeException with error code `STOPPED` if the tunnel or a parent object is stopped.
+     * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not established yet.
      */
     public void open(String service, int localPort);
 
@@ -62,12 +57,9 @@ public interface TcpTunnel {
     public void closeCallback(NabtoCallback callback);
 
     /**
-     * Get the local port whic the tunnel is bound to.
-     * 
-     * Throws a NabtoRuntimeException with a INVALID_STATE error code
-     * if the tunnel is not opened.
-     * 
-     * 
+     * Get the local port which the tunnel is bound to.
+     *
+     * @throws NabtoRuntimeException with error code `INVALID_STATE` if the tunnel is not open.
      * @return the local port number used.
      */
     public int getLocalPort();

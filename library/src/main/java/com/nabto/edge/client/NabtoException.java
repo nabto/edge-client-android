@@ -9,7 +9,8 @@ public interface NabtoException {
 
     /**
      * Get the Nabto SDK error code wrapper object.
-     * @return the error code
+     *
+     * @return The underlying Nabto Edge Client SDK error code.
      */
     public ErrorCode getErrorCode();
 }

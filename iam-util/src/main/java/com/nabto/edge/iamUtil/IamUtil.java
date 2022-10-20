@@ -27,7 +27,7 @@ public abstract class IamUtil {
      *
      * Local open pairing uses the trusted local network (LAN) pairing mechanism. No password is required for pairing and no
      * invitation is needed, anybody on the LAN can initiate pairing.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-local
@@ -63,7 +63,7 @@ public abstract class IamUtil {
      *
      * In this mode, the initial user can be paired on the local network without providing a username or password - and
      * only the initial user. This is a typical bootstrap scenario to pair the admin user (device owner).
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#initial-local
@@ -83,7 +83,7 @@ public abstract class IamUtil {
      *
      * In this mode, the initial user can be paired on the local network without providing a username or password - and
      * only the initial user. This is a typical bootstrap scenario to pair the admin user (device owner).
-     * 
+     *
      * Error information is sent to the callback.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#initial-local
@@ -98,7 +98,7 @@ public abstract class IamUtil {
      *
      * In this mode a device has set a password which can be used in the pairing process to grant a client access to the
      * device. The client can pair remotely to the device if necessary; it is not necessary to be on the same LAN.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-password
@@ -124,7 +124,7 @@ public abstract class IamUtil {
      *
      * In this mode a device has set a password which can be used in the pairing process to grant a client access to the
      * device. The client can pair remotely to the device if necessary; it is not necessary to be on the same LAN.
-     * 
+     *
      * Error information is sent to the callback.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-password
@@ -141,7 +141,7 @@ public abstract class IamUtil {
      *
      * In the Password invite pairing mode a user is required in the system to be able to pair: An existing user (or
      * the system autonomously) creates a username and password that is somehow passed to the new user (an invitation).
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#invite
@@ -163,7 +163,7 @@ public abstract class IamUtil {
      *
      * In the Password invite pairing mode a user is required in the system to be able to pair: An existing user (or
      * the system autonomously) creates a username and password that is somehow passed to the new user (an invitation).
-     * 
+     *
      * Error information is sent to the callback.
      *
      * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#invite
@@ -177,7 +177,7 @@ public abstract class IamUtil {
 
     /**
      * Retrieve a list of the available pairing modes on the device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -190,7 +190,7 @@ public abstract class IamUtil {
 
     /**
      * Retrieve device information that typically does not need a paired user.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -205,7 +205,7 @@ public abstract class IamUtil {
      * Retrieve device information that typically does not need a paired user. Runs asynchronously with a callback.
      *
      * Error information is sent to the callback.
-     * 
+     *
      * @param connection An established connection to the device
      * @param callback The callback that will be run once the function has completed successfully or erroneously.
      */
@@ -213,7 +213,7 @@ public abstract class IamUtil {
 
     /**
      * Query if the current user is paired or not on a specific device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -226,7 +226,7 @@ public abstract class IamUtil {
      * Query if the current user is paired or not on a specific device. Runs asynchronously with a callback.
      *
      * Result and error information is sent to the callback.
-     * 
+     *
      * @param connection An established connection to the device.
      * @param callback The callback that will be run once the function has completed successfully or erroneously.
      */
@@ -234,10 +234,11 @@ public abstract class IamUtil {
 
     /**
      * Get details about a specific user.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
+     * @param username Username of the user to get
      *
      * @throws USER_DOES_NOT_EXIST if the user does not exist on the device
      * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this user  (the
@@ -251,15 +252,16 @@ public abstract class IamUtil {
      * Get details about a specific user. Runs asynchronously with a callback.
      *
      * Result and error information is sent to the callback.
-     * 
+     *
      * @param connection An established connection to the device
+     * @param username Username of the user to get
      * @param callback The callback that will be run once the function has completed successfully or erroneously.
      */
     public abstract void getUserCallback(Connection connection, String username, IamCallback<IamUser> cb);
 
     /**
      * Get details about the user that has opened the current connection to the device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -272,9 +274,9 @@ public abstract class IamUtil {
 
     /**
      * Get details about the user that has opened the current connection to the device. Runs asynchronously with a callback.
-     * 
+     *
      * Result and error information is sent to the callback.
-     * 
+     *
      * @param connection An established connection to the device
      * @param callback The callback that will be run once the function has completed successfully or erroneously.
      */
@@ -282,7 +284,7 @@ public abstract class IamUtil {
 
     /**
      * Create an IAM user on device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of users and roles.
@@ -301,9 +303,9 @@ public abstract class IamUtil {
 
     /**
      * Create an IAM user on device. Runs asynchronously with a callback.
-     * 
+     *
      * Result and error information is sent to the callback.
-     * 
+     *
      * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of users and roles.
      *
      * @param connection An established connection to the device
@@ -316,7 +318,7 @@ public abstract class IamUtil {
 
     /**
      * Update an IAM user's password on device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -332,7 +334,7 @@ public abstract class IamUtil {
      * Update an IAM user's password on device. Runs asynchronously with a callback.
      *
      * Result and error information is sent to the callback.
-     * 
+     *
      * @param connection An established connection to the device
      * @param username Username for the user that should have password updated
      * @param password New password for the user
@@ -346,7 +348,7 @@ public abstract class IamUtil {
      * Known issue: This function currently assumes the user exists. To be able to interpret the
      * ROLE_DOES_NOT_EXIST code correctly, this assumption most hold. Later it can gracefully handle
      * non-existing users
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of roles.
@@ -370,7 +372,7 @@ public abstract class IamUtil {
      * non-existing users
      *
      * Result and error information is sent to the callback.
-     * 
+     *
      * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of roles.
      *
      * @param connection An established connection to the device
@@ -382,7 +384,7 @@ public abstract class IamUtil {
 
     /**
      * Update an IAM user's display name on device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -397,7 +399,7 @@ public abstract class IamUtil {
 
     /**
      * Update an IAM user's display name on device. Runs asynchronously with a callback.
-     * 
+     *
      * Result and error information is sent to the callback.
      *
      * @param connection An established connection to the device
@@ -409,7 +411,7 @@ public abstract class IamUtil {
 
     /**
      * Update an IAM user's username on device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
@@ -425,7 +427,7 @@ public abstract class IamUtil {
 
     /**
      * Update an IAM user's username on device. Runs asynchronously with a callback.
-     * 
+     *
      * Result and error information is sent to the callback.
      *
      * @param connection An established connection to the device
@@ -437,10 +439,11 @@ public abstract class IamUtil {
 
     /**
      * Delete the specified user from device.
-     * 
+     *
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
+     * @param username Username of the user to delete
      *
      * @throws USER_DOES_NOT_EXIST if the specified user does not exist on the device
      * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow deleting this user (the
@@ -451,10 +454,11 @@ public abstract class IamUtil {
 
     /**
      * Delete the specified user from device. Runs asynchronously with a callback.
-     * 
+     *
      * Result and error information is sent to the callback.
      *
      * @param connection An established connection to the device
+     * @param username Username of the user to delete
      * @param callback The callback that will be run once the function has completed successfully or erroneously.
      */
     public abstract void deleteUserCallback(Connection connection, String username, IamCallback cb);

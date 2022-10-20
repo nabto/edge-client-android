@@ -15,6 +15,8 @@ public class NabtoRuntimeException extends RuntimeException implements NabtoExce
 
     /**
      * Access the underlying Nabto Edge Client SDK error code.
+     *
+     * @return The underlying Nabto Edge Client SDK error code.
      */
     public ErrorCode getErrorCode() {
         return new ErrorCode(origin.status().getErrorCode());

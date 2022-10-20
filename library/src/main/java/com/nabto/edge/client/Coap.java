@@ -41,20 +41,17 @@ public interface Coap {
     /**
      * Set the payload for the request.
      *
-     * @param contentFormat a contentformat.
-     * @param payload the payload.
+     * @param contentFormat Contentformat of the payload.
+     * @param payload The payload to set.
      */
     void setRequestPayload(int contentFormat, byte[] payload);
 
     /**
      * Executes the request and blocks until the request is complete.
-     * 
-     * May throw a NabtoRuntimeException with one of the following error codes:
-     * ```
-     * TIMEOUT if the request timed out (took more than 2 minutes.)
-     * STOPPED if the coap request or a parent object is stopped.
-     * NOT_CONNECTED if the connection is not established yet.
-     * ```
+     *
+     * @throws NabtoRuntimeException with error code `TIMEOUT` if the request timed out (took more than 2 minutes.)
+     * @throws NabtoRuntimeException with error code `STOPPED` if the coap request or a parent object is stopped.
+     * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not established yet.
      */
     void execute();
 
@@ -69,9 +66,7 @@ public interface Coap {
     /**
      * Return status code returned from the server e.g. 204.
      *
-     * Throws a NabtoRuntimeException with a INVALID_STATE error code.
-     * if there's no response yet.
-     * 
+     * @throws NabtoRuntimeException with error code `INVALID_STATE` if the response is not available.
      * @return the status code, e.g. 204
      */
     int getResponseStatusCode();
@@ -79,12 +74,8 @@ public interface Coap {
     /**
      * Get response content format.
      *
-     * May throw a NabtoRuntimeException with one of the following error codes:
-     * ```
-     * NO_DATA if the response does not have a content format.
-     * INVALID_STATE if no response is ready yet.
-     * ```
-     * 
+     * @throws NabtoRuntimeException with error code `NO_DATA` if the response does not include a content format.
+     * @throws NabtoRuntimeException with error code `INVALID_STATE` if the response is not available.
      * @return the response content format or -1 if no content format is set in the response.
      */
     int getResponseContentFormat();
@@ -92,12 +83,8 @@ public interface Coap {
     /**
      * Get response payload
      *
-     * May throw a NabtoRuntimeException with one of the following error codes:
-     * ```
-     * NO_DATA if the response does not have a payload.
-     * INVALID_STATE if no response is ready yet.
-     * ```
-     * 
+     * @throws NabtoRuntimeException with error code `NO_DATA` if the response does not include a content format.
+     * @throws NabtoRuntimeException with error code `INVALID_STATE` if the response is not available.
      * @return The payload. If the response has no payload, the empty buffer is returned.
      */
     byte[] getResponsePayload();

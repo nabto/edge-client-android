@@ -27,7 +27,7 @@ public class DeviceDetails {
     private String deviceId;
 
     @JsonCreator
-    /**
+    /*
      * Create an instance.
      */
     public DeviceDetails(
@@ -49,6 +49,8 @@ public class DeviceDetails {
     @NotNull
     /**
      * Pairing modes currently available for use by the client.
+     *
+     * @return Array of available pairing modes.
      */
     public String[] getModes() {
         return modes;
@@ -57,6 +59,8 @@ public class DeviceDetails {
     @NotNull
     /**
      * The version of the Nabto Edge Embedded SDK.
+     *
+     * @return The SDK version of the device
      */
     public String getNabtoVersion() {
         return nabtoVersion;
@@ -65,6 +69,8 @@ public class DeviceDetails {
     @Nullable
     /**
      * The vendor assigned application version.
+     *
+     * @return The App version of the device
      */
     public String getAppVersion() {
         return appVersion;
@@ -73,6 +79,8 @@ public class DeviceDetails {
     @Nullable
     /**
      * The vendor assigned application name.
+     *
+     * @return The App name of the device
      */
     public String getAppName() {
         return appName;
@@ -81,6 +89,8 @@ public class DeviceDetails {
     @NotNull
     /**
      * The device's product id.
+     *
+     * @return The product ID of the device
      */
     public String getProductId() {
         return productId;
@@ -89,6 +99,8 @@ public class DeviceDetails {
     @NotNull
     /**
      * The device's device id.
+     *
+     * @return The device ID of the device
      */
     public String getDeviceId() {
         return deviceId;

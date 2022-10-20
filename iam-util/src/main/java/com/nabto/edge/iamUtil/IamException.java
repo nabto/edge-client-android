@@ -2,6 +2,9 @@ package com.nabto.edge.iamutil;
 
 import java.lang.RuntimeException;
 
+/**
+ * Runtime exception wrapper for IamError codes
+ */
 public class IamException extends RuntimeException {
     private IamError error;
 
@@ -15,6 +18,11 @@ public class IamException extends RuntimeException {
         this.error = error;
     }
 
+    /**
+     * Get the IAM error.
+     *
+     * @return The underlying IAM error.
+     */
     public IamError getError() {
         return error;
     }

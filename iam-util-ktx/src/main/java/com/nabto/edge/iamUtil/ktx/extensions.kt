@@ -23,7 +23,7 @@ internal suspend fun <T> iamWrapper(
  *
  * Local open pairing uses the trusted local network (LAN) pairing mechanism. No password is required for pairing and no
  * invitation is needed, anybody on the LAN can initiate pairing.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-local
@@ -39,7 +39,7 @@ internal suspend fun <T> iamWrapper(
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
 suspend fun IamUtil.awaitPairLocalOpen(
-    connection: Connection, 
+    connection: Connection,
     desiredUsername: String,
 ) {
     iamWrapper<Unit> { callback ->
@@ -52,7 +52,7 @@ suspend fun IamUtil.awaitPairLocalOpen(
  *
  * In this mode, the initial user can be paired on the local network without providing a username or password - and
  * only the initial user. This is a typical bootstrap scenario to pair the admin user (device owner).
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#initial-local
@@ -78,7 +78,7 @@ suspend fun IamUtil.awaitPairLocalInitial(
  *
  * In this mode a device has set a password which can be used in the pairing process to grant a client access to the
  * device. The client can pair remotely to the device if necessary; it is not necessary to be on the same LAN.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-password
@@ -101,7 +101,7 @@ suspend fun IamUtil.awaitPairPasswordOpen(
     desiredUsername: String,
     password: String,
 ) {
-    iamWrapper<Unit> { callback -> 
+    iamWrapper<Unit> { callback ->
         this@awaitPairPasswordOpen.pairPasswordOpenCallback(connection, desiredUsername, password, callback)
     }
 }
@@ -111,7 +111,7 @@ suspend fun IamUtil.awaitPairPasswordOpen(
  *
  * In the Password invite pairing mode a user is required in the system to be able to pair: An existing user (or
  * the system autonomously) creates a username and password that is somehow passed to the new user (an invitation).
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#invite
@@ -129,16 +129,16 @@ suspend fun IamUtil.awaitPairPasswordOpen(
 suspend fun IamUtil.awaitPairPasswordInvite(
     connection: Connection,
     username: String,
-    password: String
+    password: String,
 ) {
-    iamWrapper<Unit> { callback -> 
+    iamWrapper<Unit> { callback ->
         this@awaitPairPasswordInvite.pairPasswordInviteCallback(connection, username, password, callback)
     }
 }
 
 /**
  * Retrieve device information that typically does not need a paired user.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
@@ -148,7 +148,7 @@ suspend fun IamUtil.awaitPairPasswordInvite(
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
 suspend fun IamUtil.awaitGetDeviceDetails(
-    connection: Connection
+    connection: Connection,
 ): DeviceDetails {
     return iamWrapper<DeviceDetails>({ callback ->
         this@awaitGetDeviceDetails.getDeviceDetailsCallback(connection, callback)
@@ -157,7 +157,7 @@ suspend fun IamUtil.awaitGetDeviceDetails(
 
 /**
  * Query if the current user is paired or not on a specific device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
@@ -165,19 +165,20 @@ suspend fun IamUtil.awaitGetDeviceDetails(
  * @return true iff the current user is paired with the device
  */
 suspend fun IamUtil.awaitIsCurrentUserPaired(
-    connection: Connection
+    connection: Connection,
 ): Boolean {
-    return iamWrapper<Boolean>({ callback -> 
+    return iamWrapper<Boolean>({ callback ->
         this@awaitIsCurrentUserPaired.isCurrentUserPairedCallback(connection, callback)
     }).get()
 }
 
 /**
  * Get details about a specific user.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
+ * @param username Username of the user to get
  *
  * @throws USER_DOES_NOT_EXIST if the user does not exist on the device
  * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this user  (the
@@ -187,16 +188,16 @@ suspend fun IamUtil.awaitIsCurrentUserPaired(
  */
 suspend fun IamUtil.awaitGetUser(
     connection: Connection,
-    username: String
+    username: String,
 ): IamUser {
-    return iamWrapper<IamUser>({ callback -> 
+    return iamWrapper<IamUser>({ callback ->
         this@awaitGetUser.getUserCallback(connection, username, callback)
     }).get()
 }
 
 /**
  * Get details about the user that has opened the current connection to the device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
@@ -208,14 +209,14 @@ suspend fun IamUtil.awaitGetUser(
 suspend fun IamUtil.awaitGetCurrentUser(
     connection: Connection,
 ): IamUser {
-    return iamWrapper<IamUser>({ callback -> 
+    return iamWrapper<IamUser>({ callback ->
         this@awaitGetCurrentUser.getCurrentUserCallback(connection, callback)
     }).get()
 }
 
 /**
  * Create an IAM user on device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of users and roles.
@@ -234,16 +235,16 @@ suspend fun IamUtil.awaitCreateUser(
     connection: Connection,
     username: String,
     password: String,
-    role: String
+    role: String,
 ) {
-    iamWrapper<Unit> { callback -> 
+    iamWrapper<Unit> { callback ->
         this@awaitCreateUser.createUserCallback(connection, username, password, role, callback);
     }
 }
 
 /**
  * Update an IAM user's password on device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
@@ -269,7 +270,7 @@ suspend fun IamUtil.awaitUpdateUserPassword(
  * Known issue: This function currently assumes the user exists. To be able to interpret the
  * ROLE_DOES_NOT_EXIST code correctly, this assumption most hold. Later it can gracefully handle
  * non-existing users
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of roles.
@@ -295,7 +296,7 @@ suspend fun IamUtil.awaitUpdateUserRole(
 
 /**
  * Update an IAM user's display name on device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
@@ -311,14 +312,14 @@ suspend fun IamUtil.awaitUpdateUserDisplayName(
     username: String,
     displayName: String,
 ) {
-    iamWrapper<Unit> { callback -> 
+    iamWrapper<Unit> { callback ->
         this@awaitUpdateUserDisplayName.updateUserDisplayNameCallback(connection, username, displayName, callback)
     }
 }
 
 /**
  * Update an IAM user's username on device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
@@ -335,17 +336,18 @@ suspend fun IamUtil.awaitRenameUser(
     username: String,
     newUsername: String,
 ) {
-    iamWrapper<Unit> { callback -> 
+    iamWrapper<Unit> { callback ->
         this@awaitRenameUser.renameUserCallback(connection, username, newUsername, callback)
     }
 }
 
 /**
  * Delete the specified user from device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
+ * @param username Username of the user to delete
  *
  * @throws USER_DOES_NOT_EXIST if the specified user does not exist on the device
  * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow deleting this user (the
