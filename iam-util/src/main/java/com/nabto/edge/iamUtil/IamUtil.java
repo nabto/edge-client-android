@@ -18,6 +18,12 @@ import com.nabto.edge.client.Connection;
  * be enabled at runtime. Read more about that in the general IAM intro here: https://docs.nabto.com/developer/guides/concepts/iam/intro.html
  */
 public abstract class IamUtil {
+
+    /**
+     * Create IamUtil instance to perform IAM operations through.
+     *
+     * @return Created IamUtil object
+     */
     public static IamUtil create() {
         return new IamImpl();
     }
