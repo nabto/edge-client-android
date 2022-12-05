@@ -10,7 +10,7 @@ import com.nabto.edge.client.NabtoNoChannelsException;
 import com.nabto.edge.client.Stream;
 import com.nabto.edge.client.TcpTunnel;
 import com.nabto.edge.client.NabtoCallback;
-import com.nabto.edge.client.ConnectCallback;
+import com.nabto.edge.client.ErrorCode;
 import com.nabto.edge.client.swig.FutureCallback;
 
 import java.util.HashMap;
@@ -149,20 +149,16 @@ public class ConnectionImpl implements Connection {
         connection.connect().callback(Util.makeFutureCallback(callback));
     }
 
-    public void connectCallbackEx(ConnectCallback callback) {
-        connection.connect().callback(new FutureCallback() {
-            public void run(com.nabto.edge.client.swig.Status status) {
-                int ec = status.getErrorCode();
-                if (ec == ErrorCodes.NO_CHANNELS) {
-                    int localEc = connection.getLocalChannelErrorCode();
-                    int remoteEc = connection.getRemoteChannelErrorCode();
-                    int directCandidatesEc = connection.getDirectCandidatesChannelErrorCode();
-                    callback.run(ec, localEc, remoteEc, directCandidatesEc);
-                } else {
-                    callback.run(ec, ErrorCodes.OK, ErrorCodes.OK, ErrorCodes.OK);
-                }
-            }
-        });
+    public ErrorCode getLocalChannelErrorCode() {
+        return new ErrorCode(connection.getLocalChannelErrorCode());
+    }
+
+    public ErrorCode getRemoteChannelErrorCode() {
+        return new ErrorCode(connection.getRemoteChannelErrorCode());
+    }
+
+    public ErrorCode getDirectCandidatesChannelErrorCode() {
+        return new ErrorCode(connection.getDirectCandidatesChannelErrorCode());
     }
 
     public void passwordAuthenticate(String username, String password) {
