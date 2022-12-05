@@ -14,9 +14,6 @@ private suspend fun <T> nabtoCoroutineWrapper(
             val exception = com.nabto.edge.client.swig.NabtoException(error)
             val cause = when (error) {
                 ErrorCodes.END_OF_FILE -> NabtoEOFException(exception)
-                // @TODO: We should make a NabtoNoChannelsException here
-                //        Not sure how to get the local and remote error codes...
-                //        They are internal to the ConnectionImpl class
                 ErrorCodes.NO_CHANNELS -> NabtoRuntimeException(exception)
                 else -> NabtoRuntimeException(exception)
             }
@@ -26,7 +23,6 @@ private suspend fun <T> nabtoCoroutineWrapper(
     register(callback)
 }
 
-// @TODO: when above todo is fixed, change NO_CHANNELS execption here as well
 /**
  * Open a connection as described for Connection.connect().
  *
@@ -37,8 +33,16 @@ private suspend fun <T> nabtoCoroutineWrapper(
  * @throws NabtoRuntimeException with error code `NO_CHANNELS` if a connection could not be established.
  */
 suspend fun Connection.awaitConnect() {
-    nabtoCoroutineWrapper<Unit> { callback ->
-        this@awaitConnect.connectCallback(callback)
+    return suspendCancellableCoroutine<Unit> { continuation ->
+        val callback = { error: Int, localError: Int, remoteError: Int, directCandidatesError: Int ->
+            if (error == ErrorCodes.OK) {
+                continuation.resumeWith(Result.success(Unit))
+            } else {
+                val cause = NabtoNoChannelsException(localError, remoteError, directCandidatesError)
+                continuation.resumeWith(Result.failure(cause))
+            }
+        }
+        this@awaitConnect.connectCallbackEx(callback);
     }
 }
 

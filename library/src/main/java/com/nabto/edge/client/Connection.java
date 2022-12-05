@@ -160,6 +160,14 @@ public interface Connection {
     public void connectCallback(NabtoCallback callback);
 
     /**
+     * Connect a connection, run callback once connection is established.
+     * See the `connect()` function for error codes that the callback may give.
+     *
+     * @param callback The callback that will be run once the operation is done.
+     */
+    public void connectCallbackEx(ConnectCallback callback);
+
+    /**
      * Password authenticate a connection.
      *
      * This function blocks until the exchange is done or an exception
