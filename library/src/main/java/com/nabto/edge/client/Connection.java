@@ -160,12 +160,47 @@ public interface Connection {
     public void connectCallback(NabtoCallback callback);
 
     /**
-     * Connect a connection, run callback once connection is established.
-     * See the `connect()` function for error codes that the callback may give.
+     * Get underlying error code on local channel.
      *
-     * @param callback The callback that will be run once the operation is done.
+     * Possible local channel error code are:
+     *
+     * - `NOT_FOUND` if the device was not found locally
+     * - `NONE` if mDNS discovery was not enabled
+     *
+     * @return the local channel error code
      */
-    public void connectCallbackEx(ConnectCallback callback);
+    public ErrorCode getLocalChannelErrorCode();
+
+    /**
+     * Get underlying error code on remote channel.
+     *
+     * Possible remote channel error code are:
+     *
+     * - `NOT_ATTACHED` if the target remote device is not attached to the basestation
+     * - `TIMEOUT` if a timeout occured when connecting to the basestation.
+     * - `FORBIDDEN` if the basestation request is rejected
+     * - `TOKEN_REJECTED` if the basestation rejected based on an invalid SCT or JWT
+     * - `DNS` if the server URL failed to resolve
+     * - `UNKNOWN_SERVER_KEY` if the provided server key was not known by the basestation
+     * - `UNKNOWN_PRODUCT_ID` if the provided product ID was not known by the basestation
+     * - `UNKNOWN_DEVICE_ID` if the provided device ID was not known by the basestation
+     * - `NONE` if remote relay was not enabled
+     *
+     * @return the remote channel error code
+     */
+    public ErrorCode getRemoteChannelErrorCode();
+    
+    /**
+     * Get the direct channel error code.
+     *
+     * Possible direct channel error code are:
+     *
+     * - `NOT_FOUND` if no responses was received on any added direct channels
+     * - `NONE` if direct channels was not enabled
+     *
+     * @return the direct channel error code
+     */
+    public ErrorCode getDirectCandidatesChannelErrorCode();
 
     /**
      * Password authenticate a connection.
