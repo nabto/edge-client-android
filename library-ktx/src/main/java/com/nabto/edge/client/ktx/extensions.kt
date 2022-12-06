@@ -34,7 +34,7 @@ private suspend fun <T> nabtoCoroutineWrapper(
  */
 suspend fun Connection.awaitConnect() {
     suspendCancellableCoroutine<Optional<Unit>> { continuation ->
-        val callback = { error: Int, opt: Optional<Unit> ->
+        val callback = NabtoCallback<Unit> { error, opt ->
             if (error == ErrorCodes.OK) {
                 continuation.resumeWith(Result.success(opt))
             } else {
@@ -51,7 +51,7 @@ suspend fun Connection.awaitConnect() {
                 continuation.resumeWith(Result.failure(cause))
             }
         }
-        this@awaitConnect.connectCallback(callback as NabtoCallback<Unit>);
+        this@awaitConnect.connectCallback(callback);
     }
 }
 
