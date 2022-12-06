@@ -10,5 +10,6 @@ public enum IamPath {
     GET_USER,
     CREATE_USER,
     UPDATE_USER,
-    DELETE_USER
+    DELETE_USER,
+    GET_ROLES
 }
