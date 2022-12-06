@@ -60,7 +60,7 @@ public class MdnsTest {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-
+        client.setLogLevel("trace");
         LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
         client.addMdnsResultListener(rl);
