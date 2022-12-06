@@ -16,6 +16,23 @@ All non tagged builds are put into the snapshot repository at  https://s01.oss.s
 
 All tagged releases are going to the staging repository where they need to be accepted before they can go to the maven central repository.
 
+## Prerequisites
+You will need JDK, Android SDK, a C/C++ compiler, cmake and swig
+you can use the JDK + Android SDK that come with Android Studio or install them manually.
+
+Installing Android SDK manually can be done by downloading command-line tools from https://developer.android.com/studio#downloads and then following the guide on https://developer.android.com/studio/command-line/sdkmanager and then use sdkmanager to install the required packages
+
+The repository contains submodules that must be cloned recursively before building. Below is an example for first time building on Linux. `<ANDROID SDK>` refers to the directory where your Android SDK installation lives.
+```
+sudo apt install build-essential cmake swig
+git clone git@github.com:nabto/edge-client-android.git
+cd edge-client-android
+git submodule update --init --recursive
+echo "sdk.dir=<ANDROID SDK>" > local.properties      // not needed if ANDROID_HOME env var is set
+./gradlew build
+```
+You may need to manually run `generate_swig.sh` inside the `library` folder if you are getting errors about swig classes not being found.
+
 ## Building the library
 
 Run `./gradlew build`

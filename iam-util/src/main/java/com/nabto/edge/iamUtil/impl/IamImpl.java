@@ -11,6 +11,7 @@ import com.nabto.edge.client.*;
 import com.nabto.edge.client.Coap.ContentFormat;
 
 public class IamImpl extends IamUtil {
+    @Override
     public void pairLocalOpen(Connection connection, String desiredUsername) {
         IamComposer composer = new IamComposer();
         composer
@@ -27,6 +28,7 @@ public class IamImpl extends IamUtil {
             .maybeThrow();
     }
 
+    @Override
     public void pairLocalOpenCallback(Connection connection, String desiredUsername, IamCallback cb) {
         IamComposerAsync composer = new IamComposerAsync();
         composer
@@ -43,6 +45,7 @@ public class IamImpl extends IamUtil {
             .execute();
     }
 
+    @Override
     public void pairLocalInitial(Connection connection) {
         IamComposer composer = new IamComposer();
         composer
@@ -57,6 +60,7 @@ public class IamImpl extends IamUtil {
             .maybeThrow();
     }
 
+    @Override
     public void pairLocalInitialCallback(Connection connection, IamCallback cb) {
         IamComposerAsync composer = new IamComposerAsync();
         composer
@@ -83,6 +87,7 @@ public class IamImpl extends IamUtil {
         }
     }
 
+    @Override
     public void pairPasswordOpen(Connection connection, String desiredUsername, String password) {
         passwordAuthenticate(connection, "", password);
         IamComposer composer = new IamComposer();
@@ -100,6 +105,7 @@ public class IamImpl extends IamUtil {
             .maybeThrow();
     }
 
+    @Override
     public void pairPasswordOpenCallback(Connection connection, String desiredUsername, String password, IamCallback cb) {
         connection.passwordAuthenticateCallback("", password, (ec, arg) -> {
             if (ec != ErrorCodes.OK) {
@@ -126,6 +132,7 @@ public class IamImpl extends IamUtil {
         });
     }
 
+    @Override
     public void pairPasswordInvite(Connection connection, String username, String password) {
         passwordAuthenticate(connection, username, password);
         IamComposer composer = new IamComposer();
@@ -140,6 +147,7 @@ public class IamImpl extends IamUtil {
             .maybeThrow();
     }
 
+    @Override
     public void pairPasswordInviteCallback(Connection connection, String username, String password, IamCallback cb) {
         connection.passwordAuthenticateCallback(username, password, (ec, arg) -> {
             if (ec != ErrorCodes.OK) {
@@ -163,6 +171,7 @@ public class IamImpl extends IamUtil {
         });
     }
 
+    @Override
     public PairingMode[] getAvailablePairingModes(Connection connection) {
         DeviceDetails details = getDeviceDetails(connection);
         ArrayList<PairingMode> list = new ArrayList<>();
@@ -180,6 +189,7 @@ public class IamImpl extends IamUtil {
         return list.toArray(new PairingMode[list.size()]);
     }
 
+    @Override
     public DeviceDetails getDeviceDetails(Connection connection) {
         IamComposer composer = new IamComposer();
         DeviceDetails details = composer
@@ -195,6 +205,7 @@ public class IamImpl extends IamUtil {
         return details;
     }
 
+    @Override
     public void getDeviceDetailsCallback(Connection connection, IamCallback<DeviceDetails> cb) {
         IamComposerAsync<DeviceDetails> composer = new IamComposerAsync<>();
         composer
@@ -209,6 +220,7 @@ public class IamImpl extends IamUtil {
             .execute(false);
     }
 
+    @Override
     public boolean isCurrentUserPaired(Connection connection) {
         IamComposer composer = new IamComposer();
         int status = composer
@@ -228,6 +240,7 @@ public class IamImpl extends IamUtil {
         }
     }
 
+    @Override
     public void isCurrentUserPairedCallback(Connection connection, IamCallback<Boolean> cb) {
         IamComposerAsync<Boolean> composer = new IamComposerAsync<>();
         composer
@@ -245,6 +258,7 @@ public class IamImpl extends IamUtil {
             .execute();
     }
 
+    @Override
     public IamUser getUser(Connection connection, String username) {
         IamComposer composer = new IamComposer();
         IamUser user = composer
@@ -260,6 +274,7 @@ public class IamImpl extends IamUtil {
         return user;
     }
 
+    @Override
     public void getUserCallback(Connection connection, String username, IamCallback<IamUser> cb) {
         IamComposerAsync<IamUser> composer = new IamComposerAsync<>();
         composer
@@ -274,6 +289,7 @@ public class IamImpl extends IamUtil {
             .execute();
     }
 
+    @Override
     public IamUser getCurrentUser(Connection connection) {
         IamComposer composer = new IamComposer();
         IamUser user = composer
@@ -289,6 +305,7 @@ public class IamImpl extends IamUtil {
         return user;
     }
 
+    @Override
     public void getCurrentUserCallback(Connection connection, IamCallback<IamUser> cb) {
         IamComposerAsync<IamUser> composer = new IamComposerAsync<>();
         composer
@@ -299,6 +316,35 @@ public class IamImpl extends IamUtil {
                 {205, IamError.NONE},
                 {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
                 {404, IamError.USER_DOES_NOT_EXIST}
+            })
+            .execute();
+    }
+
+    @Override
+    public String[] getAvailableRoles(Connection connection) {
+        IamComposer composer = new IamComposer();
+        String[] result = composer
+            .start(connection, IamPath.GET_ROLES)
+            .withMap(new Object[][] {
+                {205, IamError.NONE},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION}
+            })
+            .execute()
+            .maybeThrow()
+            .decodePayload(String[].class);
+        return result;
+    }
+
+    @Override
+    public void getAvailableRolesCallback(Connection connection, IamCallback<String[]> cb) {
+        IamComposerAsync<String[]> composer = new IamComposerAsync<>();
+        composer
+            .start(connection, IamPath.GET_ROLES)
+            .withResultType(String[].class)
+            .withUserCallback(cb)
+            .withMap(new Object[][] {
+                {205, IamError.NONE},
+                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION}
             })
             .execute();
     }
@@ -338,6 +384,7 @@ public class IamImpl extends IamUtil {
             .execute();
     }
 
+    @Override
     public void createUser(Connection connection, String username, String password, String role) {
         IamComposer composer = new IamComposer();
         composer
@@ -355,6 +402,7 @@ public class IamImpl extends IamUtil {
         updateUser(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST);
     }
 
+    @Override
     public void createUserCallback(Connection connection, String username, String password, String role, IamCallback cb)
     {
         IamComposerAsync composer = new IamComposerAsync();
@@ -387,38 +435,47 @@ public class IamImpl extends IamUtil {
             .execute();
     }
 
+    @Override
     public void updateUserPassword(Connection connection, String username, String password) {
         updateUser(connection, username, "password", password, IamError.USER_DOES_NOT_EXIST);
     }
 
+    @Override
     public void updateUserPasswordCallback(Connection connection, String username, String password, IamCallback cb) {
         updateUserCallback(connection, username, "password", password, IamError.USER_DOES_NOT_EXIST, cb);
     }
 
+    @Override
     public void updateUserRole(Connection connection, String username, String role) {
         updateUser(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST);
     }
 
+    @Override
     public void updateUserRoleCallback(Connection connection, String username, String role, IamCallback cb) {
         updateUserCallback(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST, cb);
     }
 
+    @Override
     public void updateUserDisplayName(Connection connection, String username, String displayName) {
         updateUser(connection, username, "display-name", displayName, IamError.USER_DOES_NOT_EXIST);
     }
 
+    @Override
     public void updateUserDisplayNameCallback(Connection connection, String username, String displayName, IamCallback cb) {
         updateUserCallback(connection, username, "display-name", displayName, IamError.USER_DOES_NOT_EXIST, cb);
     }
 
+    @Override
     public void renameUser(Connection connection, String username, String newUsername) {
         updateUser(connection, username, "username", newUsername, IamError.USER_DOES_NOT_EXIST);
     }
 
+    @Override
     public void renameUserCallback(Connection connection, String username, String newUsername, IamCallback cb) {
         updateUserCallback(connection, username, "username", newUsername, IamError.USER_DOES_NOT_EXIST, cb);
     }
 
+    @Override
     public void deleteUser(Connection connection, String username) {
         IamComposer composer = new IamComposer();
         composer
@@ -432,6 +489,7 @@ public class IamImpl extends IamUtil {
             .maybeThrow();
     }
 
+    @Override
     public void deleteUserCallback(Connection connection, String username, IamCallback cb) {
         IamComposerAsync composer = new IamComposerAsync();
         composer

@@ -5,6 +5,7 @@ import java.math.BigInteger;
 
 import android.content.Context;
 
+import com.nabto.edge.client.MdnsScanner;
 import com.nabto.edge.client.impl.NabtoClientImpl;
 
 /**
@@ -56,6 +57,20 @@ public abstract class NabtoClient {
      * @return The created connection.
      */
     public abstract Connection createConnection();
+
+    /**
+     * Create an MdnsScanner to scan for devices using mDNS.
+     * Fundamentally just uses the NabtoClient.addMdnsResultListener method.
+     */
+    public abstract MdnsScanner createMdnsScanner();
+
+    /**
+     * Create an MdnsScanner to scan for devices using mDNS with a specific subtype.
+     * Fundamentally just uses the NabtoClient.addMdnsResultListener method.
+     *
+     * @param subtype The subtype to scan for.
+     */
+    public abstract MdnsScanner createMdnsScanner(String subtype);
 
     /**
      * Add a listener for mdns results.

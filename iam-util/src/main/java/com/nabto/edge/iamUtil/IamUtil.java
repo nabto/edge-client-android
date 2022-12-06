@@ -289,6 +289,27 @@ public abstract class IamUtil {
     public abstract void getCurrentUserCallback(Connection connection, IamCallback<IamUser> cb);
 
     /**
+    * Retrieve the roles that a user can be assigned on this device.
+    * 
+    * @param connection An established connection to the device
+    *
+    * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this list
+    * (requires the `IAM:ListRoles` permission)
+    * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+    */
+    public abstract String[] getAvailableRoles(Connection connection);
+
+    /**
+    * Retrieve the roles that a user can be assigned on this device. Runs asynchronously with a callback.
+    *
+    * Result and error information is sent to the callback.
+    * 
+    * @param connection An established connection to the device
+    * @param callback The callback that will be run once the function has completed successfully or erroneously.
+    */
+    public abstract void getAvailableRolesCallback(Connection connection, IamCallback<String[]> cb);
+
+    /**
      * Create an IAM user on device.
      *
      * This function blocks until it has succeeded.

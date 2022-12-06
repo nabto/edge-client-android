@@ -66,6 +66,17 @@ public class NabtoClientImpl extends NabtoClient {
         context.setAndroidWifiNetworkHandle(BigInteger.valueOf(network.getNetworkHandle()));
     }
 
+
+    @Override
+    public MdnsScanner createMdnsScanner() {
+        return new MdnsScannerImpl(this, "");
+    }
+
+    @Override
+    public MdnsScanner createMdnsScanner(String subtype) {
+        return new MdnsScannerImpl(this, subtype);
+    }
+
     @Override
     public Connection createConnection() {
         return new ConnectionImpl(context.createConnection(), multicastLock, wifiLock);

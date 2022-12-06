@@ -68,6 +68,9 @@ public class IamImplUtil {
             case DELETE_USER:
                 return connection.createCoap("DELETE", String.format("/iam/users/%s", strings[0]));
 
+            case GET_ROLES:
+                return connection.createCoap("GET", "/iam/roles");
+
             default: throw new IllegalArgumentException("Enum switch is not exhaustive");
         }
     }

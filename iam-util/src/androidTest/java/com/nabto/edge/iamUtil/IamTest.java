@@ -1050,6 +1050,19 @@ public class IamTest {
         assertTrue(modesList.contains(PairingMode.LOCAL_OPEN));
     }
 
+    @Test
+    public void testGetAvailableRoles() {
+        LocalDevice dev = localPairLocalInitial;
+        connection = connectToDeviceWithAdminKey(dev);
+        IamUtil iam = IamUtil.create();
+        List<String> roles = Arrays.asList(iam.getAvailableRoles(connection));
+        List<String> expected = Arrays.asList("Unpaired", "Guest", "Standard", "Administrator");
+
+        assertTrue(roles.size() == expected.size() &&
+                   roles.containsAll(expected) &&
+                   expected.containsAll(roles));
+    }
+
     private String createAdminAndGuest(Connection connection, LocalDevice dev, String guestPassword) {
         String admin = uniqueUser();
         IamUtil iam = IamUtil.create();
