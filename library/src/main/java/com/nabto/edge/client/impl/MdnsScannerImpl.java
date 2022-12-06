@@ -33,6 +33,7 @@ public class MdnsScannerImpl extends com.nabto.edge.client.swig.FutureCallback i
             multicastLock.acquire();
             wifiLock.acquire();
             resolver = context.createMdnsResolver(subtype);
+            startWait();
         }
     }
 
