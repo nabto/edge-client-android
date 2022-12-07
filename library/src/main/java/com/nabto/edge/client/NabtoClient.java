@@ -58,27 +58,50 @@ public abstract class NabtoClient {
     public abstract Connection createConnection();
 
     /**
+     * Create an MdnsScanner to scan for devices using mDNS.
+     * Fundamentally just uses the NabtoClient.addMdnsResultListener method.
+     */
+    public abstract MdnsScanner createMdnsScanner();
+
+    /**
+     * Create an MdnsScanner to scan for devices using mDNS with a specific subtype.
+     * Fundamentally just uses the NabtoClient.addMdnsResultListener method.
+     *
+     * @param subtype The subtype to scan for.
+     */
+    public abstract MdnsScanner createMdnsScanner(String subtype);
+
+    /**
      * Add a listener for mdns results.
+     * @deprecated
+     * This method is deprecated in favor of using createMdnsScanner()
      *
      * Listen for mdns results.
      *
      * @param listener The mdns result listener to add.
      */
+    @Deprecated
     public abstract void addMdnsResultListener(MdnsResultListener listener);
 
     /**
-     * Add a mdns result listener which only returns results for the given subtype.
+     * DEPRECATED: Add a mdns result listener which only returns results for the given subtype.
+     * @deprecated
+     * This method is deprecated in favor of using createMdnsScanner()
      *
      * @param listener The mdns result listener to add.
      * @param subtype The subtype to listen for.
      */
+    @Deprecated
     public abstract void addMdnsResultListener(MdnsResultListener listener, String subtype);
 
     /**
      * Remove a mdns result listener.
+     * @deprecated
+     * This method is deprecated in favor of using createMdnsScanner()
      *
      * @param listener The mdns result listener to remove.
      */
+    @Deprecated
     public abstract void removeMdnsResultListener(MdnsResultListener listener);
 
     /**
