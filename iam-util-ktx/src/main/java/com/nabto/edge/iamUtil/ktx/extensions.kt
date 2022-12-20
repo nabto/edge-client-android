@@ -141,14 +141,12 @@ suspend fun IamUtil.awaitPairPasswordInvite(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * @param connection An established connection to the device
- *
  * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this list (the
  * `IAM:GetPairing` action is not set for the Unpaired role)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
  */
 suspend fun IamUtil.awaitGetDeviceDetails(
-    connection: Connection,
+    connection: Connection
 ): DeviceDetails {
     return iamWrapper<DeviceDetails>({ callback ->
         this@awaitGetDeviceDetails.getDeviceDetailsCallback(connection, callback)
@@ -158,7 +156,7 @@ suspend fun IamUtil.awaitGetDeviceDetails(
 
 /**
  * Retrieve the roles that a user can be assigned on this device.
- * 
+ *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
  * @param connection An established connection to the device
