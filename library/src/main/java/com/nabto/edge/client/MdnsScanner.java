@@ -1,5 +1,8 @@
 package com.nabto.edge.client;
 
+/**
+ * An MdnsScanner scans for local mDNS enabled devices.
+ */
 public interface MdnsScanner {
     /**
      * Start the scan for local devices using mDNS.
