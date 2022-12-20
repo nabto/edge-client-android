@@ -159,8 +159,6 @@ suspend fun IamUtil.awaitGetDeviceDetails(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * @param connection An established connection to the device
- *
  * @throws BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this list
  * (requires the `IAM:ListRoles` permission)
  * @throws IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
