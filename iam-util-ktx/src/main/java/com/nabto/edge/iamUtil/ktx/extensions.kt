@@ -26,7 +26,7 @@ internal suspend fun <T> iamWrapper(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-local
+ * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#open-local
  *
  * @param connection An established connection to the device this client should be paired with
  * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
@@ -55,7 +55,7 @@ suspend fun IamUtil.awaitPairLocalOpen(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#initial-local
+ * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#initial-local
  *
  * @param connection An established connection to the device this client should be paired with
  *
@@ -81,7 +81,7 @@ suspend fun IamUtil.awaitPairLocalInitial(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-password
+ * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#open-password
  *
  * @param connection An established connection to the device this client should be paired with
  * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
@@ -114,7 +114,7 @@ suspend fun IamUtil.awaitPairPasswordOpen(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#invite
+ * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#invite
  *
  * @param connection An established connection to the device this client should be paired with
  * @param username Username for the invited user
@@ -239,7 +239,7 @@ suspend fun IamUtil.awaitGetCurrentUser(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of users and roles.
+ * See https://docs.nabto.com/developer/guides/iam/intro.html for an intro to the concept of users and roles.
  *
  * @param connection An established connection to the device
  * @param username Username for the new user
@@ -293,7 +293,7 @@ suspend fun IamUtil.awaitUpdateUserPassword(
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the operation has completed.
  *
- * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of roles.
+ * See https://docs.nabto.com/developer/guides/iam/intro.html for an intro to the concept of roles.
  *
  * @param connection An established connection to the device
  * @param username Username for the user that should have password updated

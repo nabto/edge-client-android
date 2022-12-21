@@ -2,7 +2,7 @@ package com.nabto.edge.iamutil;
 
 /**
  * This enum represents different pairing modes that a device may support.
- * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html
+ * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html
  */
 public enum PairingMode {
     /**

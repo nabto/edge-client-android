@@ -9,13 +9,13 @@ import com.nabto.edge.client.Connection;
  * For instance, it is made simple to invoke the different pairing endpoints - just invoke a simple high level
  * pairing function to pair the client with the connected device and don't worry about CBOR encoding and decoding.
  *
- * Read more about the important concept of pairing here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html
+ * Read more about the important concept of pairing here: https://docs.nabto.com/developer/guides/iam/pairing.html
  *
  * All the most popular IAM device endpoints are wrapped to also allow management of the user profile on the device
  * (own or other users' if client is in admin role).
  *
  * Note that the device's IAM configuration must allow invocation of the different functions and the pairing modes must
- * be enabled at runtime. Read more about that in the general IAM intro here: https://docs.nabto.com/developer/guides/concepts/iam/intro.html
+ * be enabled at runtime. Read more about that in the general IAM intro here: https://docs.nabto.com/developer/guides/iam/intro.html
  */
 public abstract class IamUtil {
 
@@ -36,7 +36,7 @@ public abstract class IamUtil {
      *
      * This function blocks until it has succeeded.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-local
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#open-local
      *
      * @param connection An established connection to the device this client should be paired with
      * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
@@ -56,7 +56,7 @@ public abstract class IamUtil {
      * Local open pairing uses the trusted local network (LAN) pairing mechanism. No password is required for pairing and no
      * invitation is needed, anybody on the LAN can initiate pairing.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-local
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#open-local
      *
      * @param connection An established connection to the device this client should be paired with
      * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
@@ -72,7 +72,7 @@ public abstract class IamUtil {
      *
      * This function blocks until it has succeeded.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#initial-local
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#initial-local
      *
      * @param connection An established connection to the device this client should be paired with
      *
@@ -92,7 +92,7 @@ public abstract class IamUtil {
      *
      * Error information is sent to the callback.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#initial-local
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#initial-local
      *
      * @param connection An established connection to the device this client should be paired with
      * @param callback The callback that will be run once the function has completed successfully or erroneously.
@@ -107,7 +107,7 @@ public abstract class IamUtil {
      *
      * This function blocks until it has succeeded.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-password
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#open-password
      *
      * @param connection An established connection to the device this client should be paired with
      * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
@@ -133,7 +133,7 @@ public abstract class IamUtil {
      *
      * Error information is sent to the callback.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#open-password
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#open-password
      *
      * @param connection An established connection to the device this client should be paired with
      * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
@@ -150,7 +150,7 @@ public abstract class IamUtil {
      *
      * This function blocks until it has succeeded.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#invite
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#invite
      *
      * @param connection An established connection to the device this client should be paired with
      * @param username Username for the invited user
@@ -172,7 +172,7 @@ public abstract class IamUtil {
      *
      * Error information is sent to the callback.
      *
-     * Read more here: https://docs.nabto.com/developer/guides/concepts/iam/pairing.html#invite
+     * Read more here: https://docs.nabto.com/developer/guides/iam/pairing.html#invite
      *
      * @param connection An established connection to the device this client should be paired with
      * @param username Username for the invited user
@@ -314,7 +314,7 @@ public abstract class IamUtil {
      *
      * This function blocks until it has succeeded.
      *
-     * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of users and roles.
+     * See https://docs.nabto.com/developer/guides/iam/intro.html for an intro to the concept of users and roles.
      *
      * @param connection An established connection to the device
      * @param username Username for the new user
@@ -333,7 +333,7 @@ public abstract class IamUtil {
      *
      * Result and error information is sent to the callback.
      *
-     * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of users and roles.
+     * See https://docs.nabto.com/developer/guides/iam/intro.html for an intro to the concept of users and roles.
      *
      * @param connection An established connection to the device
      * @param username Username for the new user
@@ -378,7 +378,7 @@ public abstract class IamUtil {
      *
      * This function blocks until it has succeeded.
      *
-     * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of roles.
+     * See https://docs.nabto.com/developer/guides/iam/intro.html for an intro to the concept of roles.
      *
      * @param connection An established connection to the device
      * @param username Username for the user that should have password updated
@@ -400,7 +400,7 @@ public abstract class IamUtil {
      *
      * Result and error information is sent to the callback.
      *
-     * See https://docs.nabto.com/developer/guides/concepts/iam/intro.html for an intro to the concept of roles.
+     * See https://docs.nabto.com/developer/guides/iam/intro.html for an intro to the concept of roles.
      *
      * @param connection An established connection to the device
      * @param username Username for the user that should have password updated
