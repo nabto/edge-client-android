@@ -54,4 +54,33 @@ public class TunnelTest {
 
         connection.close();
     }
+
+    @Test
+    public void multipleTunnels() throws Exception {
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection1 = Helper.createTunnelConnection(client);
+        Connection connection2 = Helper.createTunnelConnection(client);
+        connection1.connect();
+        connection2.connect();
+        TcpTunnel tunnel1 = connection1.createTcpTunnel();
+        TcpTunnel tunnel2 = connection2.createTcpTunnel();
+        tunnel1.open("http", 0);
+        tunnel2.open("http", 0);
+        int localPort1 = tunnel1.getLocalPort();
+        int localPort2 = tunnel2.getLocalPort();
+
+        URL url1 = new URL("http://127.0.0.1:"+localPort1+"/");
+        URL url2 = new URL("http://127.0.0.1:"+localPort2+"/");
+        HttpURLConnection urlConnection1 = (HttpURLConnection) url1.openConnection();
+        HttpURLConnection urlConnection2 = (HttpURLConnection) url2.openConnection();
+        assertEquals(200, urlConnection1.getResponseCode());
+        assertEquals(200, urlConnection2.getResponseCode());
+        urlConnection1.disconnect();
+        urlConnection2.disconnect();
+
+
+        connection1.close();
+        connection2.close();
+    }
+
 }
