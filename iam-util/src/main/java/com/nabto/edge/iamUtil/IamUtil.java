@@ -41,12 +41,12 @@ public abstract class IamUtil {
      * @param connection An established connection to the device this client should be paired with
      * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
      *
-     * @throws IamException with IamError USERNAME_EXISTS if desiredUsername is already in use on the device
-     * @throws IamException with IamError INVALID_INPUT if desiredUsername is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not support local open pairing (the `IAM:PairingLocalOpen` action
+     * @throws IamException with IamError `USERNAME_EXISTS` if desiredUsername is already in use on the device
+     * @throws IamException with IamError `INVALID_INPUT` if desiredUsername is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not support local open pairing (the `IAM:PairingLocalOpen` action
      * is not set for the Unpaired role or the device does not support the pairing mode at all)
-     * @throws IamException with IamError PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `PAIRING_MODE_DISABLED` if the pairing mode is configured on the device but is disabled at runtime
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void pairLocalOpen(Connection connection, String desiredUsername);
 
@@ -76,11 +76,11 @@ public abstract class IamUtil {
      *
      * @param connection An established connection to the device this client should be paired with
      *
-     * @throws IamException with IamError INITIAL_USER_ALREADY_PAIRED if the initial user was already paired
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not support local open pairing (the `IAM:PairingLocalInitial` action
+     * @throws IamException with IamError `INITIAL_USER_ALREADY_PAIRED` if the initial user was already paired
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not support local open pairing (the `IAM:PairingLocalInitial` action
      * is not set for the Unpaired role or the device does not support the pairing mode at all)
-     * @throws IamException with IamError PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime.
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `PAIRING_MODE_DISABLED` if the pairing mode is configured on the device but is disabled at runtime.
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void pairLocalInitial(Connection connection);
 
@@ -113,14 +113,14 @@ public abstract class IamUtil {
      * @param desiredUsername Assign this username on the device if available (pairing fails with .USERNAME_EXISTS if not)
      * @param password the common (not user-specific) password to allow pairing using Password Open pairing
      *
-     * @throws IamException with IamError USERNAME_EXISTS if desiredUsername is already in use on the device
-     * @throws IamException with IamError AUTHENTICATION_ERROR if the open pairing password was invalid for the device
-     * @throws IamException with IamError INVALID_INPUT if desiredUsername is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
-     * @throws IamException with IamError INITIAL_USER_ALREADY_PAIRED if the initial user was already paired
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not support local open pairing (the `IAM:PairingPasswordOpen` action
+     * @throws IamException with IamError `USERNAME_EXISTS` if desiredUsername is already in use on the device
+     * @throws IamException with IamError `AUTHENTICATION_ERROR` if the open pairing password was invalid for the device
+     * @throws IamException with IamError `INVALID_INPUT` if desiredUsername is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
+     * @throws IamException with IamError `INITIAL_USER_ALREADY_PAIRED` if the initial user was already paired
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not support local open pairing (the `IAM:PairingPasswordOpen` action
      * is not set for the Unpaired role or the device does not support the pairing mode at all)
-     * @throws IamException with IamError PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `PAIRING_MODE_DISABLED` if the pairing mode is configured on the device but is disabled at runtime
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void pairPasswordOpen(Connection connection, String desiredUsername, String password);
 
@@ -156,11 +156,11 @@ public abstract class IamUtil {
      * @param username Username for the invited user
      * @param password Password for the invited user
      *
-     * @throws IamException with IamError AUTHENTICATION_ERROR if authentication failed using the specified username/password combination for the device
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not support local open pairing (the `IAM:PairingPasswordInvite` action
+     * @throws IamException with IamError `AUTHENTICATION_ERROR` if authentication failed using the specified username/password combination for the device
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not support local open pairing (the `IAM:PairingPasswordInvite` action
      * is not set for the Unpaired role or the device does not support the pairing mode at all)
-     * @throws IamException with IamError PAIRING_MODE_DISABLED if the pairing mode is configured on the device but is disabled at runtime
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `PAIRING_MODE_DISABLED` if the pairing mode is configured on the device but is disabled at runtime
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void pairPasswordInvite(Connection connection, String username, String password);
 
@@ -188,9 +188,9 @@ public abstract class IamUtil {
      *
      * @param connection An established connection to the device
      *
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this list (the
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow retrieving this list (the
      * `IAM:GetPairing` action is not set for the Unpaired role)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      * @return A list of available pairing modes.
      */
     public abstract PairingMode[] getAvailablePairingModes(Connection connection);
@@ -202,9 +202,9 @@ public abstract class IamUtil {
      *
      * @param connection An established connection to the device
      *
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this list (the
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow retrieving this list (the
      * `IAM:GetPairing` action is not set for the Unpaired role)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      * @return The device details.
      */
     public abstract DeviceDetails getDeviceDetails(Connection connection);
@@ -225,7 +225,7 @@ public abstract class IamUtil {
      * This function blocks until it has succeeded.
      *
      * @param connection An established connection to the device
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      * @return true iff the current user is paired with the device
      */
     public abstract boolean isCurrentUserPaired(Connection connection);
@@ -248,10 +248,10 @@ public abstract class IamUtil {
      * @param connection An established connection to the device
      * @param username Username of the user to get
      *
-     * @throws IamException with IamError USER_DOES_NOT_EXIST if the user does not exist on the device
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this user  (the
+     * @throws IamException with IamError `USER_DOES_NOT_EXIST` if the user does not exist on the device
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow retrieving this user  (the
      * `IAM:GetUser` action is not set for the requesting role)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      * @return an IamUser instance describing the requested user
      */
     public abstract IamUser getUser(Connection connection, String username);
@@ -274,8 +274,8 @@ public abstract class IamUtil {
      *
      * @param connection An established connection to the device
      *
-     * @throws IamException with IamError USER_DOES_NOT_EXIST if the current user is not paired with the device.
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `USER_DOES_NOT_EXIST` if the current user is not paired with the device.
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      * @return an IamUser instance describing the current user
      */
     public abstract IamUser getCurrentUser(Connection connection);
@@ -295,9 +295,9 @@ public abstract class IamUtil {
     * 
     * @param connection An established connection to the device
     *
-    * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow retrieving this list
+    * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow retrieving this list
     * (requires the `IAM:ListRoles` permission)
-    * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+    * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
     * @return A list of the available roles.
     */
     public abstract String[] getAvailableRoles(Connection connection);
@@ -323,11 +323,11 @@ public abstract class IamUtil {
      * @param username Username for the new user
      * @param password Password for the new user
      * @param role IAM role for the new user
-     * @throws IamException with IamError INVALID_INPUT if username is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow the current user to create a new user (the
+     * @throws IamException with IamError `INVALID_INPUT` if username is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow the current user to create a new user (the
      * `IAM:CreateUser` action is not allowed for the requesting role)
-     * @throws IamException with IamError ROLE_DOES_NOT_EXIST the specified role does not exist in the device IAM configuration
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `ROLE_DOES_NOT_EXIST` the specified role does not exist in the device IAM configuration
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void createUser(Connection connection, String username, String password, String role);
 
@@ -354,9 +354,9 @@ public abstract class IamUtil {
      * @param connection An established connection to the device
      * @param username Username for the user that should have password updated
      * @param password New password for the user
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow the current user to update the specified user's password (the
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow the current user to update the specified user's password (the
      * `IAM:SetUserPassword` action is not allowed for the requesting role for the `IAM:Username` user)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void updateUserPassword(Connection connection, String username, String password);
 
@@ -386,11 +386,11 @@ public abstract class IamUtil {
      * @param connection An established connection to the device
      * @param username Username for the user that should have password updated
      * @param role New role for the user
-     * @throws IamException with IamError USER_DOES_NOT_EXIST if the specified user does not exist on the device (see note above)
-     * @throws IamException with IamError ROLE_DOES_NOT_EXIST the specified role does not exist in the device IAM configuration (see note above)
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow the current user to update the specified user's role (the
+     * @throws IamException with IamError `USER_DOES_NOT_EXIST` if the specified user does not exist on the device (see note above)
+     * @throws IamException with IamError `ROLE_DOES_NOT_EXIST` the specified role does not exist in the device IAM configuration (see note above)
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow the current user to update the specified user's role (the
      * `IAM:SetUserRole` action is not allowed for the requesting role for the `IAM:Username` user)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void updateUserRole(Connection connection, String username, String role);
 
@@ -420,10 +420,10 @@ public abstract class IamUtil {
      * @param connection An established connection to the device
      * @param username Username for the user that should have display name updated
      * @param displayName New display name
-     * @throws IamException with IamError USER_DOES_NOT_EXIST if the specified user does not exist on the device (see note above)
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow the current user to update the specified user's display name (the
+     * @throws IamException with IamError `USER_DOES_NOT_EXIST` if the specified user does not exist on the device (see note above)
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow the current user to update the specified user's display name (the
      * `IAM:SetUserDisplayName` action is not allowed for the requesting role for the `IAM:Username` user)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void updateUserDisplayName(Connection connection, String username, String displayName);
 
@@ -447,11 +447,11 @@ public abstract class IamUtil {
      * @param connection An established connection to the device
      * @param username Username for the user that should have username updated
      * @param newUsername New username for the user
-     * @throws IamException with IamError USER_DOES_NOT_EXIST if the specified user does not exist on the device (see note above)
-     * @throws IamException with IamError INVALID_INPUT if username is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow the current user to update the specified user's display name (the
+     * @throws IamException with IamError `USER_DOES_NOT_EXIST` if the specified user does not exist on the device (see note above)
+     * @throws IamException with IamError `INVALID_INPUT` if username is not valid as per https://docs.nabto.com/developer/api-reference/coap/iam/post-users.html#request
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow the current user to update the specified user's display name (the
      * `IAM:SetUserUsername` action is not allowed for the requesting role for the `IAM:Username` user)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void renameUser(Connection connection, String username, String newUsername);
 
@@ -475,10 +475,10 @@ public abstract class IamUtil {
      * @param connection An established connection to the device
      * @param username Username of the user to delete
      *
-     * @throws IamException with IamError USER_DOES_NOT_EXIST if the specified user does not exist on the device
-     * @throws IamException with IamError BLOCKED_BY_DEVICE_CONFIGURATION if the device configuration does not allow deleting this user (the
+     * @throws IamException with IamError `USER_DOES_NOT_EXIST` if the specified user does not exist on the device
+     * @throws IamException with IamError `BLOCKED_BY_DEVICE_CONFIGURATION` if the device configuration does not allow deleting this user (the
      * `IAM:DeleteUser` action for the `IAM:Username` attribute is not allowed for the requesting role)
-     * @throws IamException with IamError IAM_NOT_SUPPORTED if Nabto Edge IAM is not supported by the device
+     * @throws IamException with IamError `IAM_NOT_SUPPORTED` if Nabto Edge IAM is not supported by the device
      */
     public abstract void deleteUser(Connection connection, String username);
 
