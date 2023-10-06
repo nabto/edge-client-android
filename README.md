@@ -39,7 +39,7 @@ Non release builds aka snapshots can be found at https://s01.oss.sonatype.org/co
 ## Running a single test case
 
 ```
-./gradlew :jni:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.client.jni.ConnectionTest#connectRemote
+./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.TunnelTest#connect
 ```
 
 ## Debugging swig generation
