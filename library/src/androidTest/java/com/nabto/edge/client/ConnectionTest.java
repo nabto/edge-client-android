@@ -1,5 +1,7 @@
 package com.nabto.edge.client;
 
+import android.util.Log;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -8,8 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -71,4 +75,35 @@ public class ConnectionTest {
             assertEquals(e.getDirectCandidatesChannelErrorCode().getName(), new ErrorCode(ErrorCodes.NONE).getName());
         }
     }
+
+    @Test(expected = Test.None.class)
+    public void connectionEventListener() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createRemoteConnection(client);
+        Coap coap = connection.createCoap("GET", "/hello-world");
+        connection.addConnectionEventsListener(
+                new ConnectionEventsCallback() {
+                    @Override
+                    public void onEvent(int event) {
+                        // do not use assertions in callback as they are implemented as exceptions
+                        // that wreak havoc when escaping
+                        try {
+                            coap.execute();
+                        } catch (Exception e) {
+                            Log.i("ConnectionTest", "Exception in onEvent");
+                            return;
+                        }
+                        Log.i("ConnectionTest", "Got status " + coap.getResponseStatusCode());
+                        latch.countDown();
+                    }
+                }
+        );
+        connection.connect();
+        boolean success = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(success);
+        connection.close();
+
+    }
+
 }
