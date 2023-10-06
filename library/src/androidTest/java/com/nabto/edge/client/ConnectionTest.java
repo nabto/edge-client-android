@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -82,6 +83,7 @@ public class ConnectionTest {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         Connection connection = Helper.createRemoteConnection(client);
         Coap coap = connection.createCoap("GET", "/hello-world");
+        final AtomicInteger statusCode = new AtomicInteger();
         connection.addConnectionEventsListener(
                 new ConnectionEventsCallback() {
                     @Override
@@ -94,16 +96,15 @@ public class ConnectionTest {
                             Log.i("ConnectionTest", "Exception in onEvent");
                             return;
                         }
-                        Log.i("ConnectionTest", "Got status " + coap.getResponseStatusCode());
+                        statusCode.set(coap.getResponseStatusCode());
                         latch.countDown();
                     }
                 }
         );
         connection.connect();
-        boolean success = latch.await(5, TimeUnit.SECONDS);
-        assertTrue(success);
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertEquals(statusCode.get(), 205);
         connection.close();
-
     }
 
 }
