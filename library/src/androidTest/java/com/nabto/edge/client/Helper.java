@@ -34,6 +34,7 @@ public class Helper {
         Connection connection = client.createConnection();
         JSONObject options = new JSONObject();
         try {
+            options.put("ServerConnectToken", "demosct");
             options.put("ProductId", resources.getString(R.string.product_id));
             options.put("DeviceId", resources.getString(R.string.device_id));
             options.put("ServerKey", resources.getString(R.string.server_key));
