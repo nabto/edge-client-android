@@ -106,5 +106,4 @@ public class ConnectionTest {
         assertEquals(statusCode.get(), 205);
         connection.close();
     }
-
 }
