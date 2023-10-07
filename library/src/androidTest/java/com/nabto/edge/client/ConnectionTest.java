@@ -59,6 +59,7 @@ public class ConnectionTest {
             assert(e.getLocalChannelErrorCode().getErrorCode() == ErrorCodes.NOT_FOUND);
         }
     }
+
     @Test(expected = Test.None.class)
     public void noSuchLocalOrRemoteDevice() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
@@ -78,7 +79,7 @@ public class ConnectionTest {
     }
 
     @Test(expected = Test.None.class)
-    public void connectionEventListener() throws Exception {
+    public void invokeCoapInConnectionEventCallback() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         Connection connection = Helper.createRemoteConnection(client);
@@ -93,7 +94,7 @@ public class ConnectionTest {
                         try {
                             coap.execute();
                         } catch (Exception e) {
-                            Log.i("ConnectionTest", "Exception in onEvent");
+                            Log.i("ConnectionTest", "Exception in onEvent: " + e);
                             return;
                         }
                         statusCode.set(coap.getResponseStatusCode());
@@ -106,4 +107,71 @@ public class ConnectionTest {
         assertEquals(statusCode.get(), 205);
         connection.close();
     }
-}
+
+    @Test(expected = Test.None.class)
+    public void closeConnectionInConnectionEventCallback_CONNECTED() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createRemoteConnection(client);
+        connection.addConnectionEventsListener(
+                new ConnectionEventsCallback() {
+                    @Override
+                    public void onEvent(int event) {
+                        // do not use assertions in callback as they are implemented as exceptions
+                        // that wreak havoc when escaping
+                        try {
+                            if (event == ConnectionEventsCallback.CONNECTED) {
+                                connection.close();
+                                latch.countDown();
+                            }
+                        } catch (Exception e) {
+                            Log.i("ConnectionTest", "Exception in onEvent (event=" + event + "): " + e);
+                        }
+                    }
+                }
+        );
+        connection.connect();
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+    }
+
+    @Test(expected = Test.None.class)
+    public void closeConnectionInConnectionEventCallback_CLOSED() throws Exception {
+        final CountDownLatch connectedLatch = new CountDownLatch(1);
+        final CountDownLatch closedLatch = new CountDownLatch(1);
+        final CountDownLatch exceptionLatch = new CountDownLatch(1);
+        final AtomicInteger errorCode = new AtomicInteger();
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createRemoteConnection(client);
+        connection.addConnectionEventsListener(
+                new ConnectionEventsCallback() {
+                    @Override
+                    public void onEvent(int event) {
+                        // do not use assertions in callback as they are implemented as exceptions
+                        // that wreak havoc when escaping
+                        try {
+                            if (event == ConnectionEventsCallback.CONNECTED) {
+                                connectedLatch.countDown();
+                            }
+                            if (event == ConnectionEventsCallback.CLOSED) {
+                                closedLatch.countDown();
+                                connection.close();
+                            }
+                        } catch (Exception e) {
+                            Log.i("ConnectionTest", "Exception in onEvent (event=" + event + "): " + e);
+                            exceptionLatch.countDown();
+                            if (e instanceof NabtoRuntimeException) {
+                                int code = ((NabtoRuntimeException)e).getErrorCode().getErrorCode();
+                                errorCode.set(code);
+                            }
+                        }
+                    }
+                }
+        );
+        connection.connect();
+        assertTrue(connectedLatch.await(5, TimeUnit.SECONDS));
+        connection.close();
+        assertTrue(closedLatch.await(5, TimeUnit.SECONDS));
+        assertTrue(exceptionLatch.await(5, TimeUnit.SECONDS));
+        assertEquals(ErrorCodes.STOPPED, errorCode.get());
+    }
+};
