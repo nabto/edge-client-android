@@ -115,4 +115,9 @@ public class NabtoClientImpl extends NabtoClient {
     public String version() {
         return com.nabto.edge.client.swig.Context.version();
     }
+
+//    @Override
+//    public void stop() {
+//        context.
+//    }
 }
