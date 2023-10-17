@@ -22,11 +22,6 @@ import static org.junit.Assert.*;
 public class CleanerTest {
 
     @Test(expected = Test.None.class)
-    public void reproForceStop() throws Exception {
-        assertTrue(true);
-    }
-
-    @Test(expected = Test.None.class)
     public void deterministicCleanupThroughAutoClosable() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         try (SomeNabtoResourceStub stub = new SomeNabtoResourceStub(latch)) {
