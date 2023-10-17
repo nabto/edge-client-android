@@ -8,6 +8,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Implement a facility similar to Java 9's java.lang.ref.Cleaner, but using only Java 8 language
+ * features. Kudos to https://stackoverflow.com/a/47830289.
+ *
+ * Whenever a Nabto Edge Client SDK native resource is allocated, it is registered with the Cleaner
+ * singleton. If the instance is not explicitly released by user code (e.g. through AutoCloseable),
+ * the Cleaner releases it when the resource is orphaned.
+ */
 class CleanerService {
 
     /**
@@ -77,8 +85,8 @@ class CleanerService {
     }
 
     /**
-     * Regster an instance to be cleaned up when orphaned.
-     * @param o The instance to be claned up.
+     * Register an instance to be cleaned up when orphaned.
+     * @param o The instance to be cleaned up.
      * @param r The cleanup logic specific for this instance type.
      * @return
      */

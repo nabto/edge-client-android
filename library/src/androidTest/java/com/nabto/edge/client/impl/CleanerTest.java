@@ -7,11 +7,6 @@ import android.util.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.ref.PhantomReference;
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -84,61 +79,24 @@ public class CleanerTest {
         }
         Log.i("CleanerTest", "Test daemonCleansUp ends");
     }
-
-    /// explore concept through this tutorial: https://www.baeldung.com/java-phantom-reference
-//    @Test(expected = Test.None.class)
-    public void phantomReferenceExample() throws Exception {
-        class LargeObjectFinalizer extends PhantomReference<Object> {
-
-            public LargeObjectFinalizer(
-                    Object referent, ReferenceQueue<? super Object> q) {
-                super(referent, q);
-            }
-
-            public void finalizeResources() {
-                Log.i("CleanerTest", "Clearing example resource");
-            }
-        }
-
-        ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
-        List<LargeObjectFinalizer> references = new ArrayList<>();
-        List<Object> largeObjects = new ArrayList<>();
-
-        for (int i = 0; i < 10; ++i) {
-            Object largeObject = new Object();
-            largeObjects.add(largeObject);
-            references.add(new LargeObjectFinalizer(largeObject, referenceQueue));
-        }
-
-        largeObjects = null;
-        Runtime.getRuntime().gc();
-        Runtime.getRuntime().runFinalization();
-
-        Reference<?> referenceFromQueue;
-        for (PhantomReference<Object> reference : references) {
-            Log.i("CleanerTest", "Reference is enqueued: " + reference.isEnqueued());
-        }
-
-        while ((referenceFromQueue = referenceQueue.poll()) != null) {
-            ((LargeObjectFinalizer)referenceFromQueue).finalizeResources();
-            referenceFromQueue.clear();
-        }
-    }
-
-
 }
 
 class SomeNabtoResourceStub implements AutoCloseable {
     private final CleanerService.Cleanable cleanable;
-    private final someNabtoNativeHandle someNabtoNativeHandle;
+    private final SomeNabtoNativeHandle someNabtoNativeHandle;
 
     public SomeNabtoResourceStub(CountDownLatch latch) {
-        this.someNabtoNativeHandle = new someNabtoNativeHandle(latch);
+        this.someNabtoNativeHandle = new SomeNabtoNativeHandle(latch);
         this.cleanable = createCleanable(this, someNabtoNativeHandle);
     }
 
-    private static CleanerService.Cleanable createCleanable(Object o, someNabtoNativeHandle nfn) {
-        return CleanerService.instance().register(o, () -> nfn.cleanUp());
+    /**
+     * "Care must be taken not to capture the this instance, that’s why the creation has been
+     * moved into a static method in the example above. Without a this in scope, it can’t be
+     * captured by accident." (from https://stackoverflow.com/questions/46144524/delete-native-peer-with-general-phantomreference-class/47830289#47830289)
+     */
+    private static CleanerService.Cleanable createCleanable(Object o, SomeNabtoNativeHandle nativeHandle) {
+        return CleanerService.instance().register(o, () -> nativeHandle.cleanUp());
     }
 
     @Override
@@ -149,9 +107,9 @@ class SomeNabtoResourceStub implements AutoCloseable {
     public void doStuff() {
     }
 
-    private static class someNabtoNativeHandle {
+    private static class SomeNabtoNativeHandle {
         private final CountDownLatch latch;
-        private someNabtoNativeHandle(CountDownLatch latch) {
+        private SomeNabtoNativeHandle(CountDownLatch latch) {
             this.latch = latch;
         }
         private void cleanUp() {
