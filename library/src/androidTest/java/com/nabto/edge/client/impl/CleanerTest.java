@@ -1,10 +1,8 @@
-package com.nabto.edge.client;
+package com.nabto.edge.client.impl;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import android.util.Log;
-
-import com.nabto.edge.client.impl.Cleaner;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -55,7 +52,7 @@ public class CleanerTest {
         Runtime.getRuntime().gc();
         // some time is needed from gc to the orphaned references to be queued
         Thread.sleep(100);
-        Cleaner.deleteOrphaned();
+        CleanerService.instance().deleteOrphaned();
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals(0, latch.getCount());
     }
@@ -64,7 +61,7 @@ public class CleanerTest {
     @Test(expected = Test.None.class)
     public void daemonCleansUp() throws Exception {
         Log.i("CleanerTest", "Test daemonCleansUp starts");
-        Cleaner.startDaemon(10);
+        CleanerService.instance().startDaemon(10);
         try {
             CountDownLatch fooLatch = new CountDownLatch(1);
             CountDownLatch barLatch = new CountDownLatch(1);
@@ -83,7 +80,7 @@ public class CleanerTest {
             assertEquals(0, fooLatch.getCount());
             assertEquals(0, barLatch.getCount());
         } finally {
-            Cleaner.stopDaemon();
+            CleanerService.instance().stopDaemon();
         }
         Log.i("CleanerTest", "Test daemonCleansUp ends");
     }
@@ -132,7 +129,7 @@ public class CleanerTest {
 }
 
 class SomeNabtoResourceStub implements AutoCloseable {
-    private final Cleaner.Cleanable cleanable;
+    private final CleanerService.Cleanable cleanable;
     private final someNabtoNativeHandle someNabtoNativeHandle;
 
     public SomeNabtoResourceStub(CountDownLatch latch) {
@@ -140,8 +137,8 @@ class SomeNabtoResourceStub implements AutoCloseable {
         this.cleanable = createCleanable(this, someNabtoNativeHandle);
     }
 
-    private static Cleaner.Cleanable createCleanable(Object o, someNabtoNativeHandle nfn) {
-        return Cleaner.register(o, () -> nfn.cleanUp());
+    private static CleanerService.Cleanable createCleanable(Object o, someNabtoNativeHandle nfn) {
+        return CleanerService.instance().register(o, () -> nfn.cleanUp());
     }
 
     @Override

@@ -3,44 +3,44 @@ package com.nabto.edge.client.impl;
 import android.util.Log;
 
 import java.lang.ref.PhantomReference;
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Implement a facility similar to Java 9's java.lang.ref.Cleaner, but using only Java 8 language
- * features. Kudos to https://stackoverflow.com/a/47830289.
- *
- * Whenever a Nabto Edge Client SDK native resource is allocated, it is registered with the Cleaner
- * singleton. If the instance is not explicitly released by user code (e.g. through AutoCloseable),
- * the Cleaner releases it when the resource is orphaned.
- */
-public class Cleaner {
-
-    private static Thread thread;
+class CleanerService {
 
     /**
      * Instances registered with the Cleaner implements this interface to be invoked when orphaned.
      */
-    public interface Cleanable {
+    interface Cleanable {
         /// invoked when instance is orphaned
         void clean();
+    }
+
+    private static final CleanerService instance = new CleanerService();
+    private Thread thread;
+
+    /**
+     * Access the CleanerService instance.
+     * @return the CleanerService instance
+     */
+    static CleanerService instance() {
+        return instance;
     }
 
     /**
      * Start the Cleaner daemon that periodically cleans up registered orphaned resources. This overload
      * uses the default poll period of 1 second.
      */
-    public static void startDaemon() {
+    void startDaemon() {
         startDaemon(1000);
     }
 
     /**
      * Start the Cleaner daemon that periodically cleans up registered orphaned resources.
      */
-    public static void startDaemon(int pollPeriodMillis) {
+    void startDaemon(int pollPeriodMillis) {
         if (thread == null) {
             thread = new Thread(new Runnable() {
                 @Override
@@ -65,7 +65,7 @@ public class Cleaner {
     /**
      * Stop the Cleaner daemon.
      */
-    public static void stopDaemon() {
+    void stopDaemon() {
         thread.interrupt();
         try {
             thread.join();
@@ -82,17 +82,17 @@ public class Cleaner {
      * @param r The cleanup logic specific for this instance type.
      * @return
      */
-    public static Cleanable register(Object o, Runnable r) {
+    CleanerService.Cleanable register(Object o, Runnable r) {
         Log.d("Cleaner", "Registering object " + o);
-        CleanerReference c = new CleanerReference(Objects.requireNonNull(o), Objects.requireNonNull(r));
+        CleanerService.CleanerReference c = new CleanerService.CleanerReference(Objects.requireNonNull(o), Objects.requireNonNull(r));
         phantomReferences.add(c);
         return c;
     }
 
-    private static final Set<CleanerReference> phantomReferences = ConcurrentHashMap.newKeySet();
-    private static final ReferenceQueue<Object> garbageCollectedObjectsQueue = new ReferenceQueue<>();
+    private final Set<CleanerService.CleanerReference> phantomReferences = ConcurrentHashMap.newKeySet();
+    private final ReferenceQueue<Object> garbageCollectedObjectsQueue = new ReferenceQueue<>();
 
-    static final class CleanerReference extends PhantomReference<Object> implements Cleanable {
+    final class CleanerReference extends PhantomReference<Object> implements CleanerService.Cleanable {
         private final Runnable cleaningAction;
 
         CleanerReference(Object referent, Runnable action) {
@@ -108,14 +108,14 @@ public class Cleaner {
         }
     }
 
-    public static void deleteOrphaned() {
+    void deleteOrphaned() {
         for (PhantomReference<Object> reference : phantomReferences) {
             Log.d("Cleaner", "found a reference, enqueued=" + reference.isEnqueued());
         }
-        CleanerReference reference;
-        while ((reference = (CleanerReference) garbageCollectedObjectsQueue.poll()) != null) {
+        CleanerService.CleanerReference reference;
+        while ((reference = (CleanerService.CleanerReference) garbageCollectedObjectsQueue.poll()) != null) {
             Log.d("Cleaner", "cleaning a referance");
             reference.clean();
         }
     }
-};
+}
