@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import android.util.Log;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,7 +36,7 @@ public class CleanerTest {
         assertEquals(0, latch.getCount());
     }
 
-    /// hyper fragile test that depends on explicit gc triggering and timing - disabled by default, only useful during development
+    @Ignore("hyper fragile test that depends on explicit gc triggering and timing - disabled by default, only useful during development")
     @Test(expected = Test.None.class)
     public void phantomReferenceCleanup() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
@@ -52,7 +53,7 @@ public class CleanerTest {
         assertEquals(0, latch.getCount());
     }
 
-    /// hyper fragile test that depends on explicit gc triggering and timing - disabled by default, only useful during development
+    @Ignore("hyper fragile test that depends on explicit gc triggering and timing - disabled by default, only useful during development")
     @Test(expected = Test.None.class)
     public void daemonCleansUp() throws Exception {
         Log.i("CleanerTest", "Test daemonCleansUp starts");
