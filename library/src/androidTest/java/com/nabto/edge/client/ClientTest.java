@@ -29,25 +29,4 @@ public class ClientTest {
 
         assertTrue(v, v.matches("^\\d+\\.\\d+\\.\\d+.*$"));
     }
-
-    @Test(expected = Test.None.class)
-    public void autoCloseable() throws Exception {
-        class AutoCloseableTestStub implements AutoCloseable {
-            private final CountDownLatch latch;
-            public AutoCloseableTestStub(CountDownLatch latch) {
-                this.latch = latch;
-            }
-            @Override
-            public void close() throws Exception {
-                latch.countDown();
-            }
-        }
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        try (AutoCloseableTestStub stub = new AutoCloseableTestStub(latch)) {
-            // close should be invoked now
-        }
-        assertTrue(latch.await(5, TimeUnit.SECONDS));
-        assertEquals(0, latch.getCount());
-    }
 }

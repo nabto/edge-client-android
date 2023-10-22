@@ -9,7 +9,7 @@ package com.nabto.edge.client;
  * Coap instances are created using the Connection.createCoap() factory method.
  * The Coap object must be kept alive while in use.
  */
-public interface Coap {
+public interface Coap extends AutoCloseable {
 
     /**
      * Some of the most used coap content formats from
@@ -88,4 +88,26 @@ public interface Coap {
      * @return The payload. If the response has no payload, the empty buffer is returned.
      */
     byte[] getResponsePayload();
+
+    /**
+     * Releases any resources associated with the CoAP instance. This method is
+     * called automatically at the end of a try-with-resources block, which
+     * helps to ensure that resources are released promptly and reliably.
+     *
+     * <p>Example of using a CoAP object within a try-with-resources statement:</p>
+     * <pre>
+     * try (Coap coap = connection.createCoap(...)) {
+     *     // ... use coap
+     * }
+     * </pre>
+     *
+     * <p>With this setup, {@code close()} will be called automatically on
+     * {@code coap} at the end of the block, releasing any underlying
+     * native Nabto Client SDK resources without any further action required on the application.</p>
+     *
+     * <p>Unlike the {@link AutoCloseable#close()} method, this {@code close()}
+     * method does not throw any exceptions.</p>
+     */
+    @Override
+    void close();
 }

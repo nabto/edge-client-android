@@ -14,6 +14,8 @@ import com.nabto.edge.client.MdnsScanner;
 import java.util.HashMap;
 
 public class NabtoClientImpl extends NabtoClient {
+    // this specific native resource is not registered with the CleanerService as the service's
+    // life cycle itself is controlled from within this class
     private com.nabto.edge.client.swig.Context context = com.nabto.edge.client.swig.Context.create();
     private Logger logger = new Logger();
     private WifiMonitor wifiMonitor;
@@ -36,6 +38,8 @@ public class NabtoClientImpl extends NabtoClient {
             this.context.setLogger(logger);
         } catch(Exception e) {
         }
+
+        CleanerService.instance().startDaemon();
 
         wifiMonitor = new WifiMonitor(this);
         wifiMonitor.init(context);
@@ -116,8 +120,13 @@ public class NabtoClientImpl extends NabtoClient {
         return com.nabto.edge.client.swig.Context.version();
     }
 
-//    @Override
-//    public void stop() {
-//        context.
-//    }
+    @Override
+    public void close() throws Exception {
+        stop();
+    }
+
+    @Override
+    public void stop() {
+        CleanerService.instance().stopDaemon();
+    }
 }

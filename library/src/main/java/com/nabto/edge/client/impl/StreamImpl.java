@@ -1,5 +1,7 @@
 package com.nabto.edge.client.impl;
 
+import android.net.wifi.WifiManager;
+
 import java.util.Optional;
 import com.nabto.edge.client.ErrorCodes;
 import com.nabto.edge.client.NabtoEOFException;
@@ -9,9 +11,11 @@ import com.nabto.edge.client.swig.FutureBuffer;
 public class StreamImpl implements com.nabto.edge.client.Stream {
 
     com.nabto.edge.client.swig.Stream stream;
+    private final CleanerService.Cleanable cleanable;
 
     StreamImpl(com.nabto.edge.client.swig.Stream stream) {
         this.stream = stream;
+        this.cleanable = createAndRegisterCleanable(this, stream);
     }
 
     public void open(int streamPort) {
@@ -114,7 +118,8 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
         stream.write(bytes).callback(Util.makeFutureCallback(callback));
     }
 
-    public void close() {
+    @Override
+    public void streamClose() {
         try {
             stream.close().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
@@ -123,7 +128,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
     }
 
     // @TODO: Perhaps we dont need a callback for this function? Like abort below, it could just be run without blocking or setting a callback
-    public void closeCallback(NabtoCallback callback) {
+    public void streamCloseCallback(NabtoCallback callback) {
         try {
             stream.close().callback(Util.makeFutureCallback(callback));
         } catch (com.nabto.edge.client.swig.NabtoException e) {
@@ -135,4 +140,13 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
         stream.abort();
     }
 
+    @Override
+    public void close() {
+        cleanable.clean();
+    }
+
+    /// static helper to ensure no "this" is captured accidentally
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.Stream nativeHandle) {
+        return CleanerService.instance().register(o, () -> nativeHandle.delete());
+    }
 }

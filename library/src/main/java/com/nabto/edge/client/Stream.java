@@ -11,7 +11,7 @@ package com.nabto.edge.client;
  * The Stream object must be kept alive while in use.
  *
  */
-public interface Stream {
+public interface Stream extends AutoCloseable {
     /**
      * Open a stream. This function blocks until the stream is opened.
      *
@@ -99,22 +99,53 @@ public interface Stream {
      * other end reach end of file when reading from a stream when all
      * sent data has been received and acknowledged.
      *
-     * A call to close does not affect the read direction of the
+     * A call to this function does not affect the read direction of the
      * stream.
+     *
+     * Note: Odd name is to distinguish from AutoCloseable's close() with very different
+     * semantics.
      *
      * @throws NabtoRuntimeException With error code `STOPPED` if the stream is stopped.
      * @throws NabtoRuntimeException With error code `OPERATION_IN_PROGRESS` if another stop is in progress.
      * @throws NabtoRuntimeException With error code `INVALID_STATE` if the stream is not opened yet.
      */
-    public void close();
+    public void streamClose();
 
     /**
      * Close the write direction of the stream without blocking.
      * See Stream.close() for error codes.
      *
+     * Note: Odd name is to distinguish from AutoCloseable's close() with very different
+     * semantics.
+     *
      * @param callback The callback that will be run once the stream is closed.
      */
-    public void closeCallback(NabtoCallback callback);
+    public void streamCloseCallback(NabtoCallback callback);
+
+    /**
+     * Note! Semantics have changed with version 3.0 due to name clash with AutoCloseable!
+     * The 2.x version of close() has been renamed to streamClose().
+     *
+     * This function releases any resources associated with the Stream instance. This method is
+     * called automatically at the end of a try-with-resources block, which
+     * helps to ensure that resources are released promptly and reliably.
+     *
+     * <p>Example of using a CoAP object within a try-with-resources statement:</p>
+     * <pre>
+     * try (Stream stream = connection.createStream(...)) {
+     *     // ... use stream
+     * }
+     * </pre>
+     *
+     * <p>With this setup, {@code close()} will be called automatically on
+     * {@code connect} at the end of the block, releasing any underlying
+     * native Nabto Client SDK resources without any further action required on the application.</p>
+     *
+     * <p>Unlike the {@link AutoCloseable#close()} method, this {@code close()}
+     * method does not throw any exceptions.</p>
+     */
+    @Override
+    void close();
 
     /**
      * @deprecated use Stream.close()
@@ -123,4 +154,5 @@ public interface Stream {
      * closed, abort will do it for but the write and read direction.
      */
     public void abort();
+
 }

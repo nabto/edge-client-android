@@ -29,7 +29,7 @@ public class ConnectionTest {
         Connection connection = Helper.createLocalConnection(client);
 
         connection.connect();
-        connection.close();
+        connection.connectionClose();
     }
 
     @Test(expected = Test.None.class)
@@ -38,7 +38,7 @@ public class ConnectionTest {
         Connection connection = Helper.createRemoteConnection(client);
 
         connection.connect();
-        connection.close();
+        connection.connectionClose();
     }
 
     @Test(expected = Test.None.class)
@@ -105,7 +105,7 @@ public class ConnectionTest {
         connection.connect();
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals(statusCode.get(), 205);
-        connection.close();
+        connection.connectionClose();
     }
 
     @Test(expected = Test.None.class)
@@ -121,7 +121,7 @@ public class ConnectionTest {
                         // that wreak havoc when escaping
                         try {
                             if (event == ConnectionEventsCallback.CONNECTED) {
-                                connection.close();
+                                connection.connectionClose();
                                 latch.countDown();
                             }
                         } catch (Exception e) {
@@ -154,7 +154,7 @@ public class ConnectionTest {
                             }
                             if (event == ConnectionEventsCallback.CLOSED) {
                                 closedLatch.countDown();
-                                connection.close();
+                                connection.connectionClose();
                             }
                         } catch (Exception e) {
                             Log.i("ConnectionTest", "Exception in onEvent (event=" + event + "): " + e);
@@ -169,7 +169,7 @@ public class ConnectionTest {
         );
         connection.connect();
         assertTrue(connectedLatch.await(5, TimeUnit.SECONDS));
-        connection.close();
+        connection.connectionClose();
         assertTrue(closedLatch.await(5, TimeUnit.SECONDS));
         assertTrue(exceptionLatch.await(5, TimeUnit.SECONDS));
         assertEquals(ErrorCodes.STOPPED, errorCode.get());

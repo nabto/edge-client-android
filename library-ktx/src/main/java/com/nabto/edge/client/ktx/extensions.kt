@@ -2,7 +2,6 @@ package com.nabto.edge.client.ktx
 import java.util.Optional
 import com.nabto.edge.client.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.Continuation
 
 private suspend fun <T> nabtoCoroutineWrapper(
     register: (cb: NabtoCallback<T>) -> Unit
@@ -153,7 +152,7 @@ suspend fun Stream.awaitWrite(
  */
 suspend fun Stream.awaitClose() {
     nabtoCoroutineWrapper<Unit> { callback ->
-        this@awaitClose.closeCallback(callback)
+        this@awaitClose.streamCloseCallback(callback)
     }
 }
 
@@ -186,6 +185,6 @@ suspend fun TcpTunnel.awaitOpen(
  */
 suspend fun TcpTunnel.awaitClose() {
     nabtoCoroutineWrapper<Unit> { callback ->
-        this@awaitClose.closeCallback(callback)
+        this@awaitClose.tunnelCloseCallback(callback)
     }
 }

@@ -4,21 +4,12 @@ import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.Coap;
 
 public class CoapImpl implements Coap, AutoCloseable {
-    private final CleanerService.Cleanable cleanable;
     private com.nabto.edge.client.swig.Coap coap;
+    private final CleanerService.Cleanable cleanable;
 
     CoapImpl(com.nabto.edge.client.swig.Coap coap) {
         this.coap = coap;
         this.cleanable = createAndRegisterCleanable(this, coap);
-    }
-
-    /**
-     * "Care must be taken not to capture the this instance, that’s why the creation has been
-     * moved into a static method in the example above. Without a this in scope, it can’t be
-     * captured by accident." (from https://stackoverflow.com/questions/46144524/delete-native-peer-with-general-phantomreference-class/47830289#47830289)
-     */
-    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.Coap nativeHandle) {
-        return CleanerService.instance().register(o, () -> nativeHandle.delete());
     }
 
     public void setRequestPayload(int contentFormat, byte[] payload)
@@ -73,7 +64,16 @@ public class CoapImpl implements Coap, AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         cleanable.clean();
+    }
+
+    /**
+     * "Care must be taken not to capture the this instance, that’s why the creation has been
+     * moved into a static method in the example above. Without a this in scope, it can’t be
+     * captured by accident." (from https://stackoverflow.com/questions/46144524/delete-native-peer-with-general-phantomreference-class/47830289#47830289)
+     */
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.Coap nativeHandle) {
+        return CleanerService.instance().register(o, () -> nativeHandle.delete());
     }
 }

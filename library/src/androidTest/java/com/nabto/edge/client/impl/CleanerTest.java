@@ -24,7 +24,7 @@ public class CleanerTest {
     @Test(expected = Test.None.class)
     public void deterministicCleanupThroughAutoClosable() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
-        try (SomeNabtoResourceStub stub = new SomeNabtoResourceStub(latch)) {
+        try (SomeNabtoResourceStub stub = new SomeNabtoResourceStubImpl(latch)) {
             stub.doStuff();
             // cleanup should be invoked immediately when reaching end of this scope
         }
@@ -36,7 +36,7 @@ public class CleanerTest {
     public void phantomReferenceCleanup() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         {
-            SomeNabtoResourceStub stub = new SomeNabtoResourceStub(latch);
+            SomeNabtoResourceStub stub = new SomeNabtoResourceStubImpl(latch);
             // cleanup should be invoked when stub becomes a phantom reference
             stub.doStuff();
         }
@@ -57,8 +57,8 @@ public class CleanerTest {
             CountDownLatch fooLatch = new CountDownLatch(1);
             CountDownLatch barLatch = new CountDownLatch(1);
             {
-                SomeNabtoResourceStub foo = new SomeNabtoResourceStub(fooLatch);
-                SomeNabtoResourceStub bar = new SomeNabtoResourceStub(barLatch);
+                SomeNabtoResourceStub foo = new SomeNabtoResourceStubImpl(fooLatch);
+                SomeNabtoResourceStub bar = new SomeNabtoResourceStubImpl(barLatch);
                 foo.doStuff();
                 bar.doStuff();
             }
@@ -77,11 +77,15 @@ public class CleanerTest {
     }
 }
 
-class SomeNabtoResourceStub implements AutoCloseable {
+interface SomeNabtoResourceStub extends AutoCloseable {
+    void doStuff();
+}
+
+class SomeNabtoResourceStubImpl implements SomeNabtoResourceStub {
     private final CleanerService.Cleanable cleanable;
     private final SomeNabtoNativeHandle someNabtoNativeHandle;
 
-    public SomeNabtoResourceStub(CountDownLatch latch) {
+    public SomeNabtoResourceStubImpl(CountDownLatch latch) {
         this.someNabtoNativeHandle = new SomeNabtoNativeHandle(latch);
         this.cleanable = createCleanable(this, someNabtoNativeHandle);
     }
@@ -100,6 +104,7 @@ class SomeNabtoResourceStub implements AutoCloseable {
         cleanable.clean();
     }
 
+    @Override
     public void doStuff() {
     }
 

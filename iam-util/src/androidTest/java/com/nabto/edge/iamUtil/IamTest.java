@@ -72,13 +72,9 @@ public class IamTest {
     }
 
     private void cleanup(Connection conn) {
-        // We need to manually call finalize() because GC will not always run between tests.
-        // In ConnectionImpl finalize() is used to release wifi and multicast locks.
-        // If there are a lot of tests and GC isn't called often enough then tests will fail as we
-        // acquire too many wifi or multicast locks from having too many Connection objects that havent been
-        // garbage collected.
+        conn.connectionClose();
+        // invoke AutoCloseable's cleanup to reclaim locks etc
         conn.close();
-        ((ConnectionImpl)conn).finalize();
     }
 
     @After
@@ -216,8 +212,8 @@ public class IamTest {
         if (e == null) {
             fail("Expected IamException to be thrown");
         }
-        assertEquals(IamException.class, e.getClass());
-        IamException iamEx = (IamException)e;
+        assertEquals(com.nabto.edge.iamutil.IamException.class, e.getClass());
+        com.nabto.edge.iamutil.IamException iamEx = (IamException)e;
         assertEquals(iamEx.getError(), error);
     }
 

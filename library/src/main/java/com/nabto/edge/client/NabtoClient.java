@@ -14,7 +14,7 @@ import com.nabto.edge.client.impl.NabtoClientImpl;
  * connection object used to start interaction with a Nabto Edge embedded device. The Client object
  * must be kept alive for the duration of all connections created from it.
  */
-public abstract class NabtoClient {
+public abstract class NabtoClient implements AutoCloseable {
 
     /**
      * Create a new instance of a nabto client.
@@ -116,5 +116,5 @@ public abstract class NabtoClient {
      *
      * If SDK logging has been configured, this function MUST be called, otherwise Client instances are leaked.
      */
-//    public abstract void stop();
+    public abstract void stop();
 }
