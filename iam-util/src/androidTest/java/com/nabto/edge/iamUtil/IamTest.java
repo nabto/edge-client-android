@@ -1,14 +1,19 @@
 package com.nabto.edge.iamutil;
 
+import android.util.Log;
+
 import com.nabto.edge.iamutil.PairingMode;
 import com.nabto.edge.client.*;
 import com.nabto.edge.client.impl.ConnectionImpl;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -52,7 +57,7 @@ public class IamTest {
         try {
             _queue.take();
         } catch (Exception e) {
-            fail("Failed to resolve()");
+            Log.e("IamTest", "Failed to resolve - will not throw as this crashes Nabto Client SDK native thread with Swig error with no trace of what went wrong: " + e);
         }
     }
 
@@ -572,37 +577,54 @@ public class IamTest {
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
 
+        final AtomicInteger statusCode = new AtomicInteger();
         iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
+            statusCode.set(ec.ordinal());
             resolve();
         });
         await();
+        assertEquals(statusCode.get(), IamError.NONE.ordinal());
 
+        statusCode.set(-1);
         iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
+            statusCode.set(ec.ordinal());
             resolve();
         });
         await();
-        iam.getUserCallback(connection, guest, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
+        assertEquals(statusCode.get(), IamError.NONE.ordinal());
 
+        statusCode.set(-1);
+        iam.getUserCallback(connection, guest, (ec, res) -> {
+            statusCode.set(ec.ordinal());
+            resolve();
+        });
+        await();
+        assertEquals(statusCode.get(), IamError.NONE.ordinal());
+
+        statusCode.set(-1);
+        final AtomicBoolean result = new AtomicBoolean();
         // Reconnect as user instead of admin
         cleanup(connection);
         // Have to make a new variables to capture in lambda, java is really great...
         Connection connectionUser = connectToDevice(dev);
         iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertFalse(res.get());
+            statusCode.set(ec.ordinal());
+            if (ec == IamError.NONE && res.isPresent()) {
+                result.set(new Boolean(res.get()));
+            }
             resolve();
         });
         await();
+        assertEquals(IamError.NONE.ordinal(), statusCode.get());
+        assertFalse(result.get());
+
+        statusCode.set(-1);
         iam.pairPasswordInviteCallback(connectionUser, "bonk", guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
+            statusCode.set(ec.ordinal());
             resolve();
         });
         await();
+        assertEquals(IamError.AUTHENTICATION_ERROR.ordinal(), statusCode.get());
         cleanup(connectionUser);
     }
 
