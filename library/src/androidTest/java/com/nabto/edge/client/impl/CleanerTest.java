@@ -52,6 +52,8 @@ public class CleanerTest {
     @Test(expected = Test.None.class)
     public void daemonCleansUp() throws Exception {
         Log.i("CleanerTest", "Test daemonCleansUp starts");
+        // stop any daemon that was started at class loading
+        CleanerService.instance().stopDaemon();
         CleanerService.instance().startDaemon(10);
         try {
             CountDownLatch fooLatch = new CountDownLatch(1);

@@ -27,6 +27,15 @@ class CleanerService {
     }
 
     private static final CleanerService instance = new CleanerService();
+
+    /**
+     * Start the CleanerService daemon when the class is loaded. Never stop it - it runs as a
+     * daemon meaning it will not prevent the JVM from exiting.
+     */
+    static {
+        instance.startDaemon();
+    }
+
     private Thread thread;
 
     /**
@@ -49,29 +58,31 @@ class CleanerService {
      * Start the Cleaner daemon that periodically cleans up registered orphaned resources.
      */
     void startDaemon(int pollPeriodMillis) {
-        if (thread == null) {
-            thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
+        if (thread != null) {
+            return;
+        }
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    deleteOrphaned();
+                    try {
+                        Thread.sleep(pollPeriodMillis);
+                    } catch (InterruptedException e) {
+                        Log.d("nabto", "Cleaner interrupted, doing final cleanup");
                         deleteOrphaned();
-                        try {
-                            Thread.sleep(pollPeriodMillis);
-                        } catch (InterruptedException e) {
-                            deleteOrphaned();
-                            return;
-                        }
+                        return;
                     }
                 }
-            });
-            thread.setDaemon(true);
-            thread.start();
-            Log.d("NabtoClient", "Resource cleaner daemon started");
-        }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+        Log.d("nabto", "Cleaner daemon started");
     }
 
     /**
-     * Stop the Cleaner daemon.
+     * Stop the Cleaner daemon. Only needed for tests.
      */
     void stopDaemon() {
         thread.interrupt();
@@ -79,9 +90,9 @@ class CleanerService {
             thread.join();
             thread = null;
         } catch (InterruptedException e) {
-            Log.w("NabtoClient", "Resource cleaner daemon interrupted while stopping");
+            Log.w("nabto", "Resource cleaner daemon interrupted while stopping");
         }
-        Log.d("NabtoClient", "Resource cleaner daemon stopped");
+        Log.d("nabto", "Cleaner daemon stopped");
     }
 
     /**
@@ -91,8 +102,9 @@ class CleanerService {
      * @return
      */
     CleanerService.Cleanable register(Object o, Runnable r) {
-        Log.d("Cleaner", "Registering object " + o);
         CleanerService.CleanerReference c = new CleanerService.CleanerReference(Objects.requireNonNull(o), Objects.requireNonNull(r));
+        Log.d("nabto", "Cleaner registering object [" + o + "] with reference [" + c + "]");
+//        Log.d("nabto", "Cleaner registering object [" + o + "] with reference [" + c + "] - with stack:" + Log.getStackTraceString(new Exception()));
         phantomReferences.add(c);
         return c;
     }
@@ -110,6 +122,7 @@ class CleanerService {
 
         public void clean() {
             if (phantomReferences.remove(this)) {
+                Log.d("nabto", "Cleaner cleaning reference " + this);
                 super.clear();
                 cleaningAction.run();
             }
@@ -118,12 +131,14 @@ class CleanerService {
 
     void deleteOrphaned() {
         for (PhantomReference<Object> reference : phantomReferences) {
-            Log.d("Cleaner", "found a reference, enqueued=" + reference.isEnqueued());
+            Log.d("nabto", "Cleaner found a reference: " + reference + ", enqueued=" + reference.isEnqueued());
         }
         CleanerService.CleanerReference reference;
         while ((reference = (CleanerService.CleanerReference) garbageCollectedObjectsQueue.poll()) != null) {
-            Log.d("Cleaner", "cleaning a referance");
             reference.clean();
+            if (phantomReferences.isEmpty()) {
+                Log.d("nabto", "All registered Cleaner references cleaned up");
+            }
         }
     }
 }

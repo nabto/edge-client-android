@@ -39,8 +39,6 @@ public class NabtoClientImpl extends NabtoClient {
         } catch(Exception e) {
         }
 
-        CleanerService.instance().startDaemon();
-
         wifiMonitor = new WifiMonitor(this);
         wifiMonitor.init(context);
 
@@ -127,6 +125,5 @@ public class NabtoClientImpl extends NabtoClient {
 
     @Override
     public void stop() {
-        CleanerService.instance().stopDaemon();
     }
 }
