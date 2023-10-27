@@ -64,11 +64,11 @@ public class MdnsResultImpl implements MdnsResult {
                     String value = json.getString(key);
                     items.put(key, value);
                 } catch (JSONException e) {
-                    Log.w("NabtoClient", "Error accessing key " + key + " in mDNS result JSON from device: " + e);
+                    Log.w("nabto", "Error accessing key " + key + " in mDNS result JSON from device: " + e);
                 }
             }
         } catch (JSONException e) {
-            Log.w("NabtoClient", "Error parsing mDNS result JSON from device: " + e);
+            Log.w("nabto", "Error parsing mDNS result JSON from device: " + e);
         }
         return items;
     }
