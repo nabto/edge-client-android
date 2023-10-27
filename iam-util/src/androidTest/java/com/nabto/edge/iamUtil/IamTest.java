@@ -88,7 +88,17 @@ public class IamTest {
             cleanup(connection);
             connection = null;
         }
-        System.gc();
+        if (client != null) {
+            client.stop();
+            client = null;
+        }
+        for (int i=0; i<10; i++) {
+            Runtime.getRuntime().gc();
+            try {
+                Thread.sleep(10);
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     class LocalDevice {
@@ -760,54 +770,58 @@ public class IamTest {
     @Test
     public void testCreateUserAndGetUserCallback() {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
         String admin = uniqueUser();
-        
-        iam.pairPasswordOpen(connection, admin, dev.password);
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        iam.createUser(connection, guest, guestPassword, "Guest");
 
-        // Reconnect as user instead of admin
-        cleanup(connection);
-        Connection connectionUser = connectToDevice(dev);
-        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertFalse(res.get());
-            resolve();
-        });
-        await();
-        iam.pairPasswordInviteCallback(connectionUser, guest, guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertTrue(res.get());
-            resolve();
-        });
-        await();
+        Connection adminConnection = connectToDevice(dev);
+//        try (Connection adminConnection = connectToDevice(dev)) {
 
-        // Guest cannot GET admin
-        iam.getUserCallback(connectionUser, admin, (ec, res) -> {
-            assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
-            resolve();
-        });
-        await();
+            iam.pairPasswordOpen(adminConnection, admin, dev.password);
+            iam.createUser(adminConnection, guest, guestPassword, "Guest");
 
-        // Guest can GET self
-        iam.getUserCallback(connectionUser, guest, (ec, opt) -> {
-            assertEquals(ec, IamError.NONE);
-            IamUser me = opt.get();
-            assertEquals(me.getUsername(), guest);
-            assertEquals(me.getRole(), "Guest");
-            resolve();
-        });
-        await();
+            // Reconnect as user instead of admin
+            cleanup(adminConnection);
+//        }
 
-        cleanup(connectionUser);
+        try (Connection userConnection = connectToDevice(dev)) {
+            iam.isCurrentUserPairedCallback(userConnection, (ec, res) -> {
+                assertEquals(ec, IamError.NONE);
+                assertFalse(res.get());
+                resolve();
+            });
+            await();
+            iam.pairPasswordInviteCallback(userConnection, guest, guestPassword, (ec, res) -> {
+                assertEquals(IamError.NONE, ec);
+                resolve();
+            });
+            await();
+            iam.isCurrentUserPairedCallback(userConnection, (ec, res) -> {
+                assertEquals(ec, IamError.NONE);
+                assertTrue(res.get());
+                resolve();
+            });
+            await();
+
+            // Guest cannot GET admin
+            iam.getUserCallback(userConnection, admin, (ec, res) -> {
+                assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
+                resolve();
+            });
+            await();
+
+            // Guest can GET self
+            iam.getUserCallback(userConnection, guest, (ec, opt) -> {
+                assertEquals(ec, IamError.NONE);
+                IamUser me = opt.get();
+                assertEquals(me.getUsername(), guest);
+                assertEquals(me.getRole(), "Guest");
+                resolve();
+            });
+            await();
+            userConnection.connectionClose();
+        }
     }
 
     @Test
