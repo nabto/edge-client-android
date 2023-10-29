@@ -11,7 +11,9 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -506,51 +508,78 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordInviteSuccessCallback() {
+    public void testPasswordInviteSuccessCallback() throws Exception {
+        client.setLogLevel("trace");
         LocalDevice dev = localPasswordInvite;
-        connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
-        
-        String admin = uniqueUser();
-        iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-
+        final AtomicInteger errorCode = new AtomicInteger();
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-        iam.getUserCallback(connection, guest, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
+
+        try (Connection connection = connectToDevice(dev)) {
+            CountDownLatch adminLatch = new CountDownLatch(1);
+            String admin = uniqueUser();
+            iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                adminLatch.countDown();
+            });
+            assertTrue(adminLatch.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+
+            CountDownLatch userCreateLatch = new CountDownLatch(1);
+            iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                userCreateLatch.countDown();
+            });
+            assertTrue(userCreateLatch.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+
+            CountDownLatch userGetLatch = new CountDownLatch(1);
+            iam.getUserCallback(connection, guest, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                userGetLatch.countDown();
+            });
+            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+
+            connection.connectionClose();
+        }
 
         // Reconnect as user instead of admin
-        cleanup(connection);
-        connection = connectToDevice(dev);
-        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertFalse(res.get());
-            resolve();
-        });
-        await();
-        iam.pairPasswordInviteCallback(connection, guest, guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertTrue(res.get());
-            resolve();
-        });
-        await();
+        try (Connection connection = connectToDevice(dev)) {
+            CountDownLatch isPairedLatch1 = new CountDownLatch(1);
+            AtomicBoolean isPaired = new AtomicBoolean(true);
+            iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                isPaired.set(res.get());
+                isPairedLatch1.countDown();
+            });
+            assertTrue(isPairedLatch1.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            assertFalse(isPaired.get());
+
+            CountDownLatch pairLatch = new CountDownLatch(1);
+            iam.pairPasswordInviteCallback(connection, guest, guestPassword, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                pairLatch.countDown();
+            });
+            assertTrue(pairLatch.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            CountDownLatch isPairedLatch2 = new CountDownLatch(1);
+            iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+                isPaired.set(res.get());
+                errorCode.set(ec.ordinal());
+                isPairedLatch2.countDown();
+            });
+
+            assertTrue(isPairedLatch2.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertTrue(isPaired.get());
+            connection.connectionClose();
+        }
     }
+
 
     @Test
     public void testPasswordInviteWrongUser() {
