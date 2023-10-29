@@ -310,21 +310,17 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordOpenWrongPasswordCallback() {
+    public void testPasswordOpenWrongPasswordCallback() throws Exception {
         connection = connectToDevice(localPairPasswordOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode = new AtomicInteger();
+        CountDownLatch latch = new CountDownLatch(1);
         iam.pairPasswordOpenCallback(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password", (ec, res) -> {
-            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.AUTHENTICATION_ERROR.ordinal(), errorCode.get());
     }
 
     @Test
