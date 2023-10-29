@@ -287,21 +287,17 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordOpenSuccessCallback() {
+    public void testPasswordOpenSuccessCallback() throws Exception {
         connection = connectToDevice(localPairPasswordOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode = new AtomicInteger();
+        CountDownLatch latch = new CountDownLatch(1);
         iam.pairPasswordOpenCallback(connection, uniqueUser(), localPairPasswordOpen.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.ordinal(), errorCode.get());
     }
 
     @Test
