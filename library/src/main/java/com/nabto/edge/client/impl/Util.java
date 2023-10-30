@@ -1,6 +1,8 @@
 package com.nabto.edge.client.impl;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.swig.FutureCallback;
 
@@ -11,8 +13,11 @@ public class Util {
             public void run(com.nabto.edge.client.swig.Status status) {
                 Optional<Void> opt = Optional.empty();
                 callback.run(status.getErrorCode(), opt);
+                callbackReferences.remove(this);
             }
         };
+        callbackReferences.add(cb);
         return cb;
     }
+    private static final Set<FutureCallback> callbackReferences = ConcurrentHashMap.newKeySet();
 }
