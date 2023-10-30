@@ -334,22 +334,18 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordOpenBlockedByConfigCallback() {
+    public void testPasswordOpenBlockedByConfigCallback() throws Exception {
         LocalDevice dev = localPasswordPairingDisabledConfig;
         connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode = new AtomicInteger();
+        CountDownLatch latch = new CountDownLatch(1);
         iam.pairPasswordOpenCallback(connection, uniqueUser(), dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.ordinal(), errorCode.get());
     }
 
     @Test
@@ -363,29 +359,32 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalOpenSuccessCallback() {
+    public void testLocalOpenSuccessCallback() throws InterruptedException {
         connection = connectToDevice(localPairLocalOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode0 = new AtomicInteger();
+        AtomicInteger errorCode1 = new AtomicInteger();
+        AtomicBoolean result0 = new AtomicBoolean();
+        AtomicBoolean result1 = new AtomicBoolean();
+        CountDownLatch latch = new CountDownLatch(1);
         iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
-            assertEquals(ec0, IamError.NONE);
-            assertFalse(res0.get());
+            errorCode0.set(ec0.ordinal());
+            result0.set(res0.get());
             iam.pairLocalOpenCallback(connection, uniqueUser(), (ec1, res1) -> {
-                assertEquals(ec1, IamError.NONE);
                 iam.isCurrentUserPairedCallback(connection, (ec2, res2) -> {
-                    assertEquals(ec2, IamError.NONE);
-                    assertTrue(res2.get());
-                    future.complete(null);
+                    errorCode1.set(ec2.ordinal());
+                    result1.set(res2.get());
+                    latch.countDown();
                 });
             });
         });
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
 
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertEquals(IamError.NONE.ordinal(), errorCode0.get());
+        assertFalse(result0.get());
+
+        assertEquals(IamError.NONE.ordinal(), errorCode1.get());
+        assertTrue(result1.get());
     }
 
     @Test
@@ -398,21 +397,17 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalOpenInvalidUsernameCallback() {
+    public void testLocalOpenInvalidUsernameCallback() throws InterruptedException {
         connection = connectToDevice(localPairLocalOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger();
         iam.pairLocalOpenCallback(connection, "Worst username in the history of usernames", (ec, res) -> {
-            assertEquals(ec, IamError.INVALID_INPUT);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.INVALID_INPUT.ordinal(), errorCode.get());
     }
 
     @Test
