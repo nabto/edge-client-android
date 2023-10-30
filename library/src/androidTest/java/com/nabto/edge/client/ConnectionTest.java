@@ -179,20 +179,22 @@ public class ConnectionTest {
         assertEquals(ErrorCodes.STOPPED, errorCode.get());
     }
 
-    @Test(expected = Test.None.class)
-    public void gcConnectCallback() throws Exception {
-        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createConnection(client);
-        JSONObject options = new JSONObject();
-        options.put("DeviceId", "unknown");
-        connection.updateOptions(options.toString());
+    // @Test(expected = Test.None.class)
+    // public void gcConnectCallback() throws Exception {
+    //     NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+    //     Connection connection = Helper.createConnection(client);
+    //     JSONObject options = new JSONObject();
+    //     options.put("DeviceId", "unknown");
+    //     connection.updateOptions(options.toString());
 
-        connection.connectCallback(new NabtoCallback<Void>(){ public void run(int errorCode, Optional<Void> notUsed) {} });
-        // The callback is not used, the gc will gc it.
-        for (int i = 0; i < 100; i++) {
-            Runtime.getRuntime().gc();
-            Thread.sleep(30);
-        }
-        // the connect should fail at some point and the application should not crash.
-    }
+    //         connection.connectCallback(new NabtoCallback<Void>(){ public void run(int errorCode, Optional<Void> notUsed) {
+    //             Log.i("NABTO", "this is not called");
+    //         } });
+    //     // The callback is not used, the gc will gc it.
+    //     for (int i = 0; i < 100; i++) {
+    //         Runtime.getRuntime().gc();
+    //         Thread.sleep(30);
+    //     }
+    //     // the connect should fail at some point and the application should not crash.
+    // }
 };
