@@ -5,6 +5,8 @@ import android.util.Log;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.swig.FutureCallback;
 
@@ -21,9 +23,13 @@ public class Util {
                     PrintWriter pw = new PrintWriter(sw);
                     t.printStackTrace(pw);
                     Log.e("nabto", "Callback into application from SDK threw an exception (will not be propagated to Nabto Client SDK as this will cause crash):  " + sw);
+                } finally {
+                    callbackReferences.remove(this);
                 }
             }
         };
+        callbackReferences.add(cb);
         return cb;
     }
+    private static final Set<FutureCallback> callbackReferences = ConcurrentHashMap.newKeySet();
 }

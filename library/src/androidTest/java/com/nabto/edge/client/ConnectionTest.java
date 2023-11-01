@@ -12,9 +12,13 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import java.util.Optional;
+
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -174,4 +178,23 @@ public class ConnectionTest {
         assertTrue(exceptionLatch.await(5, TimeUnit.SECONDS));
         assertEquals(ErrorCodes.STOPPED, errorCode.get());
     }
+
+    // @Test(expected = Test.None.class)
+    // public void gcConnectCallback() throws Exception {
+    //     NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+    //     Connection connection = Helper.createConnection(client);
+    //     JSONObject options = new JSONObject();
+    //     options.put("DeviceId", "unknown");
+    //     connection.updateOptions(options.toString());
+
+    //         connection.connectCallback(new NabtoCallback<Void>(){ public void run(int errorCode, Optional<Void> notUsed) {
+    //             Log.i("NABTO", "this is not called");
+    //         } });
+    //     // The callback is not used, the gc will gc it.
+    //     for (int i = 0; i < 100; i++) {
+    //         Runtime.getRuntime().gc();
+    //         Thread.sleep(30);
+    //     }
+    //     // the connect should fail at some point and the application should not crash.
+    // }
 };
