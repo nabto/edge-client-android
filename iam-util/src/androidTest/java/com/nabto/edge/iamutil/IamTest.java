@@ -91,10 +91,7 @@ public class IamTest {
             cleanup(connection);
             connection = null;
         }
-        if (client != null) {
-            client.stop();
-            client = null;
-        }
+        client = null;
         for (int i=0; i<10; i++) {
             Runtime.getRuntime().gc();
             try {
@@ -298,7 +295,7 @@ public class IamTest {
             latch.countDown();
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -321,7 +318,7 @@ public class IamTest {
             latch.countDown();
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.AUTHENTICATION_ERROR.ordinal(), errorCode.get());
+        assertEquals(IamError.AUTHENTICATION_ERROR.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -346,7 +343,7 @@ public class IamTest {
             latch.countDown();
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.ordinal(), errorCode.get());
+        assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -381,10 +378,10 @@ public class IamTest {
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
 
-        assertEquals(IamError.NONE.ordinal(), errorCode0.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode0.get()].name());
         assertFalse(result0.get());
 
-        assertEquals(IamError.NONE.ordinal(), errorCode1.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode1.get()].name());
         assertTrue(result1.get());
     }
 
@@ -408,7 +405,7 @@ public class IamTest {
             latch.countDown();
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.INVALID_INPUT.ordinal(), errorCode.get());
+        assertEquals(IamError.INVALID_INPUT.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -439,7 +436,7 @@ public class IamTest {
             });
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.USERNAME_EXISTS.ordinal(), errorCode.get());
+        assertEquals(IamError.USERNAME_EXISTS.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -464,7 +461,7 @@ public class IamTest {
         });
 
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.PAIRING_MODE_DISABLED.ordinal(), errorCode.get());
+        assertEquals(IamError.PAIRING_MODE_DISABLED.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -506,7 +503,7 @@ public class IamTest {
                 adminLatch.countDown();
             });
             assertTrue(adminLatch.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
             CountDownLatch userCreateLatch = new CountDownLatch(1);
             iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
@@ -514,14 +511,14 @@ public class IamTest {
                 userCreateLatch.countDown();
             });
             assertTrue(userCreateLatch.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
             CountDownLatch userGetLatch = new CountDownLatch(1);
             iam.getUserCallback(connection, guest, (ec, res) -> {
                 errorCode.set(ec.ordinal());
                 userGetLatch.countDown();
             });
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
             connection.connectionClose();
         }
@@ -614,7 +611,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(errorCode.get(), IamError.NONE.ordinal());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         CountDownLatch latch2 = new CountDownLatch(1);
         errorCode.set(-1);
@@ -623,7 +620,7 @@ public class IamTest {
             latch2.countDown();
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
-        assertEquals(errorCode.get(), IamError.NONE.ordinal());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         CountDownLatch latch3 = new CountDownLatch(1);
         errorCode.set(-1);
@@ -639,7 +636,7 @@ public class IamTest {
             latch3.countDown();
         });
         assertTrue(latch3.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertFalse(result.get());
 
         CountDownLatch latch4 = new CountDownLatch(1);
@@ -649,7 +646,7 @@ public class IamTest {
             latch4.countDown();
         });
         assertTrue(latch4.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.AUTHENTICATION_ERROR.ordinal(), errorCode.get());
+        assertEquals(IamError.AUTHENTICATION_ERROR.name(), IamError.values()[errorCode.get()].name());
         cleanup(connectionUser);
     }
 
@@ -684,7 +681,7 @@ public class IamTest {
             latch0.countDown();
         });
         assertTrue(latch0.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
@@ -694,7 +691,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.ROLE_DOES_NOT_EXIST.ordinal(), errorCode.get());
+        assertEquals(IamError.ROLE_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -724,7 +721,7 @@ public class IamTest {
         });
 
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.USER_DOES_NOT_EXIST.ordinal(), errorCode.get());
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
         assertFalse(result.get());
     }
 
@@ -750,7 +747,7 @@ public class IamTest {
         });
 
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.IAM_NOT_SUPPORTED.ordinal(), errorCode.get());
+        assertEquals(IamError.IAM_NOT_SUPPORTED.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -821,7 +818,7 @@ public class IamTest {
                 latch0.countDown();
             });
             assertTrue(latch0.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
             assertFalse(result0.get());
 
             errorCode.set(-1);
@@ -830,7 +827,7 @@ public class IamTest {
                 latch1.countDown();
             });
             assertTrue(latch1.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
             errorCode.set(-1);
             iam.isCurrentUserPairedCallback(userConnection, (ec, res) -> {
@@ -839,7 +836,7 @@ public class IamTest {
                 latch2.countDown();
             });
             assertTrue(latch2.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
             assertTrue(result2.get());
 
             // Guest cannot GET admin
@@ -849,7 +846,7 @@ public class IamTest {
                 latch3.countDown();
             });
             assertTrue(latch3.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.ordinal(), errorCode.get());
+            assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.name(), IamError.values()[errorCode.get()].name());
 
             // Guest can GET self
             errorCode.set(-1);
@@ -861,7 +858,7 @@ public class IamTest {
                 latch4.countDown();
             });
             assertTrue(latch4.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
             assertEquals(guest, newUser.get());
             assertEquals("Guest", newRole.get());
             userConnection.connectionClose();
@@ -903,7 +900,7 @@ public class IamTest {
             latch.countDown();
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         CountDownLatch latch2 = new CountDownLatch(1);
         AtomicReference<String> deviceUsername = new AtomicReference<String>();
@@ -918,7 +915,7 @@ public class IamTest {
             latch2.countDown();
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertEquals(username, deviceUsername.get());
         assertEquals(displayName, deviceDisplayName.get());
     }
@@ -978,7 +975,7 @@ public class IamTest {
             latch0.countDown();
         });
         assertTrue(latch0.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.USER_DOES_NOT_EXIST.ordinal(), errorCode.get());
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         CountDownLatch latch1 = new CountDownLatch(1);
         errorCode.set(-1);
@@ -988,7 +985,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
             iam.getUser(connection, guest);
@@ -1030,10 +1027,10 @@ public class IamTest {
         });
 
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode0.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode0.get()].name());
         assertFalse(result0.get());
-        assertEquals(IamError.NONE.ordinal(), errorCode1.get());
-        assertEquals(IamError.NONE.ordinal(), errorCode2.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode1.get()].name());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode2.get()].name());
         assertTrue(result2.get());
     }
 
@@ -1068,7 +1065,7 @@ public class IamTest {
             latch0.countDown();
         });
         assertTrue(latch0.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertFalse(result.get());
 
         errorCode.set(-1);
@@ -1077,7 +1074,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         errorCode.set(-1);
         result.set(false);
@@ -1087,7 +1084,7 @@ public class IamTest {
             latch2.countDown();
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertTrue(result.get());
 
         errorCode.set(-1);
@@ -1096,7 +1093,7 @@ public class IamTest {
             latch3.countDown();
         });
         assertTrue(latch3.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.INITIAL_USER_ALREADY_PAIRED.ordinal(), errorCode.get());
+        assertEquals(IamError.INITIAL_USER_ALREADY_PAIRED.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -1241,7 +1238,7 @@ public class IamTest {
                 latch0.countDown();
             });
             assertTrue(latch0.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.USER_DOES_NOT_EXIST.ordinal(), errorCode.get());
+            assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
             errorCode.set(-1);
             iam.updateUserPasswordCallback(connection, user, newGuestPassword, (ec, res) -> {
@@ -1249,7 +1246,7 @@ public class IamTest {
                 latch1.countDown();
             });
             assertTrue(latch1.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
             connection.connectionClose();
         }
@@ -1262,7 +1259,7 @@ public class IamTest {
                 latch2.countDown();
             });
             assertTrue(latch2.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
             assertFalse(result.get());
 
             errorCode.set(-1);
@@ -1279,7 +1276,7 @@ public class IamTest {
                 latch4.countDown();
             });
             assertTrue(latch4.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
             errorCode.set(-1);
             result.set(false);
@@ -1289,7 +1286,7 @@ public class IamTest {
                 latch5.countDown();
             });
             assertTrue(latch5.await(1, TimeUnit.SECONDS));
-            assertEquals(IamError.NONE.ordinal(), errorCode.get());
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
             assertTrue(result.get());
 
             connection.connectionClose();
@@ -1340,7 +1337,7 @@ public class IamTest {
             latch0.countDown();
         });
         assertTrue(latch0.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.ROLE_DOES_NOT_EXIST.ordinal(), errorCode.get());
+        assertEquals(IamError.ROLE_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         // Shouldn't fail
         errorCode.set(-1);
@@ -1349,7 +1346,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         errorCode.set(-1);
         iam.getUserCallback(connection, user, (ec, res) -> {
@@ -1359,7 +1356,7 @@ public class IamTest {
             latch2.countDown();
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertEquals(newRole, newRoleDevice.get());
     }
 
@@ -1407,7 +1404,7 @@ public class IamTest {
             latch0.countDown();
         });
         assertTrue(latch0.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.USER_DOES_NOT_EXIST.ordinal(), errorCode.get());
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         // Shouldn't fail
         errorCode.set(-1);
@@ -1416,7 +1413,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         errorCode.set(-1);
         iam.getUserCallback(connection, user, (ec, res) -> {
@@ -1426,7 +1423,7 @@ public class IamTest {
             latch2.countDown();
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertEquals(newDisplayName, newDisplayNameDevice.get());
     }
 
@@ -1474,7 +1471,7 @@ public class IamTest {
             latch0.countDown();
         });
         assertTrue(latch0.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.USER_DOES_NOT_EXIST.ordinal(), errorCode.get());
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         // Shouldn't fail
         errorCode.set(-1);
@@ -1483,7 +1480,7 @@ public class IamTest {
             latch1.countDown();
         });
         assertTrue(latch1.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         errorCode.set(-1);
         iam.getUserCallback(connection, newUsername, (ec, res) -> {
@@ -1493,7 +1490,7 @@ public class IamTest {
             latch2.countDown();
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
-        assertEquals(IamError.NONE.ordinal(), errorCode.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertEquals(newUsername, newUsernameDevice.get());
     }
 }
