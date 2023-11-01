@@ -130,9 +130,9 @@ class CleanerService {
     }
 
     void deleteOrphaned() {
-        for (PhantomReference<Object> reference : phantomReferences) {
-            Log.d("nabto", "Cleaner found a reference: " + reference + ", enqueued=" + reference.isEnqueued());
-        }
+//        for (PhantomReference<Object> reference : phantomReferences) {
+//            Log.d("nabto", "Cleaner found a reference: " + reference + ", enqueued=" + reference.isEnqueued());
+//        }
         CleanerService.CleanerReference reference;
         while ((reference = (CleanerService.CleanerReference) garbageCollectedObjectsQueue.poll()) != null) {
             reference.clean();
