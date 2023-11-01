@@ -110,11 +110,4 @@ public abstract class NabtoClient implements AutoCloseable {
      * @return String representation of the SDK version.
      */
     public abstract String version();
-
-    /**
-     * Stop a client for final cleanup, this function is blocking until no more callbacks are in progress or on the event or callback queues.
-     *
-     * If SDK logging has been configured, this function MUST be called, otherwise Client instances are leaked.
-     */
-    public abstract void stop();
 }

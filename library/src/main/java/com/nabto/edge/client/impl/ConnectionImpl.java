@@ -131,7 +131,6 @@ public class ConnectionImpl implements Connection, AutoCloseable {
 
     @Override
     public void close() {
-        // TODO: invoke stop() when available
         for (CleanerService.Cleanable cleanable : cleanables) {
             cleanable.clean();
         }

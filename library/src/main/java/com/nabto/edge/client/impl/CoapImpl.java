@@ -68,11 +68,7 @@ public class CoapImpl implements Coap, AutoCloseable {
         cleanable.clean();
     }
 
-    /**
-     * "Care must be taken not to capture the this instance, that’s why the creation has been
-     * moved into a static method in the example above. Without a this in scope, it can’t be
-     * captured by accident." (from https://stackoverflow.com/questions/46144524/delete-native-peer-with-general-phantomreference-class/47830289#47830289)
-     */
+    /// static helper to ensure no "this" is captured accidentally
     private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.Coap nativeHandle) {
         return CleanerService.instance().register(o, () -> nativeHandle.delete());
     }
