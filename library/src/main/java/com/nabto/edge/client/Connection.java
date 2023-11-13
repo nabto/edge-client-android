@@ -162,6 +162,9 @@ public interface Connection extends AutoCloseable {
      * {@code connect} at the end of the block, releasing any underlying
      * native Nabto Client SDK resources without any further action required on the application.</p>
      *
+     * <p></p>If the try-with-resources construct is not feasible, the application must manually call close()
+     * when the Connection instance is no longer needed.</p>
+     *
      * <p>Unlike the {@link AutoCloseable#close()} method, this {@code close()}
      * method does not throw any exceptions.</p>
      */

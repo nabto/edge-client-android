@@ -124,7 +124,7 @@ public class NabtoClientImpl extends NabtoClient {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         // do not cleanup multicast and wifi locks here to not mess with reference count: only
         // the deprecated mDNS functions acquire/release the locks in this class - it is up to
         // users of the deprecated API to manage these resources.

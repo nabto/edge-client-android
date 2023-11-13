@@ -81,13 +81,16 @@ public interface TcpTunnel extends AutoCloseable {
      * <p>Example of using a CoAP object within a try-with-resources statement:</p>
      * <pre>
      * try (TcpTunnel tunnel = connection.createTunnel(...)) {
-     *     // ... use stream
+     *     // ... use tunnel
      * }
      * </pre>
      *
      * <p>With this setup, {@code close()} will be called automatically on
      * {@code connect} at the end of the block, releasing any underlying
      * native Nabto Client SDK resources without any further action required on the application.</p>
+     *
+     * <p></p>If the try-with-resources construct is not feasible, the application must manually call close()
+     * when the TcpTunnel instance is no longer needed.</p>
      *
      * <p>Unlike the {@link AutoCloseable#close()} method, this {@code close()}
      * method does not throw any exceptions.</p>
