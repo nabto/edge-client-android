@@ -91,7 +91,10 @@ public class IamTest {
             cleanup(connection);
             connection = null;
         }
-        client = null;
+        if (client != null) {
+            client.close();
+            client = null;
+        }
         for (int i=0; i<10; i++) {
             Runtime.getRuntime().gc();
             try {
