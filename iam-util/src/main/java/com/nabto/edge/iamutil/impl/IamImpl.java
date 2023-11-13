@@ -13,19 +13,20 @@ import com.nabto.edge.client.Coap.ContentFormat;
 public class IamImpl extends IamUtil {
     @Override
     public void pairLocalOpen(Connection connection, String desiredUsername) {
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.PAIR_LOCAL_OPEN)
-            .withPayload(new IamUser(desiredUsername))
-            .withMap(new Object[][] {
-                {201, IamError.NONE},
-                {400, IamError.INVALID_INPUT},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.PAIRING_MODE_DISABLED},
-                {409, IamError.USERNAME_EXISTS}
-            })
-            .execute()
-            .maybeThrow();
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.PAIR_LOCAL_OPEN)
+                    .withPayload(new IamUser(desiredUsername))
+                    .withMap(new Object[][]{
+                            {201, IamError.NONE},
+                            {400, IamError.INVALID_INPUT},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.PAIRING_MODE_DISABLED},
+                            {409, IamError.USERNAME_EXISTS}
+                    })
+                    .execute()
+                    .maybeThrow();
+        }
     }
 
     @Override
@@ -47,17 +48,18 @@ public class IamImpl extends IamUtil {
 
     @Override
     public void pairLocalInitial(Connection connection) {
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.PAIR_LOCAL_INITIAL)
-            .withMap(new Object[][] {
-                {201, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.PAIRING_MODE_DISABLED},
-                {409, IamError.INITIAL_USER_ALREADY_PAIRED}
-            })
-            .execute()
-            .maybeThrow();
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.PAIR_LOCAL_INITIAL)
+                    .withMap(new Object[][]{
+                            {201, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.PAIRING_MODE_DISABLED},
+                            {409, IamError.INITIAL_USER_ALREADY_PAIRED}
+                    })
+                    .execute()
+                    .maybeThrow();
+        }
     }
 
     @Override
@@ -90,19 +92,20 @@ public class IamImpl extends IamUtil {
     @Override
     public void pairPasswordOpen(Connection connection, String desiredUsername, String password) {
         passwordAuthenticate(connection, "", password);
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.PAIR_PASSWORD_OPEN)
-            .withPayload(new IamUser(desiredUsername))
-            .withMap(new Object[][] {
-                {201, IamError.NONE},
-                {400, IamError.INVALID_INPUT},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.PAIRING_MODE_DISABLED},
-                {409, IamError.USERNAME_EXISTS}
-            })
-            .execute()
-            .maybeThrow();
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.PAIR_PASSWORD_OPEN)
+                    .withPayload(new IamUser(desiredUsername))
+                    .withMap(new Object[][]{
+                            {201, IamError.NONE},
+                            {400, IamError.INVALID_INPUT},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.PAIRING_MODE_DISABLED},
+                            {409, IamError.USERNAME_EXISTS}
+                    })
+                    .execute()
+                    .maybeThrow();
+        }
     }
 
     @Override
@@ -135,16 +138,17 @@ public class IamImpl extends IamUtil {
     @Override
     public void pairPasswordInvite(Connection connection, String username, String password) {
         passwordAuthenticate(connection, username, password);
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.PAIR_PASSWORD_INVITE)
-            .withMap(new Object[][] {
-                {201, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.PAIRING_MODE_DISABLED}
-            })
-            .execute()
-            .maybeThrow();
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.PAIR_PASSWORD_INVITE)
+                    .withMap(new Object[][]{
+                            {201, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.PAIRING_MODE_DISABLED}
+                    })
+                    .execute()
+                    .maybeThrow();
+        }
     }
 
     @Override
@@ -191,18 +195,19 @@ public class IamImpl extends IamUtil {
 
     @Override
     public DeviceDetails getDeviceDetails(Connection connection) {
-        IamComposer composer = new IamComposer();
-        DeviceDetails details = composer
-            .start(connection, IamPath.GET_DEVICE_DETAILS)
-            .withMap(new Object[][] {
-                {205, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.IAM_NOT_SUPPORTED}
-            })
-            .execute(false)
-            .maybeThrow()
-            .decodePayload(DeviceDetails.class);
-        return details;
+        try (IamComposer composer = new IamComposer()) {
+            DeviceDetails details = composer
+                    .start(connection, IamPath.GET_DEVICE_DETAILS)
+                    .withMap(new Object[][]{
+                            {205, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.IAM_NOT_SUPPORTED}
+                    })
+                    .execute(false)
+                    .maybeThrow()
+                    .decodePayload(DeviceDetails.class);
+            return details;
+        }
     }
 
     @Override
@@ -222,21 +227,22 @@ public class IamImpl extends IamUtil {
 
     @Override
     public boolean isCurrentUserPaired(Connection connection) {
-        IamComposer composer = new IamComposer();
-        int status = composer
-            .start(connection, IamPath.GET_ME)
-            .withMap(new Object[][] {
-                {205, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.NONE}
-            })
-            .execute()
-            .maybeThrow()
-            .getStatus();
-        if (status == 205) {
-            return true;
-        } else {
-            return false;
+        try (IamComposer composer = new IamComposer()) {
+            int status = composer
+                    .start(connection, IamPath.GET_ME)
+                    .withMap(new Object[][]{
+                            {205, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.NONE}
+                    })
+                    .execute()
+                    .maybeThrow()
+                    .getStatus();
+            if (status == 205) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -260,18 +266,19 @@ public class IamImpl extends IamUtil {
 
     @Override
     public IamUser getUser(Connection connection, String username) {
-        IamComposer composer = new IamComposer();
-        IamUser user = composer
-            .start(connection, IamPath.GET_USER, username)
-            .withMap(new Object[][] {
-                {205, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.USER_DOES_NOT_EXIST}
-            })
-            .execute()
-            .maybeThrow()
-            .decodePayload(IamUser.class);
-        return user;
+        try (IamComposer composer = new IamComposer()) {
+            IamUser user = composer
+                    .start(connection, IamPath.GET_USER, username)
+                    .withMap(new Object[][]{
+                            {205, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.USER_DOES_NOT_EXIST}
+                    })
+                    .execute()
+                    .maybeThrow()
+                    .decodePayload(IamUser.class);
+            return user;
+        }
     }
 
     @Override
@@ -291,18 +298,19 @@ public class IamImpl extends IamUtil {
 
     @Override
     public IamUser getCurrentUser(Connection connection) {
-        IamComposer composer = new IamComposer();
-        IamUser user = composer
-            .start(connection, IamPath.GET_ME)
-            .withMap(new Object[][] {
-                {205, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.USER_DOES_NOT_EXIST}
-            })
-            .execute()
-            .maybeThrow()
-            .decodePayload(IamUser.class);
-        return user;
+        try (IamComposer composer = new IamComposer()) {
+            IamUser user = composer
+                    .start(connection, IamPath.GET_ME)
+                    .withMap(new Object[][]{
+                            {205, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.USER_DOES_NOT_EXIST}
+                    })
+                    .execute()
+                    .maybeThrow()
+                    .decodePayload(IamUser.class);
+            return user;
+        }
     }
 
     @Override
@@ -322,17 +330,18 @@ public class IamImpl extends IamUtil {
 
     @Override
     public String[] getAvailableRoles(Connection connection) {
-        IamComposer composer = new IamComposer();
-        String[] result = composer
-            .start(connection, IamPath.GET_ROLES)
-            .withMap(new Object[][] {
-                {205, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION}
-            })
-            .execute()
-            .maybeThrow()
-            .decodePayload(String[].class);
-        return result;
+        try (IamComposer composer = new IamComposer()) {
+            String[] result = composer
+                    .start(connection, IamPath.GET_ROLES)
+                    .withMap(new Object[][]{
+                            {205, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION}
+                    })
+                    .execute()
+                    .maybeThrow()
+                    .decodePayload(String[].class);
+            return result;
+        }
     }
 
     @Override
@@ -355,18 +364,19 @@ public class IamImpl extends IamUtil {
         //        We have two errors USER_DOES_NOT_EXIST and ROLE_DOES_NOT_EXIST
         //        and we can only report one. Shouldn't they just be one error?
         //        such as INVALID_USER_UPDATE_SETTINGS or something.
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.UPDATE_USER, username, key)
-            .withPayload(value)
-            .withMap(new Object[][] {
-                {204, IamError.NONE},
-                {400, IamError.INVALID_INPUT},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, error404}
-            })
-            .execute()
-            .maybeThrow();
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.UPDATE_USER, username, key)
+                    .withPayload(value)
+                    .withMap(new Object[][]{
+                            {204, IamError.NONE},
+                            {400, IamError.INVALID_INPUT},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, error404}
+                    })
+                    .execute()
+                    .maybeThrow();
+        }
     }
 
     private void updateUserCallback(Connection connection, String username, String key, String value, IamError error404, IamCallback cb) {
@@ -386,20 +396,21 @@ public class IamImpl extends IamUtil {
 
     @Override
     public void createUser(Connection connection, String username, String password, String role) {
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.CREATE_USER)
-            .withPayload(new IamUser(username))
-            .withMap(new Object[][] {
-                {201, IamError.NONE},
-                {400, IamError.INVALID_INPUT},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {409, IamError.USERNAME_EXISTS}
-            })
-            .execute()
-            .maybeThrow();
-        updateUser(connection, username, "password", password, IamError.USER_DOES_NOT_EXIST);
-        updateUser(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST);
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.CREATE_USER)
+                    .withPayload(new IamUser(username))
+                    .withMap(new Object[][]{
+                            {201, IamError.NONE},
+                            {400, IamError.INVALID_INPUT},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {409, IamError.USERNAME_EXISTS}
+                    })
+                    .execute()
+                    .maybeThrow();
+            updateUser(connection, username, "password", password, IamError.USER_DOES_NOT_EXIST);
+            updateUser(connection, username, "role", role, IamError.ROLE_DOES_NOT_EXIST);
+        }
     }
 
     @Override
@@ -477,16 +488,17 @@ public class IamImpl extends IamUtil {
 
     @Override
     public void deleteUser(Connection connection, String username) {
-        IamComposer composer = new IamComposer();
-        composer
-            .start(connection, IamPath.DELETE_USER, username)
-            .withMap(new Object[][] {
-                {202, IamError.NONE},
-                {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
-                {404, IamError.USER_DOES_NOT_EXIST}
-            })
-            .execute()
-            .maybeThrow();
+        try (IamComposer composer = new IamComposer()) {
+            composer
+                    .start(connection, IamPath.DELETE_USER, username)
+                    .withMap(new Object[][]{
+                            {202, IamError.NONE},
+                            {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                            {404, IamError.USER_DOES_NOT_EXIST}
+                    })
+                    .execute()
+                    .maybeThrow();
+        }
     }
 
     @Override

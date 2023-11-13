@@ -104,6 +104,7 @@ public class IamComposerAsync<T> {
         } else {
             userCallback.run(err, Optional.empty());
         }
+        // TODO - cleanup coap here?
     }
 
     public IamComposerAsync execute(boolean withProbe) {
@@ -149,4 +150,5 @@ public class IamComposerAsync<T> {
     public IamComposerAsync execute() {
         return execute(true);
     }
+
 }
