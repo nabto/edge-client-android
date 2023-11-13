@@ -62,7 +62,7 @@ public class CoapTest {
             client.setLogLevel("trace");
 
             Connection connection = Helper.createRemoteConnection(client);
-            connection.connectionClose();
+            connection.connect();
             for (int i = 0; i < 3; i++) {
                 Coap coap = connection.createCoap("GET", "/hello-world");
                 coap.execute();
