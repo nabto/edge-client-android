@@ -93,7 +93,7 @@ public class Helper {
         try {
             options.put("ProductId", resources.getString(R.string.stream_product_id));
             options.put("DeviceId", resources.getString(R.string.stream_device_id));
-            options.put("ServerKey", resources.getString(R.string.stream_server_key));
+            options.put("ServerConnectToken", "demosct");
             options.put("PrivateKey", client.createPrivateKey());
             connection.updateOptions(options.toString());
         } catch (JSONException e) {
