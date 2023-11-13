@@ -11,7 +11,6 @@
 
   <string name="stream_product_id">pr-fatqcwj9</string>
   <string name="stream_device_id">de-bdsotcgm</string>
-  <string name="stream_server_key">sk-72c860c244a6014248e64d5273e3e0ec</string>
 
   <string name="local_product_id">pr-test</string>
   <string name="local_device_id">de-test</string>
