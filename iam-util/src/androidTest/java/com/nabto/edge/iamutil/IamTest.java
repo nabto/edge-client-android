@@ -1495,5 +1495,6 @@ public class IamTest {
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
         assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertEquals(newUsername, newUsernameDevice.get());
+//        assertTrue(false);
     }
 }
