@@ -14,7 +14,7 @@ def getSnapshotRepositoryUrl() {
 afterEvaluate { project ->
     publishing {
         publications {
-            mavenJava(MavenPublication) {
+            release(MavenPublication) {
                 groupId = GROUP
                 if (isReleaseVersion()) {
                     version = buildVersionName()
@@ -23,7 +23,7 @@ afterEvaluate { project ->
                     version = gitBranch + "-SNAPSHOT"
                 }
                 artifactId = POM_ARTIFACT_ID_IAM_KTX
-                from components.release
+                //from components.release
                 artifact sourcesJar
                 // artifact javadocJar
                 artifact dokkaJavadocJar
@@ -79,7 +79,7 @@ afterEvaluate { project ->
 }
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier = 'sources'
 }
 
 dokkaJavadoc.configure {
@@ -92,6 +92,6 @@ dokkaJavadoc.configure {
 }
 
 task dokkaJavadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from file("${buildDir}/dokka")
 }

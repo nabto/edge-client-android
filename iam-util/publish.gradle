@@ -13,7 +13,7 @@ def getSnapshotRepositoryUrl() {
 afterEvaluate { project ->
     publishing {
         publications {
-            mavenJava(MavenPublication) {
+            release(MavenPublication) {
                 groupId = GROUP
                 if (isReleaseVersion()) {
                     version = buildVersionName()
@@ -22,7 +22,7 @@ afterEvaluate { project ->
                     version = gitBranch + "-SNAPSHOT"
                 }
                 artifactId = POM_ARTIFACT_ID_IAM
-                from components.release
+                //from components.release
                 artifact sourcesJar
                 artifact javadocJar
                 pom {
@@ -77,7 +77,7 @@ afterEvaluate { project ->
 }
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier = 'sources'
 }
 
 task javadoc(type: Javadoc) {
@@ -92,6 +92,6 @@ task javadoc(type: Javadoc) {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }

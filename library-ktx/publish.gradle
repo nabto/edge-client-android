@@ -79,7 +79,7 @@ afterEvaluate { project ->
 }
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier = 'sources'
 }
 
 dokkaJavadoc.configure {
@@ -92,6 +92,6 @@ dokkaJavadoc.configure {
 }
 
 task dokkaJavadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from file("${buildDir}/dokka")
 }
