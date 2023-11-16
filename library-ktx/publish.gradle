@@ -14,7 +14,7 @@ def getSnapshotRepositoryUrl() {
 afterEvaluate { project ->
     publishing {
         publications {
-            mavenJava(MavenPublication) {
+            release(MavenPublication) {
                 groupId = GROUP
                 if (isReleaseVersion()) {
                     version = buildVersionName()
