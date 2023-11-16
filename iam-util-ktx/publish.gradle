@@ -74,7 +74,7 @@ afterEvaluate { project ->
         }
         project.logger.info('password: ' + signingKey)
         useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.mavenJava
+        sign publishing.publications.release
     }
 }
 task sourcesJar(type: Jar) {
