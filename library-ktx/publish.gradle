@@ -24,9 +24,6 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID_KTX
                 from components.release
-                artifact releaseSourcesJar
-                // artifact javadocJar
-                artifact dokkaJavadocJar
                 pom {
                     name = POM_ARTIFACT_ID
                     description = POM_DESCRIPTION
@@ -76,22 +73,4 @@ afterEvaluate { project ->
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign publishing.publications.release
     }
-}
-// task sourcesJar(type: Jar) {
-//     from android.sourceSets.main.java.srcDirs
-//     archiveClassifier = 'sources'
-// }
-
-dokkaJavadoc.configure {
-    outputDirectory.set(file("${buildDir}/dokka"))
-    dokkaSourceSets {
-        named("main") {
-            noAndroidSdkLink.set(false)
-        }
-    }
-}
-
-task dokkaJavadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    archiveClassifier = 'javadoc'
-    from file("${buildDir}/dokka")
 }

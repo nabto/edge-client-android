@@ -37,6 +37,13 @@ android {
         }
     }
 
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
     externalNativeBuild {
         cmake {
             version "3.18.1+"

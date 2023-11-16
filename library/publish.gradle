@@ -23,8 +23,6 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID
                 from components.release
-                artifact releaseSourcesJar
-                //artifact javadocJar
                 pom {
                     name = POM_ARTIFACT_ID
                     description = POM_DESCRIPTION
@@ -75,26 +73,3 @@ afterEvaluate { project ->
         sign publishing.publications.release
     }
 }
-//task sourcesJar(type: Jar) {
-//    from android.sourceSets.main.java.srcDirs
-//    archiveClassifier = 'sources'
-//}
-
-// task javadoc(type: Javadoc) {
-//     source = android.sourceSets.main.java.source
-//     //println 'Source: ' + android.sourceSets.main.java.srcDirs
-//     println android.sourceSets.main.java.source
-//     excludes = [ "**/*.md" ]
-//     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-//     //classpath += configurations.javadocDeps
-//     android.libraryVariants.all { variant ->
-//         if (variant.name == 'release') {
-//             owner.classpath += variant.javaCompileProvider.get().classpath
-//         }
-//     }
-// }
-
-// task javadocJar(type: Jar, dependsOn: javadoc) {
-//     archiveClassifier = 'javadoc'
-//     from javadoc.destinationDir
-// }
