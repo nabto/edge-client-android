@@ -24,7 +24,7 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID_KTX
                 from components.release
-                artifact sourcesJar
+                artifact releaseSourcesJar
                 // artifact javadocJar
                 artifact dokkaJavadocJar
                 pom {
@@ -77,10 +77,10 @@ afterEvaluate { project ->
         sign publishing.publications.mavenJava
     }
 }
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    archiveClassifier = 'sources'
-}
+// task sourcesJar(type: Jar) {
+//     from android.sourceSets.main.java.srcDirs
+//     archiveClassifier = 'sources'
+// }
 
 dokkaJavadoc.configure {
     outputDirectory.set(file("${buildDir}/dokka"))

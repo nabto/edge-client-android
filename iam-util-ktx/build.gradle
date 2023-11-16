@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
 apply from: '../versioning.gradle'
+apply plugin: "org.jetbrains.kotlin.android"
 
 
 android {

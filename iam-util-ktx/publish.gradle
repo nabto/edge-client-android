@@ -23,8 +23,8 @@ afterEvaluate { project ->
                     version = gitBranch + "-SNAPSHOT"
                 }
                 artifactId = POM_ARTIFACT_ID_IAM_KTX
-                //from components.release
-                artifact sourcesJar
+                from components.release
+                artifact releaseSourcesJar
                 // artifact javadocJar
                 artifact dokkaJavadocJar
                 pom {
