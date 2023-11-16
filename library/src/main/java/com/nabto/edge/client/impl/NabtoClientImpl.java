@@ -133,7 +133,14 @@ public class NabtoClientImpl extends NabtoClient {
 
     /// static helper to ensure no "this" is captured accidentally
     private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.Context nativeHandle) {
-        return CleanerService.instance().register(o, () -> nativeHandle.delete());
+        return CleanerService.instance().register(o, () -> {
+            try {
+                nativeHandle.setLogger(null);
+            } catch (Exception e) {
+                Log.e("nabto", "Could not remove logger: " + e);
+            }
+            nativeHandle.delete();
+        });
     }
 
 }
