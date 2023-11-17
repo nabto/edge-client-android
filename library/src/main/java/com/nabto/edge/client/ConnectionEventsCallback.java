@@ -18,6 +18,10 @@ public abstract class ConnectionEventsCallback {
     /**
      * Invoked when an event occurs.
      *
+     * The implementor of this function should not let exceptions escape into
+     * the caller as the caller has no way to handle the exceptions
+     * meaningfully.
+     *
      * @param event the event which had happened.
      */
     public abstract void onEvent(int event);
