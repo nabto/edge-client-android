@@ -25,7 +25,7 @@ class StreamTest {
         try {
             options.put("ProductId", resources.getString(R.string.stream_product_id));
             options.put("DeviceId", resources.getString(R.string.stream_device_id));
-            options.put("ServerKey", resources.getString(R.string.stream_server_key));
+            options.put("ServerConnectToken", "demosct");
             options.put("PrivateKey", client.createPrivateKey());
             connection.updateOptions(options.toString());
         } catch (e: JSONException) {
@@ -36,51 +36,62 @@ class StreamTest {
 
     @Test
     fun echo() = runBlocking {
-        val client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        val connection = createStreamConnection(client)!!
-        connection.awaitConnect()
-        val stream = connection.createStream()
-        stream.open(42)
-        val toWrite = byteArrayOf(42, 32, 44, 45)
-        stream.awaitWrite(toWrite)
-        try {
-            val result = stream.awaitReadAll(4)
-            assertEquals(result.size, 4)
-            assertArrayEquals(toWrite, result)
-        } catch (e: NabtoEOFException) {
-            assert(false)
+        val context = InstrumentationRegistry.getInstrumentation().getContext()
+        NabtoClient.create(context).use { client ->
+            createStreamConnection(client)!!.use { connection ->
+                connection.awaitConnect()
+                connection.createStream().use { stream ->
+                    stream.open(42)
+                    val toWrite = byteArrayOf(42, 32, 44, 45)
+                    stream.awaitWrite(toWrite)
+                    try {
+                        val result = stream.awaitReadAll(4)
+                        assertEquals(result.size, 4)
+                        assertArrayEquals(toWrite, result)
+                    } catch (e: NabtoEOFException) {
+                        assert(false)
+                    }
+                    stream.streamClose()
+                }
+                connection.connectionClose()
+            }
         }
-        stream.close()
-        connection.close()
+        Unit
     }
 
     @Test
     fun echoEOF() = runBlocking {
-        val client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        val connection = createStreamConnection(client)!!
-        connection.awaitConnect()
-        val stream = connection.createStream()
-        stream.open(42)
-        val toWrite = byteArrayOf(42, 32, 44, 45)
-        stream.awaitWrite(toWrite)
-        stream.close()
+        val context = InstrumentationRegistry.getInstrumentation().getContext()
+        NabtoClient.create(context).use { client ->
+            createStreamConnection(client)!!.use { connection ->
+                connection.awaitConnect()
+                connection.createStream().use { stream ->
+                    stream.open(42)
+                    val toWrite = byteArrayOf(42, 32, 44, 45)
+                    stream.awaitWrite(toWrite)
+                    stream.streamClose()
 
-        try {
-            val result = stream.awaitReadAll(4)
-            assertEquals(result.size, 4)
-            assertArrayEquals(toWrite, result)
-        } catch (e: NabtoEOFException) {
-            assert(false)
+                    try {
+                        val result = stream.awaitReadAll(4)
+                        assertEquals(result.size, 4)
+                        assertArrayEquals(toWrite, result)
+                    } catch (e: NabtoEOFException) {
+                        assert(false)
+                    }
+
+                    var gotException = false
+                    try {
+                        stream.awaitReadAll(4)
+                    } catch (e: NabtoEOFException) {
+                        gotException = true
+                    }
+
+                    assertTrue(gotException)
+                    stream.streamClose()
+                }
+                connection.connectionClose()
+            }
         }
-
-        var gotException = false
-        try {
-            stream.awaitReadAll(4)
-        } catch (e: NabtoEOFException) {
-            gotException = true
-        }
-
-        assertTrue(gotException)
-        connection.close()
     }
+
 }

@@ -76,7 +76,7 @@ public class IamTest {
     public void setup() {
         client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         connection = null;
-        _queue = new SynchronousQueue<>();
+        client.setLogLevel("trace");
     }
 
     private void cleanup(Connection conn) {
@@ -104,7 +104,7 @@ public class IamTest {
         }
     }
 
-    class LocalDevice {
+    static class LocalDevice {
         public final String productId;
         public final String deviceId;
         public final String serverUrl;
@@ -1495,6 +1495,6 @@ public class IamTest {
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
         assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
         assertEquals(newUsername, newUsernameDevice.get());
-//        assertTrue(false);
+ //       assertTrue(false);
     }
 }
