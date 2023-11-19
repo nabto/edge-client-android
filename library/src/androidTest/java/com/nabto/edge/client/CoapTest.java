@@ -1,8 +1,12 @@
 package com.nabto.edge.client;
 
+import android.util.Log;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -117,6 +121,41 @@ public class CoapTest {
         }
     }
 
+//    @Test
+//    public void invokeLocalVoidCoap() throws Exception {
+//        try {
+//            NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+//            client.setLogLevel("trace");
+//
+//            Connection connection = client.createConnection();
+//            JSONObject options = new JSONObject();
+//            options.put("ProductId", "pr-coap");
+//            options.put("DeviceId", "de-coap");
+//            options.put("PrivateKey", client.createPrivateKey());
+//            options.put("Local", true);
+//            options.put("Remote", false);
+//            connection.updateOptions(options.toString());
+//            connection.connect();
+//            Coap coap = connection.createCoap("GET", "/void");
+//            coap.execute();
+//
+//            int statusCode = coap.getResponseStatusCode();
+//            assertEquals(statusCode, 205);
+//
+//            byte[] payload = coap.getResponsePayload();
+//            Log.d("nabtotest", "payload is null: " + payload == null ? "yes" : "no" );
+//
+//            connection.close();
+//        } catch (Exception e) {
+//            if (e instanceof NabtoNoChannelsException) {
+//                fail("NabtoNoChannelsException - local error: " + ((NabtoNoChannelsException) e).getLocalChannelErrorCode().getDescription() +
+//                        "; remote error: " + ((NabtoNoChannelsException) e).getRemoteChannelErrorCode().getDescription());
+//            } else {
+//                throw e;
+//            }
+//        }
+//    }
+
     static class CoapResult {
         private int statusCode;
         private int contentFormat;
@@ -140,5 +179,4 @@ public class CoapTest {
             return payload;
         }
     }
-
 }

@@ -11,18 +11,18 @@ import com.nabto.edge.client.Stream;
 import com.nabto.edge.client.TcpTunnel;
 import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.ErrorCode;
-import com.nabto.edge.client.swig.FutureCallback;
 
 import java.util.HashMap;
 
 
-public class ConnectionImpl implements Connection {
-
+public class ConnectionImpl implements Connection, AutoCloseable {
     com.nabto.edge.client.swig.Connection connection;
     WifiManager.MulticastLock multicastLock;
     WifiManager.WifiLock wifiLock;
 
-    HashMap<ConnectionEventsCallback, ConnectionEventsCallbackDecorator> connectionEventsCallbacks = new HashMap<ConnectionEventsCallback, ConnectionEventsCallbackDecorator>();
+    HashMap<ConnectionEventsCallback, ConnectionEventsCallbackDecorator> connectionEventsCallbacks = new HashMap<>();
+
+    private final CleanerService.Cleanable[] cleanables = new CleanerService.Cleanable[3];
 
     ConnectionImpl(com.nabto.edge.client.swig.Connection connection, WifiManager.MulticastLock multicastLock, WifiManager.WifiLock wifiLock) {
         this.connection = connection;
@@ -30,6 +30,9 @@ public class ConnectionImpl implements Connection {
         this.wifiLock = wifiLock;
         this.multicastLock.acquire();
         this.wifiLock.acquire();
+        this.cleanables[0] = createAndRegisterCleanable(this, connection);
+        this.cleanables[1] = createAndRegisterCleanable(this, multicastLock);
+        this.cleanables[2] = createAndRegisterCleanable(this, wifiLock);
     }
 
     public void updateOptions(String json) {
@@ -117,11 +120,19 @@ public class ConnectionImpl implements Connection {
     /**
      * Blocking close
      */
-    public void close() {
+    @Override
+    public void connectionClose() {
         try {
             connection.close().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
+        }
+    }
+
+    @Override
+    public void close() {
+        for (CleanerService.Cleanable cleanable : cleanables) {
+            cleanable.clean();
         }
     }
 
@@ -186,12 +197,6 @@ public class ConnectionImpl implements Connection {
     }
 
     @Override
-    public void finalize() {
-        this.multicastLock.release();
-        this.wifiLock.release();
-    }
-
-    @Override
     public void addConnectionEventsListener(ConnectionEventsCallback connectionEventsCallback)
     {
         ConnectionEventsCallbackDecorator decorator = new ConnectionEventsCallbackDecorator(connectionEventsCallback);
@@ -206,4 +211,18 @@ public class ConnectionImpl implements Connection {
         this.connection.removeEventsListener(decorator);
     }
 
+    /// static helper to ensure no "this" is captured accidentally
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.Connection nativeHandle) {
+        return CleanerService.instance().register(o, () -> nativeHandle.delete());
+    }
+
+    /// static helper to ensure no "this" is captured accidentally
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, WifiManager.MulticastLock lock) {
+        return CleanerService.instance().register(o, () -> lock.release());
+    }
+
+    /// static helper to ensure no "this" is captured accidentally
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, WifiManager.WifiLock lock) {
+        return CleanerService.instance().register(o, () -> lock.release());
+    }
 }

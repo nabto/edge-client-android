@@ -2,7 +2,6 @@ package com.nabto.edge.client.ktx
 import java.util.Optional
 import com.nabto.edge.client.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.Continuation
 
 private suspend fun <T> nabtoCoroutineWrapper(
     register: (cb: NabtoCallback<T>) -> Unit
@@ -151,9 +150,9 @@ suspend fun Stream.awaitWrite(
  * @throws NabtoRuntimeException With error code `OPERATION_IN_PROGRESS` if another stop is in progress.
  * @throws NabtoRuntimeException With error code `INVALID_STATE` if the stream is not opened yet.
  */
-suspend fun Stream.awaitClose() {
+suspend fun Stream.awaitStreamClose() {
     nabtoCoroutineWrapper<Unit> { callback ->
-        this@awaitClose.closeCallback(callback)
+        this@awaitStreamClose.streamCloseCallback(callback)
     }
 }
 
@@ -184,8 +183,8 @@ suspend fun TcpTunnel.awaitOpen(
  *
  * This is meant to be used in a Kotlin coroutine to suspend execution until the TcpTunnel is closed.
  */
-suspend fun TcpTunnel.awaitClose() {
+suspend fun TcpTunnel.awaitTunnelClose() {
     nabtoCoroutineWrapper<Unit> { callback ->
-        this@awaitClose.closeCallback(callback)
+        this@awaitTunnelClose.tunnelCloseCallback(callback)
     }
 }

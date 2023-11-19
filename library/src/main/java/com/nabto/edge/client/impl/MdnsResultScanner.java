@@ -2,13 +2,21 @@ package com.nabto.edge.client.impl;
 
 import com.nabto.edge.client.MdnsResultListener;
 
-public class MdnsResultScanner extends com.nabto.edge.client.swig.FutureCallback {
+@Deprecated
+public class MdnsResultScanner extends com.nabto.edge.client.swig.FutureCallback implements AutoCloseable {
+
+    private com.nabto.edge.client.swig.Context context;
+    private com.nabto.edge.client.swig.MdnsResolver resolver;
+    private com.nabto.edge.client.swig.FutureMdnsResult resultFuture;
+    private com.nabto.edge.client.MdnsResultListener listener;
+    private final CleanerService.Cleanable cleanable;
 
     MdnsResultScanner(com.nabto.edge.client.swig.Context context, MdnsResultListener listener, String subtype)
     {
         this.context = context;
         this.listener = listener;
         resolver = context.createMdnsResolver(subtype);
+        this.cleanable = createAndRegisterCleanable(this, resolver);
         startWait();
     }
 
@@ -36,8 +44,14 @@ public class MdnsResultScanner extends com.nabto.edge.client.swig.FutureCallback
         resolver.stop();
     }
 
-    private com.nabto.edge.client.swig.Context context;
-    private com.nabto.edge.client.swig.MdnsResolver resolver;
-    private com.nabto.edge.client.swig.FutureMdnsResult resultFuture;
-    private com.nabto.edge.client.MdnsResultListener listener;
+    @Override
+    public void close() throws Exception {
+        stop();
+        this.cleanable.clean();
+    }
+
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.MdnsResolver nativeHandle) {
+        return CleanerService.instance().register(o, () -> nativeHandle.delete());
+    }
+
 }

@@ -14,7 +14,7 @@ import com.nabto.edge.client.impl.NabtoClientImpl;
  * connection object used to start interaction with a Nabto Edge embedded device. The Client object
  * must be kept alive for the duration of all connections created from it.
  */
-public abstract class NabtoClient {
+public abstract class NabtoClient implements AutoCloseable {
 
     /**
      * Create a new instance of a nabto client.
@@ -110,4 +110,29 @@ public abstract class NabtoClient {
      * @return String representation of the SDK version.
      */
     public abstract String version();
+
+    /**
+     * Releases any resources associated with the Client instance. This method is
+     * called automatically at the end of a try-with-resources block, which
+     * helps to ensure that resources are released promptly and reliably.
+     *
+     * <p>Example of using a Client object within a try-with-resources statement:</p>
+     * <pre>
+     * try (NabtoClient client = NabtoClient.create(...)) {
+     *     // ... use client
+     * }
+     * </pre>
+     *
+     * <p>With this setup, {@code close()} will be called automatically on
+     * {@code client} at the end of the block, releasing any underlying
+     * native Nabto Client SDK resources without any further action required on the application.
+     *
+     * <p></p>If the try-with-resources construct is not feasible, the application must manually call close()
+     * when the NabtoClient instance is no longer needed.</p>
+     *
+     * <p>Unlike the {@link AutoCloseable#close()} method, this {@code close()}
+     * method does not throw any exceptions.</p>
+     */
+    @Override
+    public abstract void close();
 }

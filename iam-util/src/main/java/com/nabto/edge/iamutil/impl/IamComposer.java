@@ -1,6 +1,5 @@
 package com.nabto.edge.iamutil.impl;
 
-import java.util.Optional;
 import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
@@ -10,7 +9,7 @@ import com.nabto.edge.client.Coap;
 import com.nabto.edge.client.Coap.ContentFormat;
 import com.nabto.edge.client.Connection;
 
-public class IamComposer {
+public class IamComposer implements AutoCloseable {
     private Coap probe;
     private Coap coap;
     private Map<Integer, IamError> errorMap;
@@ -72,5 +71,10 @@ public class IamComposer {
 
     public <T> T decodePayload(Class<T> cls) {
         return IamImplUtil.decode(coap.getResponsePayload(), cls);
+    }
+
+    public void close() {
+        coap.close();
+        probe.close();
     }
 }

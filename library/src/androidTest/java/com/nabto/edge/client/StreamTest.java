@@ -33,9 +33,8 @@ public class StreamTest {
             assert(false);
         }
 
-        stream.close();
-        connection.close();
-
+        stream.streamClose();
+        connection.connectionClose();
     }
 
     @Test
@@ -47,7 +46,7 @@ public class StreamTest {
         stream.open(42);
         byte[] toWrite = new byte[]{42,32,44,45};
         stream.write(toWrite);
-        stream.close();
+        stream.streamClose();
         try {
             byte[] result = stream.readAll(4);
             assertEquals(result.length, 4);
@@ -65,8 +64,32 @@ public class StreamTest {
             assertTrue(eof);
         }
 
-        stream.close();
-        connection.close();
+        stream.streamClose();
+        connection.connectionClose();
 
     }
+
+    @Test
+    public void echoWithCleanup() {
+        try (NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext())) {
+            try (Connection connection = Helper.createStreamConnection(client)) {
+                connection.connect();
+                Stream stream = connection.createStream();
+                stream.open(42);
+                byte[] toWrite = new byte[]{42, 32, 44, 45};
+                stream.write(toWrite);
+                try {
+                    byte[] result = stream.readAll(4);
+                    assertEquals(result.length, 4);
+                    assertArrayEquals(toWrite, result); // toWrite.data()[i], data[i]);
+                } catch (NabtoEOFException e) {
+                    assert (false);
+                }
+
+                stream.streamClose();
+                connection.connectionClose();
+            }
+        }
+    }
+
 }

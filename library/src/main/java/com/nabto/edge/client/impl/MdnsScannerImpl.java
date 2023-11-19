@@ -7,7 +7,7 @@ import com.nabto.edge.client.MdnsScanner;
 import com.nabto.edge.client.MdnsResultListener;
 import com.nabto.edge.client.NabtoClient;
 
-public class MdnsScannerImpl extends com.nabto.edge.client.swig.FutureCallback implements MdnsScanner {
+public class MdnsScannerImpl extends com.nabto.edge.client.swig.FutureCallback implements MdnsScanner, AutoCloseable {
     private com.nabto.edge.client.swig.Context context;
     private com.nabto.edge.client.swig.MdnsResolver resolver;
     private com.nabto.edge.client.swig.FutureMdnsResult resultFuture;
@@ -85,5 +85,10 @@ public class MdnsScannerImpl extends com.nabto.edge.client.swig.FutureCallback i
     @Override
     public void removeMdnsResultReceiver(MdnsResultListener receiver) {
         listeners.remove(receiver);
+    }
+
+    @Override
+    public void close() throws Exception {
+        stop();
     }
 }

@@ -104,6 +104,12 @@ public class IamComposerAsync<T> {
         } else {
             userCallback.run(err, Optional.empty());
         }
+
+        if (next == null)
+        {
+            coap.close();
+            probe.close();
+        }
     }
 
     public IamComposerAsync execute(boolean withProbe) {
@@ -130,6 +136,8 @@ public class IamComposerAsync<T> {
                     if (probeStatus != 205 && probeStatus != 403) {
                         // Iam is not supported by the device
                         userCallback.run(IamError.IAM_NOT_SUPPORTED, Optional.empty());
+                        coap.close();
+                        probe.close();
                     } else {
                         // Iam is supported by the device, but the coap command that was executed was invalid
                         // Let the caller handle it
@@ -149,4 +157,5 @@ public class IamComposerAsync<T> {
     public IamComposerAsync execute() {
         return execute(true);
     }
+
 }

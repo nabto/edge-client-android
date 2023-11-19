@@ -1,5 +1,10 @@
 package com.nabto.edge.client;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -27,13 +32,39 @@ import java.util.Optional;
 @RunWith(AndroidJUnit4.class)
 public class ConnectionTest {
 
+    // note: test will fail in emulator, at least on macOS (local test devices not discoverable from within emulator's default network)
     @Test(expected = Test.None.class)
     public void connectLocal() throws Exception {
-        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createLocalConnection(client);
+//        final Context context = InstrumentationRegistry.getInstrumentation().getContext();
+//        final ConnectivityManager connectivityManager = (ConnectivityManager)(context.getSystemService(Context.CONNECTIVITY_SERVICE));
+//        for (Network network : connectivityManager.getAllNetworks()) {
+//            NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+//            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    connectivityManager.bindProcessToNetwork(network);
+//                    Log.d("nabto", "bindProcessToNetwork(some_wifi) ok");
+//                } else {
+//                    // For older Android versions, use the deprecated method
+//                    ConnectivityManager.setProcessDefaultNetwork(network);
+//                    Log.d("nabto", "setProcessDefaultNetwork(wome_wifi) ok");
+//                }
+//            }
+//        }
 
-        connection.connect();
-        connection.close();
+        try (NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext())) {
+            client.setLogLevel("trace");
+            try (Connection connection = Helper.createLocalConnection(client)) {
+                connection.connect();
+                connection.connectionClose();
+            } catch (Exception e) {
+                if (e instanceof NabtoNoChannelsException) {
+                    fail("NabtoNoChannelsException - local error: " + ((NabtoNoChannelsException) e).getLocalChannelErrorCode().getDescription() +
+                            "; remote error: " + ((NabtoNoChannelsException) e).getRemoteChannelErrorCode().getDescription());
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     @Test(expected = Test.None.class)
@@ -42,7 +73,7 @@ public class ConnectionTest {
         Connection connection = Helper.createRemoteConnection(client);
 
         connection.connect();
-        connection.close();
+        connection.connectionClose();
     }
 
     @Test(expected = Test.None.class)
@@ -70,6 +101,7 @@ public class ConnectionTest {
         Connection connection = Helper.createConnection(client);
         JSONObject options = new JSONObject();
         options.put("DeviceId", "unknown");
+        options.put("ServerConnectToken", "demosct");
         connection.updateOptions(options.toString());
         try {
             connection.connect();
@@ -109,7 +141,7 @@ public class ConnectionTest {
         connection.connect();
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals(statusCode.get(), 205);
-        connection.close();
+        connection.connectionClose();
     }
 
     @Test(expected = Test.None.class)
@@ -125,7 +157,7 @@ public class ConnectionTest {
                         // that wreak havoc when escaping
                         try {
                             if (event == ConnectionEventsCallback.CONNECTED) {
-                                connection.close();
+                                connection.connectionClose();
                                 latch.countDown();
                             }
                         } catch (Exception e) {
@@ -158,7 +190,7 @@ public class ConnectionTest {
                             }
                             if (event == ConnectionEventsCallback.CLOSED) {
                                 closedLatch.countDown();
-                                connection.close();
+                                connection.connectionClose();
                             }
                         } catch (Exception e) {
                             Log.i("ConnectionTest", "Exception in onEvent (event=" + event + "): " + e);
@@ -173,7 +205,7 @@ public class ConnectionTest {
         );
         connection.connect();
         assertTrue(connectedLatch.await(5, TimeUnit.SECONDS));
-        connection.close();
+        connection.connectionClose();
         assertTrue(closedLatch.await(5, TimeUnit.SECONDS));
         assertTrue(exceptionLatch.await(5, TimeUnit.SECONDS));
         assertEquals(ErrorCodes.STOPPED, errorCode.get());

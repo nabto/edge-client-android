@@ -9,7 +9,7 @@ package com.nabto.edge.client;
  * Connection object must be kept alive for the duration of all streams, tunnels, and CoAP sessions
  * created from it.
  */
-public interface Connection {
+public interface Connection extends AutoCloseable {
     /**
      * Connection types
      *
@@ -134,14 +134,45 @@ public interface Connection {
     /**
      * Close a connection.
      *
+     * Note: Odd name is to distinguish from AutoCloseable's close() with very different
+     * semantics.
+     *
      * @throws NabtoRuntimeException with error code `OPERATION_IN_PROGRESS` if another close is in progreess.
      * @throws NabtoRuntimeException with error code `STOPPED` if the connection is closed or stopped or a parent object is stopped.
      * @throws NabtoRuntimeException with error code `NOT_CONNECTED` if the connection is not established yet.
      */
+    void connectionClose();
+
+    /**
+     * Note! Semantics have changed with version 3.0 due to name clash with AutoCloseable!
+     * The 2.x version of close() has been renamed to connectionClose().
+     *
+     * This function releases any resources associated with the Connection instance. This method is
+     * called automatically at the end of a try-with-resources block, which
+     * helps to ensure that resources are released promptly and reliably.
+     *
+     * <p>Example of using a CoAP object within a try-with-resources statement:</p>
+     * <pre>
+     * try (Connection connection = client.createConnect(...)) {
+     *     // ... use connection
+     * }
+     * </pre>
+     *
+     * <p>With this setup, {@code close()} will be called automatically on
+     * {@code connect} at the end of the block, releasing any underlying
+     * native Nabto Client SDK resources without any further action required on the application.</p>
+     *
+     * <p></p>If the try-with-resources construct is not feasible, the application must manually call close()
+     * when the Connection instance is no longer needed.</p>
+     *
+     * <p>Unlike the {@link AutoCloseable#close()} method, this {@code close()}
+     * method does not throw any exceptions.</p>
+     */
+    @Override
     void close();
 
     /**
-     * Connect a connection.
+     * Establish a connection.
      *
      * This function blocks until a connection is established or an
      * exception is thrown.
@@ -152,7 +183,7 @@ public interface Connection {
     void connect();
 
     /**
-     * Connect a connection, run callback once connection is established.
+     * Establish a connection, run callback once connection is established.
      * See the `connect()` function for error codes that the callback may give.
      *
      * @param callback The callback that will be run once the operation is done.
@@ -242,4 +273,5 @@ public interface Connection {
      * @param connectionEventsCallback the connection events callback to remove.
      */
     void removeConnectionEventsListener(ConnectionEventsCallback connectionEventsCallback);
+
 }

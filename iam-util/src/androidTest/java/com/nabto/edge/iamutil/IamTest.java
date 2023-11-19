@@ -1,14 +1,22 @@
 package com.nabto.edge.iamutil;
 
+import android.util.Log;
+
 import com.nabto.edge.iamutil.PairingMode;
 import com.nabto.edge.client.*;
 import com.nabto.edge.client.impl.ConnectionImpl;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -52,7 +60,7 @@ public class IamTest {
         try {
             _queue.take();
         } catch (Exception e) {
-            fail("Failed to resolve()");
+            Log.e("IamTest", "Failed to resolve - will not throw as this crashes Nabto Client SDK native thread with Swig error with no trace of what went wrong: " + e);
         }
     }
 
@@ -68,17 +76,13 @@ public class IamTest {
     public void setup() {
         client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         connection = null;
-        _queue = new SynchronousQueue<>();
+        client.setLogLevel("trace");
     }
 
     private void cleanup(Connection conn) {
-        // We need to manually call finalize() because GC will not always run between tests.
-        // In ConnectionImpl finalize() is used to release wifi and multicast locks.
-        // If there are a lot of tests and GC isn't called often enough then tests will fail as we
-        // acquire too many wifi or multicast locks from having too many Connection objects that havent been
-        // garbage collected.
+        conn.connectionClose();
+        // invoke AutoCloseable's cleanup to reclaim locks etc
         conn.close();
-        ((ConnectionImpl)conn).finalize();
     }
 
     @After
@@ -87,10 +91,20 @@ public class IamTest {
             cleanup(connection);
             connection = null;
         }
-        System.gc();
+        if (client != null) {
+            client.close();
+            client = null;
+        }
+        for (int i=0; i<10; i++) {
+            Runtime.getRuntime().gc();
+            try {
+                Thread.sleep(10);
+            } catch (Exception ignore) {
+            }
+        }
     }
 
-    class LocalDevice {
+    static class LocalDevice {
         public final String productId;
         public final String deviceId;
         public final String serverUrl;
@@ -216,8 +230,8 @@ public class IamTest {
         if (e == null) {
             fail("Expected IamException to be thrown");
         }
-        assertEquals(IamException.class, e.getClass());
-        IamException iamEx = (IamException)e;
+        assertEquals(com.nabto.edge.iamutil.IamException.class, e.getClass());
+        com.nabto.edge.iamutil.IamException iamEx = (IamException)e;
         assertEquals(iamEx.getError(), error);
     }
 
@@ -274,21 +288,17 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordOpenSuccessCallback() {
+    public void testPasswordOpenSuccessCallback() throws Exception {
         connection = connectToDevice(localPairPasswordOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        CountDownLatch latch = new CountDownLatch(1);
         iam.pairPasswordOpenCallback(connection, uniqueUser(), localPairPasswordOpen.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -301,21 +311,17 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordOpenWrongPasswordCallback() {
+    public void testPasswordOpenWrongPasswordCallback() throws Exception {
         connection = connectToDevice(localPairPasswordOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        CountDownLatch latch = new CountDownLatch(1);
         iam.pairPasswordOpenCallback(connection, uniqueUser(), "i-am-a-clown-with-a-wrong-password", (ec, res) -> {
-            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.AUTHENTICATION_ERROR.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -329,22 +335,18 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordOpenBlockedByConfigCallback() {
+    public void testPasswordOpenBlockedByConfigCallback() throws Exception {
         LocalDevice dev = localPasswordPairingDisabledConfig;
         connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        CountDownLatch latch = new CountDownLatch(1);
         iam.pairPasswordOpenCallback(connection, uniqueUser(), dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -358,29 +360,32 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalOpenSuccessCallback() {
+    public void testLocalOpenSuccessCallback() throws InterruptedException {
         connection = connectToDevice(localPairLocalOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        AtomicInteger errorCode0 = new AtomicInteger(-1);
+        AtomicInteger errorCode1 = new AtomicInteger(-1);
+        AtomicBoolean result0 = new AtomicBoolean(true);
+        AtomicBoolean result1 = new AtomicBoolean(false);
+        CountDownLatch latch = new CountDownLatch(1);
         iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
-            assertEquals(ec0, IamError.NONE);
-            assertFalse(res0.get());
+            errorCode0.set(ec0.ordinal());
+            result0.set(res0.get());
             iam.pairLocalOpenCallback(connection, uniqueUser(), (ec1, res1) -> {
-                assertEquals(ec1, IamError.NONE);
                 iam.isCurrentUserPairedCallback(connection, (ec2, res2) -> {
-                    assertEquals(ec2, IamError.NONE);
-                    assertTrue(res2.get());
-                    future.complete(null);
+                    errorCode1.set(ec2.ordinal());
+                    result1.set(res2.get());
+                    latch.countDown();
                 });
             });
         });
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
 
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode0.get()].name());
+        assertFalse(result0.get());
+
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode1.get()].name());
+        assertTrue(result1.get());
     }
 
     @Test
@@ -393,21 +398,17 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalOpenInvalidUsernameCallback() {
+    public void testLocalOpenInvalidUsernameCallback() throws InterruptedException {
         connection = connectToDevice(localPairLocalOpen);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
-
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
         iam.pairLocalOpenCallback(connection, "Worst username in the history of usernames", (ec, res) -> {
-            assertEquals(ec, IamError.INVALID_INPUT);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.INVALID_INPUT.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -423,26 +424,22 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalOpenUsernameAlreadyExistsCallback() {
+    public void testLocalOpenUsernameAlreadyExistsCallback() throws InterruptedException {
         LocalDevice dev = localPairLocalOpen;
         connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
         String username = uniqueUser();
-        CompletableFuture future = new CompletableFuture();
-
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
 
         iam.pairLocalOpenCallback(connection, username, (_ec, _res) -> {
             iam.pairLocalOpenCallback(connection, username, (ec, res) -> {
-                assertEquals(ec, IamError.USERNAME_EXISTS);
-                future.complete(null);
+                errorCode.set(ec.ordinal());
+                latch.countDown();
             });
         });
-
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.USERNAME_EXISTS.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -455,21 +452,19 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalOpenBlockedByConfigCallback() {
+    public void testLocalOpenBlockedByConfigCallback() throws InterruptedException {
         connection = connectToDevice(localPasswordPairingDisabledConfig);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
 
         iam.pairLocalOpenCallback(connection, uniqueUser(), (ec, res) -> {
-            assertEquals(ec, IamError.PAIRING_MODE_DISABLED);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
 
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.PAIRING_MODE_DISABLED.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -495,51 +490,78 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordInviteSuccessCallback() {
+    public void testPasswordInviteSuccessCallback() throws Exception {
+        client.setLogLevel("trace");
         LocalDevice dev = localPasswordInvite;
-        connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
-        
-        String admin = uniqueUser();
-        iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-
+        final AtomicInteger errorCode = new AtomicInteger(-1);
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-        iam.getUserCallback(connection, guest, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
+
+        try (Connection connection = connectToDevice(dev)) {
+            CountDownLatch adminLatch = new CountDownLatch(1);
+            String admin = uniqueUser();
+            iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                adminLatch.countDown();
+            });
+            assertTrue(adminLatch.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            CountDownLatch userCreateLatch = new CountDownLatch(1);
+            iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                userCreateLatch.countDown();
+            });
+            assertTrue(userCreateLatch.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            CountDownLatch userGetLatch = new CountDownLatch(1);
+            iam.getUserCallback(connection, guest, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                userGetLatch.countDown();
+            });
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            connection.connectionClose();
+        }
 
         // Reconnect as user instead of admin
-        cleanup(connection);
-        connection = connectToDevice(dev);
-        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertFalse(res.get());
-            resolve();
-        });
-        await();
-        iam.pairPasswordInviteCallback(connection, guest, guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertTrue(res.get());
-            resolve();
-        });
-        await();
+        try (Connection connection = connectToDevice(dev)) {
+            CountDownLatch isPairedLatch1 = new CountDownLatch(1);
+            AtomicBoolean isPaired = new AtomicBoolean(true);
+            iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                isPaired.set(res.get());
+                isPairedLatch1.countDown();
+            });
+            assertTrue(isPairedLatch1.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            assertFalse(isPaired.get());
+
+            CountDownLatch pairLatch = new CountDownLatch(1);
+            iam.pairPasswordInviteCallback(connection, guest, guestPassword, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                pairLatch.countDown();
+            });
+            assertTrue(pairLatch.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            CountDownLatch isPairedLatch2 = new CountDownLatch(1);
+            iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+                isPaired.set(res.get());
+                errorCode.set(ec.ordinal());
+                isPairedLatch2.countDown();
+            });
+
+            assertTrue(isPairedLatch2.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertTrue(isPaired.get());
+            connection.connectionClose();
+        }
     }
+
 
     @Test
     public void testPasswordInviteWrongUser() {
@@ -567,7 +589,7 @@ public class IamTest {
     }
 
     @Test
-    public void testPasswordInviteWrongUserCallback() {
+    public void testPasswordInviteWrongUserCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
         Connection connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
@@ -576,37 +598,58 @@ public class IamTest {
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
 
+        CountDownLatch latch0 = new CountDownLatch(1);
+        final AtomicInteger errorCode = new AtomicInteger(-1);
         iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
+        CountDownLatch latch1 = new CountDownLatch(1);
+        errorCode.set(-1);
         iam.createUserCallback(connection, guest, guestPassword, "Guest", (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
-        iam.getUserCallback(connection, guest, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
+        CountDownLatch latch2 = new CountDownLatch(1);
+        errorCode.set(-1);
+        iam.getUserCallback(connection, guest, (ec, res) -> {
+            errorCode.set(ec.ordinal());
+            latch2.countDown();
+        });
+        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+        CountDownLatch latch3 = new CountDownLatch(1);
+        errorCode.set(-1);
+        final AtomicBoolean result = new AtomicBoolean(true);
         // Reconnect as user instead of admin
         cleanup(connection);
-        // Have to make a new variables to capture in lambda, java is really great...
         Connection connectionUser = connectToDevice(dev);
         iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertFalse(res.get());
-            resolve();
+            errorCode.set(ec.ordinal());
+            if (ec == IamError.NONE && res.isPresent()) {
+                result.set(res.get());
+            }
+            latch3.countDown();
         });
-        await();
+        assertTrue(latch3.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertFalse(result.get());
+
+        CountDownLatch latch4 = new CountDownLatch(1);
+        errorCode.set(-1);
         iam.pairPasswordInviteCallback(connectionUser, "bonk", guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch4.countDown();
         });
-        await();
+        assertTrue(latch4.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.AUTHENTICATION_ERROR.name(), IamError.values()[errorCode.get()].name());
         cleanup(connectionUser);
     }
 
@@ -627,25 +670,31 @@ public class IamTest {
     }
 
     @Test
-    public void testCreateUserBadRoleCallback() {
+    public void testCreateUserBadRoleCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
 
+        CountDownLatch latch0 = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
         String admin = uniqueUser();
+
         iam.pairPasswordOpenCallback(connection, admin, dev.password, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
+        CountDownLatch latch1 = new CountDownLatch(1);
         iam.createUserCallback(connection, guest, guestPassword, "Clown", (ec, res) -> {
-            assertEquals(ec, IamError.ROLE_DOES_NOT_EXIST);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.ROLE_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -659,24 +708,24 @@ public class IamTest {
     }
 
     @Test
-    public void testCheckUnpairedUserCallback() {
+    public void testCheckUnpairedUserCallback() throws InterruptedException {
         connection = connectToDevice(localPasswordInvite);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicBoolean result = new AtomicBoolean(true);
 
         iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
-            assertFalse(res0.get());
+            result.set(res0.get());
             iam.getCurrentUserCallback(connection, (ec1, res1) -> {
-                assertEquals(ec1, IamError.USER_DOES_NOT_EXIST);
-                future.complete(null);
+                errorCode.set(ec1.ordinal());
+                latch.countDown();
             });
         });
 
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
+        assertFalse(result.get());
     }
 
     @Test
@@ -689,21 +738,19 @@ public class IamTest {
     }
 
     @Test
-    public void testCheckPairedUserNoIamSupportCallback() {
+    public void testCheckPairedUserNoIamSupportCallback() throws InterruptedException {
         connection = connectToDevice(localMdnsDevice);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
 
         iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.IAM_NOT_SUPPORTED);
-            future.complete(null);
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
 
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.IAM_NOT_SUPPORTED.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -740,56 +787,85 @@ public class IamTest {
     }
 
     @Test
-    public void testCreateUserAndGetUserCallback() {
+    public void testCreateUserAndGetUserCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
         String admin = uniqueUser();
-        
-        iam.pairPasswordOpen(connection, admin, dev.password);
         String guest = uniqueUser();
         String guestPassword = "guestpassword";
-        iam.createUser(connection, guest, guestPassword, "Guest");
 
-        // Reconnect as user instead of admin
-        cleanup(connection);
-        Connection connectionUser = connectToDevice(dev);
-        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertFalse(res.get());
-            resolve();
-        });
-        await();
-        iam.pairPasswordInviteCallback(connectionUser, guest, guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
-        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertTrue(res.get());
-            resolve();
-        });
-        await();
+        try (Connection adminConnection = connectToDevice(dev)) {
+            iam.pairPasswordOpen(adminConnection, admin, dev.password);
+            iam.createUser(adminConnection, guest, guestPassword, "Guest");
 
-        // Guest cannot GET admin
-        iam.getUserCallback(connectionUser, admin, (ec, res) -> {
-            assertEquals(ec, IamError.BLOCKED_BY_DEVICE_CONFIGURATION);
-            resolve();
-        });
-        await();
+            // Reconnect as user instead of admin
+            cleanup(adminConnection);
+        }
 
-        // Guest can GET self
-        iam.getUserCallback(connectionUser, guest, (ec, opt) -> {
-            assertEquals(ec, IamError.NONE);
-            IamUser me = opt.get();
-            assertEquals(me.getUsername(), guest);
-            assertEquals(me.getRole(), "Guest");
-            resolve();
-        });
-        await();
+        CountDownLatch latch0 = new CountDownLatch(1);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+        CountDownLatch latch3 = new CountDownLatch(1);
+        CountDownLatch latch4 = new CountDownLatch(1);
 
-        cleanup(connectionUser);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicBoolean result0 = new AtomicBoolean(true);
+        AtomicBoolean result2 = new AtomicBoolean(false);
+        AtomicReference<String> newUser = new AtomicReference<>();
+        AtomicReference<String> newRole = new AtomicReference<>();
+
+        try (Connection userConnection = connectToDevice(dev)) {
+            iam.isCurrentUserPairedCallback(userConnection, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                result0.set(res.get());
+                latch0.countDown();
+            });
+            assertTrue(latch0.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertFalse(result0.get());
+
+            errorCode.set(-1);
+            iam.pairPasswordInviteCallback(userConnection, guest, guestPassword, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                latch1.countDown();
+            });
+            assertTrue(latch1.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            errorCode.set(-1);
+            iam.isCurrentUserPairedCallback(userConnection, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                result2.set(res.get());
+                latch2.countDown();
+            });
+            assertTrue(latch2.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertTrue(result2.get());
+
+            // Guest cannot GET admin
+            errorCode.set(-1);
+            iam.getUserCallback(userConnection, admin, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                latch3.countDown();
+            });
+            assertTrue(latch3.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.BLOCKED_BY_DEVICE_CONFIGURATION.name(), IamError.values()[errorCode.get()].name());
+
+            // Guest can GET self
+            errorCode.set(-1);
+            iam.getUserCallback(userConnection, guest, (ec, opt) -> {
+                errorCode.set(ec.ordinal());
+                IamUser me = opt.get();
+                newUser.set(me.getUsername());
+                newRole.set(me.getRole());
+                latch4.countDown();
+            });
+            assertTrue(latch4.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertEquals(guest, newUser.get());
+            assertEquals("Guest", newRole.get());
+            userConnection.connectionClose();
+        }
     }
 
     @Test
@@ -810,7 +886,7 @@ public class IamTest {
     }
 
     @Test
-    public void testSetDisplayNameCallback() {
+    public void testSetDisplayNameCallback() throws InterruptedException {
         LocalDevice dev = localPairLocalOpen;
         connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
@@ -818,21 +894,33 @@ public class IamTest {
         String username = uniqueUser();
         String displayName = uniqueUser();
 
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+
         iam.pairLocalOpen(connection, username);
         iam.updateUserDisplayNameCallback(connection, username, displayName, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch.countDown();
         });
-        await();
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        AtomicReference<String> deviceUsername = new AtomicReference<String>();
+        AtomicReference<String> deviceDisplayName = new AtomicReference<String>();
+        errorCode.set(-1);
 
         iam.getCurrentUserCallback(connection, (ec, opt) -> {
-            assertEquals(ec, IamError.NONE);
+            errorCode.set(ec.ordinal());
             IamUser user = opt.get();
-            assertEquals(user.username, username);
-            assertEquals(user.displayName, displayName);
-            resolve();
+            deviceUsername.set(user.getUsername());
+            deviceDisplayName.set(user.getDisplayName());
+            latch2.countDown();
         });
-        await();
+        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertEquals(username, deviceUsername.get());
+        assertEquals(displayName, deviceDisplayName.get());
     }
 
     @Test
@@ -865,7 +953,7 @@ public class IamTest {
     }
 
     @Test
-    public void testDeleteUserCallback() {
+    public void testDeleteUserCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
         IamUtil iam = IamUtil.create();
@@ -882,17 +970,25 @@ public class IamTest {
         assertEquals(guestUser.getUsername(), guest);
         assertEquals(guestUser.getRole(), "Guest");
 
+        CountDownLatch latch0 = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+
         iam.deleteUserCallback(connection, "nonexistent", (ec, res) -> {
-            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        errorCode.set(-1);
 
         iam.deleteUserCallback(connection, guest, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
         assertIamError(IamError.USER_DOES_NOT_EXIST, () -> {
             iam.getUser(connection, guest);
@@ -909,29 +1005,36 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalInitialSuccessCallback() {
+    public void testLocalInitialSuccessCallback() throws InterruptedException {
         connection = connectToDeviceWithAdminKey(localPairLocalInitial);
         IamUtil iam = IamUtil.create();
-        CompletableFuture future = new CompletableFuture();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger errorCode0 = new AtomicInteger(-1);
+        AtomicInteger errorCode1 = new AtomicInteger(-1);
+        AtomicInteger errorCode2 = new AtomicInteger(-1);
+        AtomicBoolean result0 = new AtomicBoolean(true);
+        AtomicBoolean result2 = new AtomicBoolean(false);
 
         iam.isCurrentUserPairedCallback(connection, (ec0, res0) -> {
-            assertEquals(ec0, IamError.NONE);
-            assertFalse(res0.get());
+            errorCode0.set(ec0.ordinal());
+            result0.set(res0.get());
             iam.pairLocalInitialCallback(connection, (ec1, res1) -> {
-                assertEquals(ec1, IamError.NONE);
+                errorCode1.set(ec1.ordinal());
                 iam.isCurrentUserPairedCallback(connection, (ec2, res2) -> {
-                    assertEquals(ec2, IamError.NONE);
-                    assertTrue(res2.get());
-                    future.complete(null);
+                    errorCode2.set(ec2.ordinal());
+                    result2.set(res2.get());
+                    latch.countDown();
                 });
             });
         });
 
-        try {
-            future.get();
-        } catch (Exception e) {
-            fail("Future.get() failed");
-        }
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode0.get()].name());
+        assertFalse(result0.get());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode1.get()].name());
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode2.get()].name());
+        assertTrue(result2.get());
     }
 
     @Test
@@ -947,34 +1050,53 @@ public class IamTest {
     }
 
     @Test
-    public void testLocalInitialAlreadyPairedFailCallback() {
+    public void testLocalInitialAlreadyPairedFailCallback() throws InterruptedException {
         connection = connectToDeviceWithAdminKey(localPairLocalInitial);
         IamUtil iam = IamUtil.create();
-        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertFalse(res.get());
-            resolve();
-        });
-        await();
 
-        iam.pairLocalInitialCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
+        CountDownLatch latch0 = new CountDownLatch(1);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+        CountDownLatch latch3 = new CountDownLatch(1);
+
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicBoolean result = new AtomicBoolean(true);
 
         iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertTrue(res.get());
-            resolve();
+            errorCode.set(ec.ordinal());
+            result.set(res.get());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertFalse(result.get());
 
+        errorCode.set(-1);
         iam.pairLocalInitialCallback(connection, (ec, res) -> {
-            assertEquals(ec, IamError.INITIAL_USER_ALREADY_PAIRED);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+        errorCode.set(-1);
+        result.set(false);
+        iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+            errorCode.set(ec.ordinal());
+            result.set(res.get());
+            latch2.countDown();
+        });
+        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertTrue(result.get());
+
+        errorCode.set(-1);
+        iam.pairLocalInitialCallback(connection, (ec, res) -> {
+            errorCode.set(ec.ordinal());
+            latch3.countDown();
+        });
+        assertTrue(latch3.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.INITIAL_USER_ALREADY_PAIRED.name(), IamError.values()[errorCode.get()].name());
     }
 
     @Test
@@ -1093,58 +1215,85 @@ public class IamTest {
     }
 
     @Test
-    public void testUpdateUserPasswordCallback() {
+    public void testUpdateUserPasswordCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
-        Connection connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
         IamUtil iam = IamUtil.create();
 
-        String user = createAdminAndGuest(connection, dev, guestPassword);
+        CountDownLatch latch0 = new CountDownLatch(1);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+        CountDownLatch latch3 = new CountDownLatch(1);
+        CountDownLatch latch4 = new CountDownLatch(1);
+        CountDownLatch latch5 = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicBoolean result = new AtomicBoolean(true);
+
+        String user;
         String newGuestPassword = "newguestpassword";
 
-        // Should fail
-        iam.updateUserPasswordCallback(connection, "baduser", "sus", (ec, res) -> {
-            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
-            resolve();
-        });
-        await();
+        try (Connection connection = connectToDevice(dev)) {
+             user = createAdminAndGuest(connection, dev, guestPassword);
 
-        iam.updateUserPasswordCallback(connection, user, newGuestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
+            // Should fail
+            iam.updateUserPasswordCallback(connection, "baduser", "sus", (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                latch0.countDown();
+            });
+            assertTrue(latch0.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
-        // Reconnect as user instead of admin
-        cleanup(connection);
-        Connection connectionUser = connectToDevice(dev);
-        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertFalse(res.get());
-            resolve();
-        });
-        await();
+            errorCode.set(-1);
+            iam.updateUserPasswordCallback(connection, user, newGuestPassword, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                latch1.countDown();
+            });
+            assertTrue(latch1.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
-        iam.pairPasswordInviteCallback(connectionUser, user, guestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.AUTHENTICATION_ERROR);
-            resolve();
-        });
-        await();
+            connection.connectionClose();
+        }
 
-        iam.pairPasswordInviteCallback(connectionUser, user, newGuestPassword, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
-        });
-        await();
+        try (Connection connection = connectToDevice(dev)) {
+            errorCode.set(-1);
+            iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                result.set(res.get());
+                latch2.countDown();
+            });
+            assertTrue(latch2.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertFalse(result.get());
 
-        iam.isCurrentUserPairedCallback(connectionUser, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            assertTrue(res.get());
-            resolve();
-        });
-        await();
+            errorCode.set(-1);
+            iam.pairPasswordInviteCallback(connection, user, guestPassword, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                latch3.countDown();
+            });
+            assertTrue(latch3.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.AUTHENTICATION_ERROR.ordinal(), errorCode.get());
 
-        cleanup(connectionUser);
+            errorCode.set(-1);
+            iam.pairPasswordInviteCallback(connection, user, newGuestPassword, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                latch4.countDown();
+            });
+            assertTrue(latch4.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+
+            errorCode.set(-1);
+            result.set(false);
+            iam.isCurrentUserPairedCallback(connection, (ec, res) -> {
+                errorCode.set(ec.ordinal());
+                result.set(res.get());
+                latch5.countDown();
+            });
+            assertTrue(latch5.await(1, TimeUnit.SECONDS));
+            assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+            assertTrue(result.get());
+
+            connection.connectionClose();
+        }
     }
 
     @Test
@@ -1170,7 +1319,7 @@ public class IamTest {
     }
 
     @Test
-    public void testUpdateUserRoleCallback() {
+    public void testUpdateUserRoleCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
@@ -1179,27 +1328,39 @@ public class IamTest {
         String user = createAdminAndGuest(connection, dev, guestPassword);
         String newRole = "Standard";
 
+        CountDownLatch latch0 = new CountDownLatch(1);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicReference<String> newRoleDevice = new AtomicReference<String>();
+
         // Should fail
         iam.updateUserRoleCallback(connection, user, "badrole", (ec, res) -> {
-            assertEquals(ec, IamError.ROLE_DOES_NOT_EXIST);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.ROLE_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         // Shouldn't fail
+        errorCode.set(-1);
         iam.updateUserRoleCallback(connection, user, newRole, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
+        errorCode.set(-1);
         iam.getUserCallback(connection, user, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
+            errorCode.set(ec.ordinal());
             IamUser userHandle = res.get();
-            assertEquals(userHandle.getRole(), newRole);
-            resolve();
+            newRoleDevice.set(userHandle.getRole());
+            latch2.countDown();
         });
-        await();
+        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertEquals(newRole, newRoleDevice.get());
     }
 
     @Test
@@ -1225,7 +1386,7 @@ public class IamTest {
     }
 
     @Test
-    public void testUpdateUserDisplayNameCallback() {
+    public void testUpdateUserDisplayNameCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
@@ -1234,27 +1395,39 @@ public class IamTest {
         String user = createAdminAndGuest(connection, dev, guestPassword);
         String newDisplayName = "Morbius";
 
+        CountDownLatch latch0 = new CountDownLatch(1);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicReference<String> newDisplayNameDevice = new AtomicReference<String>();
+
         // Should fail
         iam.updateUserDisplayNameCallback(connection, "morb", newDisplayName, (ec, res) -> {
-            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         // Shouldn't fail
+        errorCode.set(-1);
         iam.updateUserDisplayNameCallback(connection, user, newDisplayName, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
+        errorCode.set(-1);
         iam.getUserCallback(connection, user, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
+            errorCode.set(ec.ordinal());
             IamUser userHandle = res.get();
-            assertEquals(userHandle.getDisplayName(), newDisplayName);
-            resolve();
+            newDisplayNameDevice.set(userHandle.getDisplayName());
+            latch2.countDown();
         });
-        await();
+        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertEquals(newDisplayName, newDisplayNameDevice.get());
     }
 
     @Test
@@ -1280,7 +1453,7 @@ public class IamTest {
     }
 
     @Test
-    public void testRenameUserCallback() {
+    public void testRenameUserCallback() throws InterruptedException {
         LocalDevice dev = localPasswordInvite;
         connection = connectToDevice(dev);
         String guestPassword = "guestpassword";
@@ -1289,26 +1462,39 @@ public class IamTest {
         String user = createAdminAndGuest(connection, dev, guestPassword);
         String newUsername = uniqueUser();
 
+        CountDownLatch latch0 = new CountDownLatch(1);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+        AtomicInteger errorCode = new AtomicInteger(-1);
+        AtomicReference<String> newUsernameDevice = new AtomicReference<String>();
+
         // Should fail
         iam.renameUserCallback(connection, "idontexist", newUsername, (ec, res) -> {
-            assertEquals(ec, IamError.USER_DOES_NOT_EXIST);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch0.countDown();
         });
-        await();
+        assertTrue(latch0.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.USER_DOES_NOT_EXIST.name(), IamError.values()[errorCode.get()].name());
 
         // Shouldn't fail
+        errorCode.set(-1);
         iam.renameUserCallback(connection, user, newUsername, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
-            resolve();
+            errorCode.set(ec.ordinal());
+            latch1.countDown();
         });
-        await();
+        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
 
+        errorCode.set(-1);
         iam.getUserCallback(connection, newUsername, (ec, res) -> {
-            assertEquals(ec, IamError.NONE);
+            errorCode.set(ec.ordinal());
             IamUser userHandle = res.get();
-            assertEquals(userHandle.getUsername(), newUsername);
-            resolve();
+            newUsernameDevice.set(userHandle.getUsername());
+            latch2.countDown();
         });
-        await();
+        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertEquals(IamError.NONE.name(), IamError.values()[errorCode.get()].name());
+        assertEquals(newUsername, newUsernameDevice.get());
+ //       assertTrue(false);
     }
 }

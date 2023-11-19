@@ -5,9 +5,11 @@ import com.nabto.edge.client.NabtoCallback;
 public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
 
     com.nabto.edge.client.swig.TcpTunnel tcpTunnel;
+    private final CleanerService.Cleanable cleanable;
 
     TcpTunnelImpl(com.nabto.edge.client.swig.TcpTunnel tcpTunnel) {
         this.tcpTunnel = tcpTunnel;
+        this.cleanable = createAndRegisterCleanable(this, tcpTunnel);
     }
 
     public void open(String service, int localPort)
@@ -28,7 +30,12 @@ public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
         }
     }
 
+    @Override
     public void close() {
+       cleanable.clean();
+    }
+
+    public void tunnelClose() {
         try {
             tcpTunnel.close().waitForResult();
         } catch (com.nabto.edge.client.swig.NabtoException e) {
@@ -36,7 +43,7 @@ public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
         }
     }
 
-    public void closeCallback(NabtoCallback callback) {
+    public void tunnelCloseCallback(NabtoCallback callback) {
         try {
             tcpTunnel.close().callback(Util.makeFutureCallback(callback));
         } catch (com.nabto.edge.client.swig.NabtoException e) {
@@ -51,4 +58,10 @@ public class TcpTunnelImpl implements com.nabto.edge.client.TcpTunnel {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
+
+    /// static helper to ensure no "this" is captured accidentally
+    private static CleanerService.Cleanable createAndRegisterCleanable(Object o, com.nabto.edge.client.swig.TcpTunnel nativeHandle) {
+        return CleanerService.instance().register(o, () -> nativeHandle.delete());
+    }
+
 }
