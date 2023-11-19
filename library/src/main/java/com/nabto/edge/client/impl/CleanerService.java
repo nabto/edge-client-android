@@ -103,7 +103,7 @@ class CleanerService {
      */
     CleanerService.Cleanable register(Object o, Runnable r) {
         CleanerService.CleanerReference c = new CleanerService.CleanerReference(Objects.requireNonNull(o), Objects.requireNonNull(r));
-        Log.d("nabto", "Cleaner registering object [" + o + "] with reference [" + c + "]");
+//        Log.d("nabto", "Cleaner registering object [" + o + "] with reference [" + c + "]");
 //        Log.d("nabto", "Cleaner registering object [" + o + "] with reference [" + c + "] - with stack:" + Log.getStackTraceString(new Exception()));
         phantomReferences.add(c);
         return c;
@@ -122,7 +122,7 @@ class CleanerService {
 
         public void clean() {
             if (phantomReferences.remove(this)) {
-                Log.d("nabto", "Cleaner cleaning reference " + this);
+  //              Log.d("nabto", "Cleaner cleaning reference " + this);
                 super.clear();
                 cleaningAction.run();
             }

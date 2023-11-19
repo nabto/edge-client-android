@@ -78,7 +78,7 @@ public class MdnsTest {
 
         LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
-        client.addMdnsResultListener(rl,"testsubtype");
+        client.addMdnsResultListener(rl,"swift-test-subtype");
 
         String productId = resources.getString(R.string.local_product_id);
         String deviceId = resources.getString(R.string.local_device_id);
@@ -93,13 +93,13 @@ public class MdnsTest {
 
         LinkedBlockingQueue<MdnsResult> blockingQueue = new LinkedBlockingQueue<MdnsResult>();
         ResultListener rl = new ResultListener();
-        client.addMdnsResultListener(rl,"testsubtype");
+        client.addMdnsResultListener(rl,"swift-test-subtype");
 
         String productId = resources.getString(R.string.local_product_id);
         String deviceId = resources.getString(R.string.local_device_id);
         MdnsResult mr = rl.waitForDevice(productId, deviceId);
         assertNotEquals(mr, null);
         Map<String,String> txtItems = mr.getTxtItems();
-        assertTrue(txtItems.get("testkey").equals("testvalue"));
+        assertTrue(txtItems.get("swift-txt-key").equals("swift-txt-val"));
     }
 }

@@ -12,6 +12,6 @@
   <string name="stream_product_id">pr-fatqcwj9</string>
   <string name="stream_device_id">de-bdsotcgm</string>
 
-  <string name="local_product_id">pr-test</string>
-  <string name="local_device_id">de-test</string>
+  <string name="local_product_id">pr-mdns</string>
+  <string name="local_device_id">de-mdns</string>
 </resources>
