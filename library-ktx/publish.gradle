@@ -14,7 +14,7 @@ def getSnapshotRepositoryUrl() {
 afterEvaluate { project ->
     publishing {
         publications {
-            mavenJava(MavenPublication) {
+            release(MavenPublication) {
                 groupId = GROUP
                 if (isReleaseVersion()) {
                     version = buildVersionName()
@@ -24,9 +24,6 @@ afterEvaluate { project ->
                 }
                 artifactId = POM_ARTIFACT_ID_KTX
                 from components.release
-                artifact sourcesJar
-                // artifact javadocJar
-                artifact dokkaJavadocJar
                 pom {
                     name = POM_ARTIFACT_ID
                     description = POM_DESCRIPTION
@@ -74,24 +71,6 @@ afterEvaluate { project ->
         }
         project.logger.info('password: ' + signingKey)
         useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.mavenJava
+        sign publishing.publications.release
     }
-}
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-dokkaJavadoc.configure {
-    outputDirectory.set(file("${buildDir}/dokka"))
-    dokkaSourceSets {
-        named("main") {
-            noAndroidSdkLink.set(false)
-        }
-    }
-}
-
-task dokkaJavadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    classifier = 'javadoc'
-    from file("${buildDir}/dokka")
 }

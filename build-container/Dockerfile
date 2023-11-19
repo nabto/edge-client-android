@@ -1,8 +1,8 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 USER root
 
-RUN apt-get update && apt-get install curl unzip git build-essential openjdk-11-jdk swig -y
+RUN apt-get update && apt-get install curl unzip git build-essential openjdk-17-jdk swig -y
 
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip" \
     ANDROID_HOME="/usr/local/android-sdk"
@@ -23,10 +23,10 @@ RUN yes | $ANDROID_SDKMANAGER --licenses
 
 # Install Android Build Tool and Libraries
 RUN $ANDROID_SDKMANAGER "tools" "platform-tools"
-RUN $ANDROID_SDKMANAGER "build-tools;30.0.2"
-RUN $ANDROID_SDKMANAGER "platforms;android-31"
+RUN $ANDROID_SDKMANAGER "build-tools;34.0.0"
+RUN $ANDROID_SDKMANAGER "platforms;android-34"
 RUN $ANDROID_SDKMANAGER "ndk-bundle"
 RUN $ANDROID_SDKMANAGER "cmake;3.18.1"
-RUN $ANDROID_SDKMANAGER "ndk;21.4.7075529"
+RUN $ANDROID_SDKMANAGER "ndk;25.1.8937393"
 
 RUN yes | $ANDROID_SDKMANAGER --licenses
