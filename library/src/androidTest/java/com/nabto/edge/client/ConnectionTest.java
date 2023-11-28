@@ -194,11 +194,11 @@ public class ConnectionTest {
                             }
                         } catch (Exception e) {
                             Log.i("ConnectionTest", "Exception in onEvent (event=" + event + "): " + e);
-                            exceptionLatch.countDown();
                             if (e instanceof NabtoRuntimeException) {
                                 int code = ((NabtoRuntimeException)e).getErrorCode().getErrorCode();
                                 errorCode.set(code);
                             }
+                            exceptionLatch.countDown();
                         }
                     }
                 }
