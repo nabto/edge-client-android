@@ -1,19 +1,19 @@
 package com.nabto.edge.client;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
-
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -40,18 +40,37 @@ public class TunnelTest {
     @Test
     public void connect() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-        Connection connection = Helper.createTunnelConnection(client);
-        connection.connect();
-        TcpTunnel tunnel = connection.createTcpTunnel();
-        tunnel.open("http", 0);
-        int localPort = tunnel.getLocalPort();
+        try (Connection connection = Helper.createTunnelConnection(client)) {
+            connection.connect();
+            try (TcpTunnel tunnel = connection.createTcpTunnel()) {
+                tunnel.open("http", 0);
+                int localPort = tunnel.getLocalPort();
 
-        URL url = new URL("http://127.0.0.1:"+localPort+"/");
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        assertEquals(200, urlConnection.getResponseCode());
-        urlConnection.disconnect();
-
-
-        connection.close();
+                URL url = new URL("http://127.0.0.1:" + localPort + "/");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                assertEquals(200, urlConnection.getResponseCode());
+                urlConnection.disconnect();
+            }
+        }
     }
+
+    @Test
+    public void closeWithOpenTunnel() throws Exception {
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        client.setLogLevel("trace");
+        try (Connection connection = Helper.createTunnelConnection(client)) {
+            connection.connect();
+            try (TcpTunnel tunnel = connection.createTcpTunnel()) {
+                // trigger close of tunnel
+                connection.close();
+                try {
+                    tunnel.open("http", 0);
+                    fail("Expected exception");
+                } catch (NabtoRuntimeException e) {
+                    assertEquals(ErrorCodes.STOPPED, e.getErrorCode().getErrorCode());
+                }
+            }
+        }
+    }
+
 }
