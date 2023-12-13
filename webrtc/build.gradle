@@ -1,0 +1,66 @@
+apply plugin: 'com.android.library'
+apply from: '../versioning.gradle'
+apply plugin: "org.jetbrains.kotlin.android"
+
+
+android {
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
+    namespace "com.nabto.edge.client.webrtc"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 34
+        versionCode buildVersionCode()
+        versionName buildVersionName()
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+
+    implementation project(":library")
+    implementation project(":library-ktx")
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.3.2"
+
+    def webrtcVersion = "1.0.5"
+    implementation "io.getstream:stream-webrtc-android:$webrtcVersion"
+    implementation "io.getstream:stream-webrtc-android-ui:$webrtcVersion"
+    implementation "io.getstream:stream-webrtc-android-ktx:$webrtcVersion"
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    androidTestImplementation 'androidx.test:core-ktx:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation "androidx.test:runner:1.5.2"
+    androidTestImplementation "androidx.test:rules:1.5.0"
+}
+
+apply from: 'publish.gradle'
