@@ -11,6 +11,14 @@ import com.nabto.edge.client.NabtoCallback;
 import com.nabto.edge.client.swig.FutureCallback;
 
 public class Util {
+
+    public static void logUnhandledCallbackException(Throwable t) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        Log.e("nabto", "Callback into application from SDK threw an exception (will not be propagated to Nabto Client SDK as this will cause crash):  " + sw);
+    }
+
     public static FutureCallback makeFutureCallback(NabtoCallback<Void> callback) {
         // Most of the future callbacks used just pass through to a NabtoCallback like this
         FutureCallback cb = new FutureCallback() {
@@ -19,10 +27,7 @@ public class Util {
                 try {
                     callback.run(status.getErrorCode(), opt);
                 } catch (Throwable t) {
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    t.printStackTrace(pw);
-                    Log.e("nabto", "Callback into application from SDK threw an exception (will not be propagated to Nabto Client SDK as this will cause crash):  " + sw);
+                    logUnhandledCallbackException(t);
                 } finally {
                     callbackReferences.remove(this);
                 }
