@@ -50,7 +50,7 @@ public class ConnectionImpl implements Connection, AutoCloseable {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
     }
-    
+
     public String getDeviceFingerprint() {
         try {
             return connection.getDeviceFingerprint();
@@ -127,6 +127,10 @@ public class ConnectionImpl implements Connection, AutoCloseable {
         } catch (com.nabto.edge.client.swig.NabtoException e) {
             throw new com.nabto.edge.client.NabtoRuntimeException(e);
         }
+    }
+
+    public void connectionCloseCallback(NabtoCallback callback) {
+        connection.close().callback(Util.makeFutureCallback(callback));
     }
 
     @Override

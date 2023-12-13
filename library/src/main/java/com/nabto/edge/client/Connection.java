@@ -143,6 +143,15 @@ public interface Connection extends AutoCloseable {
      */
     void connectionClose();
 
+
+    /**
+     * Close a connection, run callback once connection is closed.
+     * See the `connectionClose()` function for error codes that the callback may give.
+     *
+     * @param callback The callback that will be run once the operation is done.
+     */
+    public void connectionCloseCallback(NabtoCallback callback);
+
     /**
      * Note! Semantics have changed with version 3.0 due to name clash with AutoCloseable!
      * The 2.x version of close() has been renamed to connectionClose().
@@ -220,7 +229,7 @@ public interface Connection extends AutoCloseable {
      * @return the remote channel error code
      */
     public ErrorCode getRemoteChannelErrorCode();
-    
+
     /**
      * Get the direct channel error code.
      *

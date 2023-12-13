@@ -17,29 +17,11 @@ import org.json.JSONObject
 
 @RunWith(AndroidJUnit4::class)
 class StreamTest {
-    suspend fun createStreamConnection(client: NabtoClient): Connection? {
-        val resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
-
-        val connection = client.createConnection();
-        val options = JSONObject();
-        try {
-            options.put("ProductId", resources.getString(R.string.stream_product_id));
-            options.put("DeviceId", resources.getString(R.string.stream_device_id));
-            options.put("ServerConnectToken", "demosct");
-            options.put("PrivateKey", client.createPrivateKey());
-            connection.updateOptions(options.toString());
-        } catch (e: JSONException) {
-            return null;
-        }
-        return connection;
-    }
-
     @Test
     fun echo() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().getContext()
         NabtoClient.create(context).use { client ->
             createStreamConnection(client)!!.use { connection ->
-                connection.awaitConnect()
                 connection.createStream().use { stream ->
                     stream.open(42)
                     val toWrite = byteArrayOf(42, 32, 44, 45)
@@ -53,7 +35,7 @@ class StreamTest {
                     }
                     stream.streamClose()
                 }
-                connection.connectionClose()
+                connection.awaitConnectionClose()
             }
         }
         Unit
@@ -64,7 +46,6 @@ class StreamTest {
         val context = InstrumentationRegistry.getInstrumentation().getContext()
         NabtoClient.create(context).use { client ->
             createStreamConnection(client)!!.use { connection ->
-                connection.awaitConnect()
                 connection.createStream().use { stream ->
                     stream.open(42)
                     val toWrite = byteArrayOf(42, 32, 44, 45)
@@ -89,7 +70,7 @@ class StreamTest {
                     assertTrue(gotException)
                     stream.streamClose()
                 }
-                connection.connectionClose()
+                connection.awaitConnectionClose()
             }
         }
     }

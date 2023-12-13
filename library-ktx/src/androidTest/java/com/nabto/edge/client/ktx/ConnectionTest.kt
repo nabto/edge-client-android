@@ -21,35 +21,17 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class CoroutineTest {
+class ConnectionTest {
     val testScheduler = TestCoroutineScheduler()
     val testDispatcher = StandardTestDispatcher(testScheduler)
     val testScope = TestScope(testDispatcher)
 
     @Test
-    fun testCoroutineCancellation() = testScope.runTest {
+    fun testConnection() = testScope.runTest {
         var connection: Connection? = null
-        var wasCancelled = false
-        val latch = CountDownLatch(1)
-
-        val job = launch {
-            try {
-                val client: NabtoClient = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
-                connection = createStreamConnection(client)
-                awaitCancellation()
-            } finally {
-                wasCancelled = true
-                connection = null
-                latch.countDown()
-            }
-        }
-
-        // runCurrent runs the pending job above which will then suspend when it getes to awaitCancellation
-        testScheduler.runCurrent()
-        job.cancelAndJoin()
-
-        assertTrue(latch.await(5, TimeUnit.SECONDS))
-        assertTrue(wasCancelled)
-        assertNull(connection)
+        val client: NabtoClient = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        connection = createStreamConnection(client)
+        assertNotNull(connection);
+        connection?.awaitConnectionClose();
     }
 }

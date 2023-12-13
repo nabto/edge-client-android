@@ -23,6 +23,20 @@ private suspend fun <T> nabtoCoroutineWrapper(
 }
 
 /**
+ * Close a connection as described for Connection.connectionClose().
+ *
+ * This function is meant to be used in a Kotlin coroutine to suspend execution until the connection
+ * is closed or an error occurs.
+ *
+ * @throws NabtoRuntimeException with error code `STOPPED` if the client instance was stopped
+ */
+suspend fun Connection.awaitConnectionClose() {
+    nabtoCoroutineWrapper<Unit> { callback ->
+        this@awaitConnectionClose.connectionCloseCallback(callback)
+    }
+}
+
+/**
  * Open a connection as described for Connection.connect().
  *
  * This function is meant to be used in a Kotlin coroutine to suspend execution until the connection
@@ -37,7 +51,7 @@ suspend fun Connection.awaitConnect() {
             if (error == ErrorCodes.OK) {
                 continuation.resumeWith(Result.success(opt))
             } else {
-                val cause = when (error) { 
+                val cause = when (error) {
                     ErrorCodes.NO_CHANNELS -> {
                         NabtoNoChannelsException(
                             this@awaitConnect.localChannelErrorCode.errorCode,
