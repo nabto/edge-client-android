@@ -54,7 +54,11 @@ public class MdnsScannerImpl extends com.nabto.edge.client.swig.FutureCallback i
             }
             for (MdnsResultListener listener : listeners)
             {
-                listener.onChange(new MdnsResultImpl(result));
+                try {
+                    listener.onChange(new MdnsResultImpl(result));
+                } catch(Throwable t) {
+                    Util.logUnhandledCallbackException(t);
+                }
             }
             startWait();
         }
