@@ -225,7 +225,7 @@ public class ConnectionTest {
                         if (event == ConnectionEventsCallback.CONNECTED) {
                             connectedLatch.countDown();
                         }
-                        throw new RuntimeException("This should be called and logged");
+                        throw new RuntimeException("This exception should be ignored by the invoker of onEvent");
                     }
                 }
         );
