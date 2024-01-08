@@ -11,7 +11,10 @@ public class ConnectionEventsCallbackDecorator extends com.nabto.edge.client.swi
 
     @Override
     public void onEvent(int event) {
-        super.onEvent(event);
-        callback.onEvent(event);
+        try {
+            callback.onEvent(event);
+        } catch(Throwable t) {
+            Util.logUnhandledCallbackException(t);
+        }
     }
 }

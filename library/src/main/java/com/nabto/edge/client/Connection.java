@@ -24,7 +24,7 @@ public interface Connection extends AutoCloseable {
     /**
      * Set connection parameters through a JSON document.
      *
-     * The provided options are merged with the already set options. n error is returned if a
+     * The provided options are merged with the already set options. An error is returned if a
      * parameter is not recognized. This only updates the internal representation of parameters.
      *
      * Options are set in a JSON document as follows:

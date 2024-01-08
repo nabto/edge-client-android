@@ -211,6 +211,29 @@ public class ConnectionTest {
         assertEquals(ErrorCodes.STOPPED, errorCode.get());
     }
 
+    @Test(expected = Test.None.class)
+    public void throwExceptionInsideConnectionEventCallback() throws Exception {
+        final CountDownLatch connectedLatch = new CountDownLatch(1);
+        NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
+        Connection connection = Helper.createRemoteConnection(client);
+        connection.addConnectionEventsListener(
+                new ConnectionEventsCallback() {
+                    @Override
+                    public void onEvent(int event) {
+                        // do not use assertions in callback as they are implemented as exceptions
+                        // that wreak havoc when escaping
+                        if (event == ConnectionEventsCallback.CONNECTED) {
+                            connectedLatch.countDown();
+                        }
+                        throw new RuntimeException("This exception should be ignored by the invoker of onEvent");
+                    }
+                }
+        );
+        connection.connect();
+        assertTrue(connectedLatch.await(5, TimeUnit.SECONDS));
+        connection.connectionClose();
+    }
+
     // @Test(expected = Test.None.class)
     // public void gcConnectCallback() throws Exception {
     //     NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
