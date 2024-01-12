@@ -159,12 +159,7 @@ class EdgeWebrtcConnectionImpl(
                         throw RuntimeException("Could not create PeerConnection")
                     }
 
-                    // @TODO: Not sure why but the SDP is not correct if we do not have any tracks.
-                    val videoSource = EdgeWebRTC.peerConnectionFactory.createVideoSource(false)
-                    val videoTrack = EdgeWebRTC.peerConnectionFactory.createVideoTrack("dummy", videoSource);
-                    peerConnection.addTrack(videoTrack)
-
-                    peerConnection.createOffer(localOfferObserver, localConstraints)
+                    onConnectedCallback?.let { it() }
                 }
             }
         }
@@ -187,7 +182,7 @@ class EdgeWebrtcConnectionImpl(
     override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
     override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
         if (state == PeerConnection.IceConnectionState.CONNECTED) {
-            onConnectedCallback?.let { it() }
+            // onConnectedCallback?.let { it() }
         }
 
         if (state == PeerConnection.IceConnectionState.CLOSED) {

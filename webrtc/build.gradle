@@ -1,11 +1,13 @@
-apply plugin: 'com.android.library'
-apply from: '../versioning.gradle'
-apply plugin: "org.jetbrains.kotlin.android"
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.plugin.serialization" version "1.8.10"
+}
 
+apply from: '../versioning.gradle'
 
 android {
-    compileSdkVersion 34
-    buildToolsVersion "34.0.0"
+    compileSdk 34
     namespace "com.nabto.edge.client.webrtc"
 
     compileOptions {
@@ -51,8 +53,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.3.2"
 
     def webrtcVersion = "1.0.5"
-    implementation "io.getstream:stream-webrtc-android:$webrtcVersion"
-    implementation "io.getstream:stream-webrtc-android-ui:$webrtcVersion"
+    api "io.getstream:stream-webrtc-android:$webrtcVersion"
+    api "io.getstream:stream-webrtc-android-ui:$webrtcVersion"
     implementation "io.getstream:stream-webrtc-android-ktx:$webrtcVersion"
 
     testImplementation 'junit:junit:4.13.2'

@@ -69,6 +69,13 @@ class EdgeWebRTC {
         internal lateinit var peerConnectionFactory: PeerConnectionFactory
         val eglBaseContext: EglBase.Context get() = eglBase.eglBaseContext
 
+        fun initVideoView(view: EdgeVideoView) {
+            view.init(eglBaseContext, object : RendererCommon.RendererEvents {
+                override fun onFirstFrameRendered() {}
+                override fun onFrameResolutionChanged(p0: Int, p1: Int, p2: Int) {}
+            })
+        }
+
         fun create(conn: Connection, context: Context): EdgeWebrtcConnection {
             if (!this::peerConnectionFactory.isInitialized) {
                 // We need to specify that we want to use h264 encoding/decoding, otherwise the SDP

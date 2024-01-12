@@ -27,7 +27,6 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class RTCInfo(
-    @Required @SerialName("FileStreamPort") val fileStreamPort: Int,
     @Required @SerialName("SignalingStreamPort") val signalingStreamPort: Int
 )
 
@@ -82,7 +81,8 @@ data class MetadataTrack(
 @Serializable
 data class SignalMessageMetadata(
     val tracks: List<MetadataTrack>?,
-    val noTrickle: Boolean?
+    val noTrickle: Boolean = false,
+    val status: String
 )
 
 @Serializable
