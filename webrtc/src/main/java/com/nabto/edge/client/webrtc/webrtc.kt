@@ -2,30 +2,14 @@ package com.nabto.edge.client.webrtc
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import com.nabto.edge.client.Connection
+import com.nabto.edge.client.webrtc.impl.EdgeWebrtcConnectionImpl
 import io.getstream.webrtc.android.ui.VideoTextureViewRenderer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.webrtc.AudioTrack
-import org.webrtc.DataChannel
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
-import org.webrtc.IceCandidate
-import org.webrtc.MediaConstraints
-import org.webrtc.MediaStream
-import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.RendererCommon
-import org.webrtc.RtpTransceiver
-import org.webrtc.SdpObserver
-import org.webrtc.SessionDescription
-import org.webrtc.VideoTrack
 
 // @TODO: Make our own TextureViewRenderer implementation?
 // @TODO: Make a Jetpack Composable View?
@@ -50,7 +34,8 @@ interface EdgeVideoTrack : EdgeMediaTrack {
 }
 
 interface EdgeAudioTrack : EdgeMediaTrack {
-
+    fun setEnabled(enabled: Boolean)
+    fun setVolume(volume: Double)
 }
 
 typealias OnConnectedCallback = () -> Unit

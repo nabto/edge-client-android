@@ -29,6 +29,7 @@ class FirstFragment : Fragment() {
     private lateinit var conn: Connection
     private lateinit var pc: EdgeWebrtcConnection
     private lateinit var remoteTrack: EdgeVideoTrack
+    private lateinit var remoteAudioTrack: EdgeAudioTrack
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,7 +54,12 @@ class FirstFragment : Fragment() {
 
         pc.onConnected {
             Log.i("TestApp", "Connected to peer!")
-            val coap = conn.createCoap("GET", "/webrtc/video/frontdoor")
+            val trackInfo = """
+                {"tracks": ["frontdoor-video", "frontdoor-audio"]}
+            """.trimIndent()
+
+            val coap = conn.createCoap("POST", "/webrtc/tracks")
+            coap.setRequestPayload(50, trackInfo.toByteArray())
             coap.execute()
             Log.i("TestApp", "Coap response: ${coap.responseStatusCode}")
             if (coap.responseStatusCode != 201) {
@@ -62,9 +68,15 @@ class FirstFragment : Fragment() {
         }
 
         pc.onTrack { track ->
+            Log.i("TestApp", "Track of type ${track.type}")
             if (track.type == EdgeMediaTrackType.VIDEO) {
                 remoteTrack = track as EdgeVideoTrack
                 remoteTrack.add(binding.videoView)
+            }
+
+            if (track.type == EdgeMediaTrackType.AUDIO) {
+                remoteAudioTrack = track as EdgeAudioTrack
+                remoteAudioTrack.setEnabled(true)
             }
         }
     }

@@ -1,10 +1,19 @@
-package com.nabto.edge.client.webrtc
+package com.nabto.edge.client.webrtc.impl
 
 import android.content.Context
-import android.util.AttributeSet
 import android.util.Log
 import com.nabto.edge.client.Connection
-import io.getstream.webrtc.android.ui.VideoTextureViewRenderer
+import com.nabto.edge.client.webrtc.EdgeSignaling
+import com.nabto.edge.client.webrtc.EdgeStreamSignaling
+import com.nabto.edge.client.webrtc.EdgeWebRTC
+import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
+import com.nabto.edge.client.webrtc.OnClosedCallback
+import com.nabto.edge.client.webrtc.OnConnectedCallback
+import com.nabto.edge.client.webrtc.OnTrackCallback
+import com.nabto.edge.client.webrtc.SDP
+import com.nabto.edge.client.webrtc.SignalMessage
+import com.nabto.edge.client.webrtc.SignalMessageType
+import com.nabto.edge.client.webrtc.SignalingIceCandidate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,14 +22,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
-import org.webrtc.DefaultVideoDecoderFactory
-import org.webrtc.DefaultVideoEncoderFactory
-import org.webrtc.EglBase
 import org.webrtc.IceCandidate
 import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
-import org.webrtc.PeerConnectionFactory
 import org.webrtc.RendererCommon
 import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
@@ -54,29 +59,6 @@ class EdgeWebrtcConnectionImpl(
                 MediaConstraints.KeyValuePair("offerToReceiveVideo", "true")
             )
         )
-    }
-
-    private val localOfferObserver: SdpObserver = object : SdpObserver {
-        override fun onCreateSuccess(sdp: SessionDescription?) {
-            scope.launch {
-                signaling.send(
-                    SignalMessage(
-                        type = SignalMessageType.OFFER,
-                        data = Json.encodeToString(
-                            SDP(
-                                "offer",
-                                sdp?.description ?: ""
-                            )
-                        )
-                    )
-                )
-                peerConnection.setLocalDescription(dummySdpObserver, sdp!!)
-            }
-        }
-
-        override fun onSetSuccess() {}
-        override fun onCreateFailure(p0: String?) {}
-        override fun onSetFailure(p0: String?) {}
     }
 
     private val localAnswerObserver = object : SdpObserver {
@@ -194,13 +176,17 @@ class EdgeWebrtcConnectionImpl(
     override fun onIceCandidate(candidate: IceCandidate?) {
         candidate?.let { cand ->
             scope.launch {
-                signaling.send(SignalMessage(
+                signaling.send(
+                    SignalMessage(
                     type = SignalMessageType.ICE_CANDIDATE,
-                    data = Json.encodeToString(SignalingIceCandidate(
+                    data = Json.encodeToString(
+                        SignalingIceCandidate(
                         sdpMid = cand.sdpMid,
                         candidate = cand.sdp
-                    ))
-                ))
+                    )
+                    )
+                )
+                )
             }
         }
     }
