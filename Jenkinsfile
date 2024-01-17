@@ -16,7 +16,7 @@ pipeline {
                 sh "./gradlew :library-ktx:build --rerun-tasks"
                 sh "./gradlew :iam-util:build --rerun-tasks"
                 sh "./gradlew :iam-util-ktx:build --rerun-tasks"
-                sh "./gradlew :webrtc --rerun-tasks"
+                sh "./gradlew :webrtc:build --rerun-tasks"
             }
         }
         stage('Deploy') {
