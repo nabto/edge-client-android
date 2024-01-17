@@ -31,8 +31,7 @@ import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
 
 class EdgeWebrtcConnectionImpl(
-    conn: Connection,
-    context: Context
+    conn: Connection
 ) : EdgeWebrtcConnection, PeerConnection.Observer, RendererCommon.RendererEvents {
     private val tag = this.javaClass.simpleName
     private lateinit var peerConnection: PeerConnection

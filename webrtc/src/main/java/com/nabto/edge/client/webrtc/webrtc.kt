@@ -80,7 +80,7 @@ class EdgeWebRTC {
                 }.createPeerConnectionFactory()
             }
 
-            return EdgeWebrtcConnectionImpl(conn, context)
+            return EdgeWebrtcConnectionImpl(conn)
         }
     }
 }

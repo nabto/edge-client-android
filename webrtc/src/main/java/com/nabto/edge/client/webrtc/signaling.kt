@@ -76,7 +76,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
     init {
         // @TODO: figure out how we can use async functions instead of blocking.
         val coap = conn.createCoap("GET", "/webrtc/info")
-        val result = coap.execute()
+        coap.execute()
 
         if (coap.responseStatusCode != 205) {
             Log.e(tag, "Unexpected /webrtc/info return code ${coap.responseStatusCode}")
