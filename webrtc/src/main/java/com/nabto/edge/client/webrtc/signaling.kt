@@ -1,6 +1,9 @@
 package com.nabto.edge.client.webrtc
 
 import android.util.Log
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.Stream
 import com.nabto.edge.client.ktx.awaitReadAll
@@ -9,42 +12,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Required
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
 
-@Serializable
+
 data class RTCInfo(
-    @Required @SerialName("SignalingStreamPort") val signalingStreamPort: Int
+    @JsonProperty("SignalingStreamPort") val signalingStreamPort: Int
 )
 
-object SignalMessageTypeAsIntSerializer : KSerializer<SignalMessageType> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("SignalMessageType", PrimitiveKind.INT)
-
-    override fun deserialize(decoder: Decoder): SignalMessageType {
-        val num = decoder.decodeInt()
-        return SignalMessageType.values()[num]
-    }
-
-    override fun serialize(encoder: Encoder, value: SignalMessageType) {
-        encoder.encodeInt(value.num)
-    }
-}
-
-@Serializable(with = SignalMessageTypeAsIntSerializer::class)
-enum class SignalMessageType(val num: Int) {
+enum class SignalMessageType(@get:JsonValue val num: Int) {
     OFFER(0),
     ANSWER(1),
     ICE_CANDIDATE(2),
@@ -52,19 +26,16 @@ enum class SignalMessageType(val num: Int) {
     TURN_RESPONSE(4)
 }
 
-@Serializable
 data class SDP(
     val type: String,
     val sdp: String
 )
 
-@Serializable
 data class SignalingIceCandidate(
     val sdpMid: String,
     val candidate: String
 )
 
-@Serializable
 data class TurnServer(
     val hostname: String,
     val port: Int,
@@ -72,20 +43,17 @@ data class TurnServer(
     val password: String
 )
 
-@Serializable
 data class MetadataTrack(
     val mid: String,
     val trackId: String
 )
 
-@Serializable
 data class SignalMessageMetadata(
     val tracks: List<MetadataTrack>?,
     val noTrickle: Boolean = false,
     val status: String
 )
 
-@Serializable
 data class SignalMessage(
     val type: SignalMessageType,
     val data: String? = null,
@@ -98,12 +66,12 @@ interface EdgeSignaling {
     suspend fun recv(): SignalMessage
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
     private val tag = "EdgeStreamSignaling"
     private val scope = CoroutineScope(Dispatchers.IO)
     private val stream: Stream
     private val messageFlow = MutableSharedFlow<SignalMessage>()
+    private val mapper = jacksonObjectMapper()
 
     init {
         // @TODO: figure out how we can use async functions instead of blocking.
@@ -115,7 +83,9 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             // @TODO: Throw an exception here
         }
 
-        val rtcInfo = Cbor.decodeFromByteArray<RTCInfo>(coap.responsePayload)
+        val jsonString = coap.responsePayload.decodeToString()
+        Log.i("TEST", jsonString)
+        val rtcInfo = mapper.readValue(jsonString, RTCInfo::class.java)
 
         stream = conn.createStream()
         stream.open(rtcInfo.signalingStreamPort)
@@ -126,7 +96,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
     }
 
     private suspend fun sendMessage(msg: SignalMessage) {
-        val json = Json.encodeToString(msg)
+        val json = mapper.writeValueAsString(msg)
         Log.i(tag, json)
         val lenBytes = byteArrayOf(
             (json.length shr 0).toByte(),
@@ -139,8 +109,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
     }
 
     override suspend fun send(msg: SignalMessage) {
-        val json = Json.encodeToString(msg)
-        Log.i(tag, json)
+        val json = mapper.writeValueAsString(msg)
         val lenBytes = byteArrayOf(
             (json.length shr 0).toByte(),
             (json.length shr 8).toByte(),
@@ -160,8 +129,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
                     ((lenData[3].toUInt() and 0xFFu) shl 24)
 
         val json = String(stream.readAll(len.toInt()), Charsets.UTF_8)
-        Log.i(tag, "Recv: $json")
-        return Json.decodeFromString(json)
+        return mapper.readValue(json, SignalMessage::class.java)
     }
 
 }

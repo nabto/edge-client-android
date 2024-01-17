@@ -2,6 +2,7 @@ package com.nabto.edge.client.webrtc.impl
 
 import android.content.Context
 import android.util.Log
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeStreamSignaling
@@ -17,9 +18,6 @@ import com.nabto.edge.client.webrtc.SignalingIceCandidate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
@@ -40,6 +38,7 @@ class EdgeWebrtcConnectionImpl(
     private lateinit var peerConnection: PeerConnection
     private val signaling: EdgeSignaling = EdgeStreamSignaling(conn)
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val jsonMapper = jacksonObjectMapper()
 
     private var onConnectedCallback: OnConnectedCallback? = null
     private var onClosedCallback: OnClosedCallback? = null
@@ -64,17 +63,9 @@ class EdgeWebrtcConnectionImpl(
     private val localAnswerObserver = object : SdpObserver {
         override fun onCreateSuccess(sdp: SessionDescription?) {
             scope.launch {
-                signaling.send(
-                    SignalMessage(
-                        type = SignalMessageType.ANSWER,
-                        data = Json.encodeToString(
-                            SDP(
-                                "answer",
-                                sdp?.description ?: ""
-                            )
-                        )
-                    )
-                )
+                val data = jsonMapper.writeValueAsString(SDP("answer", sdp?.description ?: ""))
+                val msg = SignalMessage(type = SignalMessageType.ANSWER, data = data)
+                signaling.send(msg)
                 peerConnection.setLocalDescription(dummySdpObserver, sdp!!)
             }
         }
@@ -97,20 +88,20 @@ class EdgeWebrtcConnectionImpl(
             Log.i(tag, msg.toString())
             when (msg.type) {
                 SignalMessageType.ANSWER -> {
-                    val answerData = Json.decodeFromString<SDP>(msg.data!!)
+                    val answerData = jsonMapper.readValue(msg.data!!, SDP::class.java)
                     val answer = SessionDescription(SessionDescription.Type.ANSWER, answerData.sdp)
                     peerConnection.setRemoteDescription(dummySdpObserver, answer)
                 }
 
                 SignalMessageType.OFFER -> {
-                    val offerData = Json.decodeFromString<SDP>(msg.data!!)
+                    val offerData = jsonMapper.readValue(msg.data!!, SDP::class.java)
                     val offer = SessionDescription(SessionDescription.Type.OFFER, offerData.sdp)
                     peerConnection.setRemoteDescription(dummySdpObserver, offer)
                     peerConnection.createAnswer(localAnswerObserver, localConstraints)
                 }
 
                 SignalMessageType.ICE_CANDIDATE -> {
-                    val candidate = Json.decodeFromString<SignalingIceCandidate>(msg.data!!)
+                    val candidate = jsonMapper.readValue(msg.data!!, SignalingIceCandidate::class.java)
                     val iceCandidate = IceCandidate(candidate.sdpMid, 0, candidate.candidate)
                     peerConnection.addIceCandidate(iceCandidate)
                 }
@@ -176,17 +167,8 @@ class EdgeWebrtcConnectionImpl(
     override fun onIceCandidate(candidate: IceCandidate?) {
         candidate?.let { cand ->
             scope.launch {
-                signaling.send(
-                    SignalMessage(
-                    type = SignalMessageType.ICE_CANDIDATE,
-                    data = Json.encodeToString(
-                        SignalingIceCandidate(
-                        sdpMid = cand.sdpMid,
-                        candidate = cand.sdp
-                    )
-                    )
-                )
-                )
+                val data = jsonMapper.writeValueAsString(SignalingIceCandidate(sdpMid = cand.sdpMid, candidate = cand.sdp))
+                signaling.send(SignalMessage(type = SignalMessageType.ICE_CANDIDATE, data = data))
             }
         }
     }

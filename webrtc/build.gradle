@@ -1,7 +1,6 @@
 plugins {
     id "com.android.library"
     id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.plugin.serialization" version "1.8.10"
 }
 
 apply from: '../versioning.gradle'
@@ -49,8 +48,10 @@ dependencies {
     implementation project(":library")
     implementation project(":library-ktx")
 
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.3.2"
+    implementation "com.fasterxml.jackson.core:jackson-core:$DEP_JACKSON_VERSION"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:$DEP_JACKSON_VERSION"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$DEP_JACKSON_VERSION"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$DEP_JACKSON_VERSION"
 
     def webrtcVersion = "1.0.5"
     api "io.getstream:stream-webrtc-android:$webrtcVersion"

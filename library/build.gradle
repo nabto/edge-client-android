@@ -52,16 +52,14 @@ android {
     }
 }
 
-def jacksonVersion = "2.13.5"
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'org.jetbrains:annotations:23.0.0'
-    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-core:${DEP_JACKSON_VERSION}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${DEP_JACKSON_VERSION}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${DEP_JACKSON_VERSION}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${DEP_JACKSON_VERSION}"
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
