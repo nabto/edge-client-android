@@ -3,7 +3,9 @@ package com.nabto.edge.client.webrtc
 import android.util.Log
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.Stream
 import com.nabto.edge.client.ktx.awaitReadAll
@@ -15,7 +17,7 @@ import kotlinx.coroutines.launch
 
 
 data class RTCInfo(
-    @JsonProperty("SignalingStreamPort") val signalingStreamPort: Int
+    @JsonProperty("SignalingStreamPort") val signalingStreamPort: Long
 )
 
 enum class SignalMessageType(@get:JsonValue val num: Int) {
@@ -83,12 +85,11 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             // @TODO: Throw an exception here
         }
 
-        val jsonString = coap.responsePayload.decodeToString()
-        Log.i("TEST", jsonString)
-        val rtcInfo = mapper.readValue(jsonString, RTCInfo::class.java)
+        val cborMapper = CBORMapper().registerKotlinModule()
+        val rtcInfo = cborMapper.readValue(coap.responsePayload, RTCInfo::class.java)
 
         stream = conn.createStream()
-        stream.open(rtcInfo.signalingStreamPort)
+        stream.open(rtcInfo.signalingStreamPort.toInt())
 
         scope.launch {
             messageFlow.collect { msg -> sendMessage(msg) }
