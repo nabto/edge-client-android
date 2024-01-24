@@ -85,8 +85,12 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             // @TODO: Throw an exception here
         }
 
-        val cborMapper = CBORMapper().registerKotlinModule()
-        val rtcInfo = cborMapper.readValue(coap.responsePayload, RTCInfo::class.java)
+        val rtcInfo = if (coap.responseContentFormat == 60) {
+            val cborMapper = CBORMapper().registerKotlinModule()
+            cborMapper.readValue(coap.responsePayload, RTCInfo::class.java)
+        } else {
+            mapper.readValue(coap.responsePayload, RTCInfo::class.java)
+        }
 
         stream = conn.createStream()
         stream.open(rtcInfo.signalingStreamPort.toInt())
