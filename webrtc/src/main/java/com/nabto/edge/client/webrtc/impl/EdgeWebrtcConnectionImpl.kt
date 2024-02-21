@@ -18,6 +18,7 @@ import com.nabto.edge.client.webrtc.SignalingIceCandidate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.webrtc.AddIceObserver
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
@@ -39,39 +40,44 @@ class EdgeWebrtcConnectionImpl(
     private val scope = CoroutineScope(Dispatchers.IO)
     private val jsonMapper = jacksonObjectMapper()
 
+    private var polite = true
+    private var makingOffer = false
+    private var ignoreOffer = false
+
     private var onConnectedCallback: OnConnectedCallback? = null
     private var onClosedCallback: OnClosedCallback? = null
     private var onTrackCallback: OnTrackCallback? = null
 
-    private val dummySdpObserver = object : SdpObserver {
-        override fun onCreateSuccess(p0: SessionDescription?) {}
-        override fun onSetSuccess() {}
+    private val offerObserver = object : SdpObserver {
+        override fun onCreateSuccess(sdp: SessionDescription?) {}
         override fun onCreateFailure(p0: String?) {}
-        override fun onSetFailure(p0: String?) {}
-    }
 
-    private val localConstraints = MediaConstraints().apply {
-        this.mandatory.addAll(
-            listOf(
-                MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"),
-                MediaConstraints.KeyValuePair("offerToReceiveVideo", "true")
-            )
-        )
-    }
-
-    private val localAnswerObserver = object : SdpObserver {
-        override fun onCreateSuccess(sdp: SessionDescription?) {
+        override fun onSetSuccess() {
             scope.launch {
-                val data = jsonMapper.writeValueAsString(SDP("answer", sdp?.description ?: ""))
-                val msg = SignalMessage(type = SignalMessageType.ANSWER, data = data)
-                signaling.send(msg)
-                peerConnection.setLocalDescription(dummySdpObserver, sdp!!)
+                sendDescription(peerConnection.localDescription)
             }
         }
 
-        override fun onSetSuccess() {}
+        override fun onSetFailure(p0: String?) {
+            // @TODO: Error logging
+        }
+    }
+
+    private val renegotiationObserver = object : SdpObserver {
+        override fun onCreateSuccess(p0: SessionDescription?) {}
         override fun onCreateFailure(p0: String?) {}
-        override fun onSetFailure(p0: String?) {}
+
+        override fun onSetSuccess() {
+            scope.launch {
+                sendDescription(peerConnection.localDescription)
+                makingOffer = false
+            }
+        }
+
+        override fun onSetFailure(p0: String?) {
+            // @TODO: Error logging
+            makingOffer = false
+        }
     }
 
     init {
@@ -79,6 +85,57 @@ class EdgeWebrtcConnectionImpl(
             signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
             messageLoop()
         }
+    }
+
+    private suspend fun sendDescription(sdp: SessionDescription) {
+        val data = jsonMapper.writeValueAsString(SDP("answer", sdp.description))
+        val type = when (sdp.type) {
+            SessionDescription.Type.OFFER -> SignalMessageType.OFFER
+            SessionDescription.Type.ANSWER -> SignalMessageType.ANSWER
+            else -> SignalMessageType.OFFER
+        }
+        val msg = SignalMessage(type = type, data = data)
+        signaling.send(msg)
+    }
+
+    private fun handleDescription(sdp: SessionDescription?) {
+        if (sdp != null) {
+            val offerCollision = sdp.type == SessionDescription.Type.OFFER && (makingOffer || peerConnection.signalingState() == PeerConnection.SignalingState.STABLE)
+            ignoreOffer = !polite && offerCollision
+
+            if (ignoreOffer) {
+                return
+            }
+
+            peerConnection.setRemoteDescription(object : SdpObserver {
+                override fun onCreateSuccess(p0: SessionDescription?) {}
+                override fun onCreateFailure(p0: String?) {}
+
+                override fun onSetSuccess() {
+                    if (sdp.type == SessionDescription.Type.OFFER) {
+                        peerConnection.setLocalDescription(offerObserver)
+                    }
+                }
+
+                override fun onSetFailure(p0: String?) {
+
+                }
+
+            }, sdp)
+        }
+    }
+
+    private fun handleIceCandidate(candidate: IceCandidate) {
+        peerConnection.addIceCandidate(candidate, object: AddIceObserver {
+            override fun onAddSuccess() {}
+
+            override fun onAddFailure(str: String?) {
+                if (!ignoreOffer) {
+                    // @TODO: Use something better than a RuntimeException?
+                    throw RuntimeException(str)
+                }
+            }
+        })
     }
 
     private suspend fun messageLoop() {
@@ -89,20 +146,19 @@ class EdgeWebrtcConnectionImpl(
                 SignalMessageType.ANSWER -> {
                     val answerData = jsonMapper.readValue(msg.data!!, SDP::class.java)
                     val answer = SessionDescription(SessionDescription.Type.ANSWER, answerData.sdp)
-                    peerConnection.setRemoteDescription(dummySdpObserver, answer)
+                    handleDescription(answer)
                 }
 
                 SignalMessageType.OFFER -> {
                     val offerData = jsonMapper.readValue(msg.data!!, SDP::class.java)
                     val offer = SessionDescription(SessionDescription.Type.OFFER, offerData.sdp)
-                    peerConnection.setRemoteDescription(dummySdpObserver, offer)
-                    peerConnection.createAnswer(localAnswerObserver, localConstraints)
+                    handleDescription(offer)
                 }
 
                 SignalMessageType.ICE_CANDIDATE -> {
                     val candidate = jsonMapper.readValue(msg.data!!, SignalingIceCandidate::class.java)
                     val iceCandidate = IceCandidate(candidate.sdpMid, 0, candidate.candidate)
-                    peerConnection.addIceCandidate(iceCandidate)
+                    handleIceCandidate(iceCandidate)
                 }
 
                 SignalMessageType.TURN_REQUEST -> {}
@@ -176,8 +232,10 @@ class EdgeWebrtcConnectionImpl(
     override fun onAddStream(stream: MediaStream?) {}
     override fun onRemoveStream(stream: MediaStream?) {}
     override fun onDataChannel(dataChannel: DataChannel?) {}
+
     override fun onRenegotiationNeeded() {
-        // @TODO: Figure out what to do with renegotiation
+        makingOffer = true
+        peerConnection.setLocalDescription(renegotiationObserver)
     }
 
     override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}

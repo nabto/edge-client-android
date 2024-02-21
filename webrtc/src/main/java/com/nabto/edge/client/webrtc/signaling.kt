@@ -8,12 +8,17 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.Stream
+import com.nabto.edge.client.ktx.awaitExecute
 import com.nabto.edge.client.ktx.awaitReadAll
 import com.nabto.edge.client.ktx.awaitWrite
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentLinkedQueue
 
 
 data class RTCInfo(
@@ -71,31 +76,32 @@ interface EdgeSignaling {
 class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
     private val tag = "EdgeStreamSignaling"
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val stream: Stream
-    private val messageFlow = MutableSharedFlow<SignalMessage>()
+    private lateinit var stream: Stream
+    private val messageFlow = MutableSharedFlow<SignalMessage>(replay = 16)
     private val mapper = jacksonObjectMapper()
 
+    private val initialized = CompletableDeferred<Unit>()
+
     init {
-        // @TODO: figure out how we can use async functions instead of blocking.
-        val coap = conn.createCoap("GET", "/webrtc/info")
-        coap.execute()
-
-        if (coap.responseStatusCode != 205) {
-            Log.e(tag, "Unexpected /webrtc/info return code ${coap.responseStatusCode}")
-            // @TODO: Throw an exception here
-        }
-
-        val rtcInfo = if (coap.responseContentFormat == 60) {
-            val cborMapper = CBORMapper().registerKotlinModule()
-            cborMapper.readValue(coap.responsePayload, RTCInfo::class.java)
-        } else {
-            mapper.readValue(coap.responsePayload, RTCInfo::class.java)
-        }
-
-        stream = conn.createStream()
-        stream.open(rtcInfo.signalingStreamPort.toInt())
-
         scope.launch {
+            val coap = conn.createCoap("GET", "/webrtc/info")
+            coap.awaitExecute()
+
+            if (coap.responseStatusCode != 205) {
+                Log.e(tag, "Unexpected /webrtc/info return code ${coap.responseStatusCode}")
+                // @TODO: Throw an exception here
+            }
+
+            val rtcInfo = if (coap.responseContentFormat == 60) {
+                val cborMapper = CBORMapper().registerKotlinModule()
+                cborMapper.readValue(coap.responsePayload, RTCInfo::class.java)
+            } else {
+                mapper.readValue(coap.responsePayload, RTCInfo::class.java)
+            }
+
+            stream = conn.createStream()
+            stream.open(rtcInfo.signalingStreamPort.toInt())
+            initialized.complete(Unit)
             messageFlow.collect { msg -> sendMessage(msg) }
         }
     }
@@ -114,18 +120,11 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
     }
 
     override suspend fun send(msg: SignalMessage) {
-        val json = mapper.writeValueAsString(msg)
-        val lenBytes = byteArrayOf(
-            (json.length shr 0).toByte(),
-            (json.length shr 8).toByte(),
-            (json.length shr 16).toByte(),
-            (json.length shr 24).toByte()
-        )
-        val res = lenBytes + json.toByteArray(Charsets.UTF_8)
-        stream.awaitWrite(res)
+        messageFlow.emit(msg)
     }
 
     override suspend fun recv(): SignalMessage {
+        initialized.await()
         val lenData = stream.awaitReadAll(4)
         val len =
             ((lenData[0].toUInt() and 0xFFu)) or
