@@ -16,9 +16,9 @@ import org.webrtc.RendererCommon
 
 internal class EdgeWebRTCManagerInternal : EdgeWebRTCManager {
     companion object {
-        val eglBase = EglBase.create()
+        val eglBase: EglBase = EglBase.create()
+        val instance = EdgeWebRTCManagerInternal()
         lateinit var peerConnectionFactory: PeerConnectionFactory
-        lateinit var instance: EdgeWebRTCManagerInternal
 
         fun initialize(context: Context) {
             val initOpts = PeerConnectionFactory.InitializationOptions.builder(context).apply {
