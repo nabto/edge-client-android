@@ -1,12 +1,10 @@
 package com.nabto.edge.client.webrtc.impl
 
-import android.content.Context
 import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeStreamSignaling
-import com.nabto.edge.client.webrtc.EdgeWebRTC
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
 import com.nabto.edge.client.webrtc.OnClosedCallback
 import com.nabto.edge.client.webrtc.OnConnectedCallback
@@ -22,7 +20,6 @@ import org.webrtc.AddIceObserver
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
-import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.RendererCommon
@@ -31,7 +28,7 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
 
-class EdgeWebrtcConnectionImpl(
+internal class EdgeWebrtcConnectionImpl(
     conn: Connection
 ) : EdgeWebrtcConnection, PeerConnection.Observer, RendererCommon.RendererEvents {
     private val tag = this.javaClass.simpleName
@@ -53,6 +50,7 @@ class EdgeWebrtcConnectionImpl(
         override fun onCreateFailure(p0: String?) {}
 
         override fun onSetSuccess() {
+            EdgeLogger.info("local description set to: ${peerConnection.localDescription.description}")
             scope.launch {
                 sendDescription(peerConnection.localDescription)
             }
@@ -60,6 +58,7 @@ class EdgeWebrtcConnectionImpl(
 
         override fun onSetFailure(p0: String?) {
             // @TODO: Error logging
+            EdgeLogger.error("Failed to set local description: $p0")
         }
     }
 
@@ -76,6 +75,7 @@ class EdgeWebrtcConnectionImpl(
 
         override fun onSetFailure(p0: String?) {
             // @TODO: Error logging
+            EdgeLogger.error("Failed to set local description in renegotiation: $p0")
             makingOffer = false
         }
     }
@@ -88,6 +88,7 @@ class EdgeWebrtcConnectionImpl(
     }
 
     private suspend fun sendDescription(sdp: SessionDescription) {
+        EdgeLogger.info("Sending description to peer: ${sdp.description}")
         val data = jsonMapper.writeValueAsString(SDP("answer", sdp.description))
         val type = when (sdp.type) {
             SessionDescription.Type.OFFER -> SignalMessageType.OFFER
@@ -104,6 +105,7 @@ class EdgeWebrtcConnectionImpl(
             ignoreOffer = !polite && offerCollision
 
             if (ignoreOffer) {
+                EdgeLogger.info("Ignoring offer...")
                 return
             }
 
@@ -112,16 +114,19 @@ class EdgeWebrtcConnectionImpl(
                 override fun onCreateFailure(p0: String?) {}
 
                 override fun onSetSuccess() {
+                    EdgeLogger.info("Remote ${sdp.type} SDP has been set.")
                     if (sdp.type == SessionDescription.Type.OFFER) {
                         peerConnection.setLocalDescription(offerObserver)
                     }
                 }
 
                 override fun onSetFailure(p0: String?) {
-
+                    EdgeLogger.error("Setting remote SDP failed: $p0")
                 }
 
             }, sdp)
+        } else {
+            EdgeLogger.error("Null SDP in handleDescription, this shouldn't happen! Ensure your signaling is functional.")
         }
     }
 
@@ -180,9 +185,11 @@ class EdgeWebrtcConnectionImpl(
                     }
 
                     val pcOpts = PeerConnection.RTCConfiguration(null)
+                    pcOpts.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE
+                    pcOpts.bundlePolicy = PeerConnection.BundlePolicy.BALANCED
                     pcOpts.iceServers = iceServers
 
-                    peerConnection = EdgeWebRTC.peerConnectionFactory.createPeerConnection(pcOpts, this) ?: run {
+                    peerConnection = EdgeWebRTCManagerInternal.peerConnectionFactory.createPeerConnection(pcOpts, this) ?: run {
                         // @TODO: Error in a better way than throwing a vague exception
                         throw RuntimeException("Could not create PeerConnection")
                     }
@@ -207,8 +214,12 @@ class EdgeWebrtcConnectionImpl(
 
     override fun onFirstFrameRendered() {}
     override fun onFrameResolutionChanged(videoWidth: Int, videoHeight: Int, rotation: Int) {}
-    override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
+    override fun onSignalingChange(state: PeerConnection.SignalingState?) {
+        Log.i(tag, "Signaling state changed to: $state")
+    }
+
     override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
+        Log.i(tag, "Connection state changed to: $state")
         if (state == PeerConnection.IceConnectionState.CONNECTED) {
             // onConnectedCallback?.let { it() }
         }

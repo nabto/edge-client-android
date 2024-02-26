@@ -45,6 +45,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation("androidx.startup:startup-runtime:1.1.1")
 
     implementation project(":library")
     implementation project(":library-ktx")

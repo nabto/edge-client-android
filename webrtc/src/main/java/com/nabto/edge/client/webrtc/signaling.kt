@@ -132,7 +132,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
                     ((lenData[2].toUInt() and 0xFFu) shl 16) or
                     ((lenData[3].toUInt() and 0xFFu) shl 24)
 
-        val json = String(stream.readAll(len.toInt()), Charsets.UTF_8)
+        val json = String(stream.awaitReadAll(len.toInt()), Charsets.UTF_8)
         return mapper.readValue(json, SignalMessage::class.java)
     }
 

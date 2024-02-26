@@ -5,7 +5,7 @@ import com.nabto.edge.client.webrtc.EdgeVideoTrack
 import com.nabto.edge.client.webrtc.EdgeVideoView
 import org.webrtc.VideoTrack
 
-class EdgeVideoTrackImpl(val track: VideoTrack) : EdgeVideoTrack {
+internal class EdgeVideoTrackImpl(val track: VideoTrack) : EdgeVideoTrack {
     override fun add(view: EdgeVideoView) {
         track.addSink(view)
     }

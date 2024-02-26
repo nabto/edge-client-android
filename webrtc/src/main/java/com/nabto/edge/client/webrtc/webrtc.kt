@@ -3,13 +3,8 @@ package com.nabto.edge.client.webrtc
 import android.content.Context
 import android.util.AttributeSet
 import com.nabto.edge.client.Connection
-import com.nabto.edge.client.webrtc.impl.EdgeWebrtcConnectionImpl
+import com.nabto.edge.client.webrtc.impl.EdgeWebRTCManagerInternal
 import io.getstream.webrtc.android.ui.VideoTextureViewRenderer
-import org.webrtc.DefaultVideoDecoderFactory
-import org.webrtc.DefaultVideoEncoderFactory
-import org.webrtc.EglBase
-import org.webrtc.PeerConnectionFactory
-import org.webrtc.RendererCommon
 
 // @TODO: Make our own TextureViewRenderer implementation?
 // @TODO: Make a Jetpack Composable View?
@@ -26,6 +21,13 @@ enum class EdgeMediaTrackType {
 
 interface EdgeMediaTrack {
     val type: EdgeMediaTrackType
+}
+
+enum class EdgeWebRTCLogLevel {
+    ERROR,
+    WARNING,
+    INFO,
+    VERBOSE
 }
 
 interface EdgeVideoTrack : EdgeMediaTrack {
@@ -48,39 +50,12 @@ interface EdgeWebrtcConnection {
     fun onTrack(cb: OnTrackCallback)
 }
 
-class EdgeWebRTC {
+interface EdgeWebRTCManager {
+    fun setLogLevel(logLevel: EdgeWebRTCLogLevel)
+    fun initVideoView(view: EdgeVideoView)
+    fun createRTCConnection(conn: Connection): EdgeWebrtcConnection
+
     companion object {
-        private val eglBase: EglBase = EglBase.create()
-        internal lateinit var peerConnectionFactory: PeerConnectionFactory
-        val eglBaseContext: EglBase.Context get() = eglBase.eglBaseContext
-
-        fun initVideoView(view: EdgeVideoView) {
-            view.init(eglBaseContext, object : RendererCommon.RendererEvents {
-                override fun onFirstFrameRendered() {}
-                override fun onFrameResolutionChanged(p0: Int, p1: Int, p2: Int) {}
-            })
-        }
-
-        fun create(conn: Connection, context: Context): EdgeWebrtcConnection {
-            if (!this::peerConnectionFactory.isInitialized) {
-                // We need to specify that we want to use h264 encoding/decoding, otherwise the SDP
-                // will not reflect this.
-                val encoderFactory = DefaultVideoEncoderFactory(eglBase.eglBaseContext, true, true)
-                val decoderFactory = DefaultVideoDecoderFactory(eglBase.eglBaseContext)
-
-                // Make a PeerConnectionFactory.InitializationOptions builder and build the InitializationOptions.
-                // Then we can initialize the static parts of the PeerConnectionFactory class
-                val staticOpts = PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
-                PeerConnectionFactory.initialize(staticOpts)
-
-                // Now that the static part of the class is initialized, we make a PeerConnectionFactoryBuilder
-                peerConnectionFactory = PeerConnectionFactory.builder().apply {
-                    setVideoEncoderFactory(encoderFactory)
-                    setVideoDecoderFactory(decoderFactory)
-                }.createPeerConnectionFactory()
-            }
-
-            return EdgeWebrtcConnectionImpl(conn)
-        }
+        fun getInstance(): EdgeWebRTCManager = EdgeWebRTCManagerInternal.instance
     }
 }

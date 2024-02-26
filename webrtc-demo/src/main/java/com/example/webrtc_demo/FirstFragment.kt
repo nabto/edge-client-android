@@ -7,13 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.example.webrtc_demo.databinding.FragmentFirstBinding
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.ConnectionEventsCallback
 import com.nabto.edge.client.NabtoClient
 import com.nabto.edge.client.webrtc.*
-import com.nabto.edge.iamutil.IamUtil
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -42,24 +40,11 @@ class FirstFragment : Fragment() {
     }
 
     suspend fun onConnected() {
-        val iam = IamUtil.create()
-        val modes = iam.getAvailablePairingModes(conn)
-        Log.i("TestApp", modes.joinToString())
-        if (!iam.isCurrentUserPaired(conn)) {
-            iam.pairPasswordOpen(conn, "eln", "VAykyzWk74TU")
-        }
-
         Log.i("TestApp", "Logged in")
-        pc = EdgeWebRTC.create(conn, requireActivity())
+        pc = EdgeWebRTCManager.getInstance().createRTCConnection(conn)
 
         pc.onConnected {
-            Log.i("TestApp", "Connected to peer!")
-            val trackInfo = """
-                {"tracks": ["frontdoor-video", "frontdoor-audio"]}
-            """.trimIndent()
-
-            val coap = conn.createCoap("POST", "/webrtc/tracks")
-            coap.setRequestPayload(50, trackInfo.toByteArray())
+            val coap = conn.createCoap("POST", "/webrtc/from_device")
             coap.execute()
             Log.i("TestApp", "Coap response: ${coap.responseStatusCode}")
             if (coap.responseStatusCode != 201) {
@@ -84,19 +69,15 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        EdgeWebRTC.initVideoView(binding.videoView)
+        EdgeWebRTCManager.getInstance().initVideoView(binding.videoView)
         val client = NabtoClient.create(requireActivity())
         conn = client.createConnection()
 
-        val key = """
-<client private key>
-            """.trimIndent()
-
         val opts = JSONObject()
-        opts.put("ProductId", "<product id>")
-        opts.put("DeviceId", "<device id>")
-        opts.put("PrivateKey", key)
-        opts.put("ServerConnectToken", "<sct>")
+        opts.put("ProductId", "pr-4fiowoh4")
+        opts.put("DeviceId", "de-bgdqxtqs")
+        opts.put("PrivateKey", client.createPrivateKey())
+        opts.put("ServerConnectToken", "demosct")
 
         conn.updateOptions(opts.toString())
         conn.addConnectionEventsListener(object : ConnectionEventsCallback() {
