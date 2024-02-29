@@ -9,8 +9,10 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.Stream
 import com.nabto.edge.client.ktx.awaitExecute
+import com.nabto.edge.client.ktx.awaitOpen
 import com.nabto.edge.client.ktx.awaitReadAll
 import com.nabto.edge.client.ktx.awaitWrite
+import com.nabto.edge.client.webrtc.impl.EdgeLogger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
@@ -88,8 +90,8 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             coap.awaitExecute()
 
             if (coap.responseStatusCode != 205) {
-                Log.e(tag, "Unexpected /webrtc/info return code ${coap.responseStatusCode}")
-                // @TODO: Throw an exception here
+                EdgeLogger.error("Unexpected /webrtc/info return code ${coap.responseStatusCode}")
+                throw EdgeWebRTCError.SignalingFailedToInitialize()
             }
 
             val rtcInfo = if (coap.responseContentFormat == 60) {
@@ -100,7 +102,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             }
 
             stream = conn.createStream()
-            stream.open(rtcInfo.signalingStreamPort.toInt())
+            stream.awaitOpen(rtcInfo.signalingStreamPort.toInt())
             initialized.complete(Unit)
             messageFlow.collect { msg -> sendMessage(msg) }
         }

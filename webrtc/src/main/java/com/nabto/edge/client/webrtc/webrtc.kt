@@ -30,6 +30,16 @@ enum class EdgeWebRTCLogLevel {
     VERBOSE
 }
 
+sealed class EdgeWebRTCError : Error() {
+    class SignalingFailedToInitialize() : EdgeWebRTCError()
+    class SignalingFailedRecv() : EdgeWebRTCError()
+    class SignalingInvalidMessage() : EdgeWebRTCError()
+    class SetRemoteDescriptionError() : EdgeWebRTCError()
+    class SendAnswerError() : EdgeWebRTCError()
+    class ICECandidateError() : EdgeWebRTCError()
+    class ConnectionInitError() : EdgeWebRTCError()
+}
+
 interface EdgeVideoTrack : EdgeMediaTrack {
     fun add(view: EdgeVideoView)
     fun remove(view: EdgeVideoView)
@@ -43,11 +53,16 @@ interface EdgeAudioTrack : EdgeMediaTrack {
 typealias OnConnectedCallback = () -> Unit
 typealias OnClosedCallback = () -> Unit
 typealias OnTrackCallback = (EdgeMediaTrack) -> Unit
+typealias OnErrorCallback = (EdgeWebRTCError) -> Unit
 
 interface EdgeWebrtcConnection {
     fun onConnected(cb: OnConnectedCallback)
     fun onClosed(cb: OnClosedCallback)
     fun onTrack(cb: OnTrackCallback)
+    fun onError(cb: OnErrorCallback)
+
+    fun connect()
+    fun close()
 }
 
 interface EdgeWebRTCManager {

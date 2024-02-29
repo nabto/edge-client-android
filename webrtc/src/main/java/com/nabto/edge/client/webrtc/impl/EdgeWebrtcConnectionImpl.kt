@@ -5,9 +5,11 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeStreamSignaling
+import com.nabto.edge.client.webrtc.EdgeWebRTCError
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
 import com.nabto.edge.client.webrtc.OnClosedCallback
 import com.nabto.edge.client.webrtc.OnConnectedCallback
+import com.nabto.edge.client.webrtc.OnErrorCallback
 import com.nabto.edge.client.webrtc.OnTrackCallback
 import com.nabto.edge.client.webrtc.SDP
 import com.nabto.edge.client.webrtc.SignalMessage
@@ -44,6 +46,7 @@ internal class EdgeWebrtcConnectionImpl(
     private var onConnectedCallback: OnConnectedCallback? = null
     private var onClosedCallback: OnClosedCallback? = null
     private var onTrackCallback: OnTrackCallback? = null
+    private var onErrorCallback: OnErrorCallback? = null
 
     private val offerObserver = object : SdpObserver {
         override fun onCreateSuccess(sdp: SessionDescription?) {}
@@ -74,17 +77,38 @@ internal class EdgeWebrtcConnectionImpl(
         }
 
         override fun onSetFailure(p0: String?) {
-            // @TODO: Error logging
             EdgeLogger.error("Failed to set local description in renegotiation: $p0")
             makingOffer = false
         }
     }
 
-    init {
+    override fun connect() {
         scope.launch {
             signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
             messageLoop()
         }
+    }
+
+    override fun close() {
+        if (::peerConnection.isInitialized) {
+            peerConnection.close()
+        }
+    }
+
+    override fun onConnected(cb: OnConnectedCallback) {
+        onConnectedCallback = cb
+    }
+
+    override fun onClosed(cb: OnClosedCallback) {
+        onClosedCallback = cb
+    }
+
+    override fun onTrack(cb: OnTrackCallback) {
+        onTrackCallback = cb
+    }
+
+    override fun onError(cb: OnErrorCallback) {
+        onErrorCallback = cb
     }
 
     private suspend fun sendDescription(sdp: SessionDescription) {
@@ -122,6 +146,7 @@ internal class EdgeWebrtcConnectionImpl(
 
                 override fun onSetFailure(p0: String?) {
                     EdgeLogger.error("Setting remote SDP failed: $p0")
+                    onErrorCallback?.invoke(EdgeWebRTCError.SetRemoteDescriptionError())
                 }
 
             }, sdp)
@@ -136,8 +161,8 @@ internal class EdgeWebrtcConnectionImpl(
 
             override fun onAddFailure(str: String?) {
                 if (!ignoreOffer) {
-                    // @TODO: Use something better than a RuntimeException?
-                    throw RuntimeException(str)
+                    EdgeLogger.error("Failed adding ice candidate: $str")
+                    onErrorCallback?.invoke(EdgeWebRTCError.ICECandidateError())
                 }
             }
         })
@@ -190,8 +215,9 @@ internal class EdgeWebrtcConnectionImpl(
                     pcOpts.iceServers = iceServers
 
                     peerConnection = EdgeWebRTCManagerInternal.peerConnectionFactory.createPeerConnection(pcOpts, this) ?: run {
-                        // @TODO: Error in a better way than throwing a vague exception
-                        throw RuntimeException("Could not create PeerConnection")
+                        EdgeLogger.error("PeerConnectionFactory.createPeerConnection failed. Returned peerConnection is null.")
+                        onErrorCallback?.invoke(EdgeWebRTCError.ConnectionInitError())
+                        throw EdgeWebRTCError.ConnectionInitError()
                     }
 
                     onConnectedCallback?.let { it() }
@@ -200,30 +226,14 @@ internal class EdgeWebrtcConnectionImpl(
         }
     }
 
-    override fun onConnected(cb: OnConnectedCallback) {
-        onConnectedCallback = cb
-    }
-
-    override fun onClosed(cb: OnClosedCallback) {
-        onClosedCallback = cb
-    }
-
-    override fun onTrack(cb: OnTrackCallback) {
-        onTrackCallback = cb
-    }
-
     override fun onFirstFrameRendered() {}
     override fun onFrameResolutionChanged(videoWidth: Int, videoHeight: Int, rotation: Int) {}
     override fun onSignalingChange(state: PeerConnection.SignalingState?) {
-        Log.i(tag, "Signaling state changed to: $state")
+        EdgeLogger.info("Signaling state changed to: $state")
     }
 
     override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
-        Log.i(tag, "Connection state changed to: $state")
-        if (state == PeerConnection.IceConnectionState.CONNECTED) {
-            // onConnectedCallback?.let { it() }
-        }
-
+        EdgeLogger.info("Connection state changed to: $state")
         if (state == PeerConnection.IceConnectionState.CLOSED) {
             onClosedCallback?.let { it() }
         }
@@ -249,7 +259,9 @@ internal class EdgeWebrtcConnectionImpl(
         peerConnection.setLocalDescription(renegotiationObserver)
     }
 
-    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
+    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {
+        EdgeLogger.info("ICE gathering state changed to: $state")
+    }
 
     override fun onTrack(transceiver: RtpTransceiver?) {
         super.onTrack(transceiver)

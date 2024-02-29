@@ -64,6 +64,8 @@ class FirstFragment : Fragment() {
                 remoteAudioTrack.setEnabled(true)
             }
         }
+
+        pc.connect()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
