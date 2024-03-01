@@ -86,11 +86,11 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
 
     init {
         scope.launch {
-            val coap = conn.createCoap("GET", "/webrtc/info")
+            val coap = conn.createCoap("GET", "/p2p/webrtc-info")
             coap.awaitExecute()
 
             if (coap.responseStatusCode != 205) {
-                EdgeLogger.error("Unexpected /webrtc/info return code ${coap.responseStatusCode}")
+                EdgeLogger.error("Unexpected /p2p/webrtc-info return code ${coap.responseStatusCode}")
                 throw EdgeWebRTCError.SignalingFailedToInitialize()
             }
 
