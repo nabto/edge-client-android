@@ -220,6 +220,7 @@ interface EdgeWebRTCManager {
      * Only one WebRTC connection can exist on a Nabto Edge Connection at a time.
      *
      * @param conn [in] The Nabto Edge Connection to use for signaling
+     * @return The created EdgeWebrtcConnection object
      */
     fun createRTCConnection(conn: Connection): EdgeWebrtcConnection
 
