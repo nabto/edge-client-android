@@ -1,31 +1,6 @@
 package com.nabto.edge.client.webrtc
 
-import android.util.Log
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.nabto.edge.client.Connection
-import com.nabto.edge.client.Stream
-import com.nabto.edge.client.ktx.awaitExecute
-import com.nabto.edge.client.ktx.awaitOpen
-import com.nabto.edge.client.ktx.awaitReadAll
-import com.nabto.edge.client.ktx.awaitWrite
-import com.nabto.edge.client.webrtc.impl.EdgeLogger
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
-import java.util.concurrent.ConcurrentLinkedQueue
-
-
-data class RTCInfo(
-    @JsonProperty("SignalingStreamPort") val signalingStreamPort: Long
-)
 
 enum class SignalMessageType(@get:JsonValue val num: Int) {
     OFFER(0),
@@ -34,11 +9,6 @@ enum class SignalMessageType(@get:JsonValue val num: Int) {
     TURN_REQUEST(3),
     TURN_RESPONSE(4)
 }
-
-data class SDP(
-    val type: String,
-    val sdp: String
-)
 
 data class SignalingIceCandidate(
     val sdpMid: String,
@@ -71,73 +41,7 @@ data class SignalMessage(
 )
 
 interface EdgeSignaling {
+    suspend fun connect()
     suspend fun send(msg: SignalMessage)
     suspend fun recv(): SignalMessage
 }
-
-class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
-    private val tag = "EdgeStreamSignaling"
-    private val scope = CoroutineScope(Dispatchers.IO)
-    private lateinit var stream: Stream
-    private val messageFlow = MutableSharedFlow<SignalMessage>(replay = 16)
-    private val mapper = jacksonObjectMapper()
-
-    private val initialized = CompletableDeferred<Unit>()
-
-    init {
-        scope.launch {
-            val coap = conn.createCoap("GET", "/p2p/webrtc-info")
-            coap.awaitExecute()
-
-            if (coap.responseStatusCode != 205) {
-                EdgeLogger.error("Unexpected /p2p/webrtc-info return code ${coap.responseStatusCode}")
-                throw EdgeWebRTCError.SignalingFailedToInitialize()
-            }
-
-            val rtcInfo = if (coap.responseContentFormat == 60) {
-                val cborMapper = CBORMapper().registerKotlinModule()
-                cborMapper.readValue(coap.responsePayload, RTCInfo::class.java)
-            } else {
-                mapper.readValue(coap.responsePayload, RTCInfo::class.java)
-            }
-
-            stream = conn.createStream()
-            stream.awaitOpen(rtcInfo.signalingStreamPort.toInt())
-            initialized.complete(Unit)
-            messageFlow.collect { msg -> sendMessage(msg) }
-        }
-    }
-
-    private suspend fun sendMessage(msg: SignalMessage) {
-        val json = mapper.writeValueAsString(msg)
-        Log.i(tag, json)
-        val lenBytes = byteArrayOf(
-            (json.length shr 0).toByte(),
-            (json.length shr 8).toByte(),
-            (json.length shr 16).toByte(),
-            (json.length shr 24).toByte()
-        )
-        val res = lenBytes + json.toByteArray(Charsets.UTF_8)
-        stream.awaitWrite(res)
-    }
-
-    override suspend fun send(msg: SignalMessage) {
-        messageFlow.emit(msg)
-    }
-
-    override suspend fun recv(): SignalMessage {
-        initialized.await()
-        val lenData = stream.awaitReadAll(4)
-        val len =
-            ((lenData[0].toUInt() and 0xFFu)) or
-                    ((lenData[1].toUInt() and 0xFFu) shl 8) or
-                    ((lenData[2].toUInt() and 0xFFu) shl 16) or
-                    ((lenData[3].toUInt() and 0xFFu) shl 24)
-
-        val json = String(stream.awaitReadAll(len.toInt()), Charsets.UTF_8)
-        return mapper.readValue(json, SignalMessage::class.java)
-    }
-
-}
-
-

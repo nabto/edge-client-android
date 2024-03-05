@@ -190,7 +190,7 @@ interface EdgeWebrtcConnection {
     /**
      * Close a connected WebRTC connection.
      */
-    fun close()
+    fun connectionClose()
 }
 
 /**

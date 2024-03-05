@@ -4,14 +4,12 @@ import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.webrtc.EdgeSignaling
-import com.nabto.edge.client.webrtc.EdgeStreamSignaling
 import com.nabto.edge.client.webrtc.EdgeWebRTCError
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
 import com.nabto.edge.client.webrtc.OnClosedCallback
 import com.nabto.edge.client.webrtc.OnConnectedCallback
 import com.nabto.edge.client.webrtc.OnErrorCallback
 import com.nabto.edge.client.webrtc.OnTrackCallback
-import com.nabto.edge.client.webrtc.SDP
 import com.nabto.edge.client.webrtc.SignalMessage
 import com.nabto.edge.client.webrtc.SignalMessageType
 import com.nabto.edge.client.webrtc.SignalingIceCandidate
@@ -29,6 +27,11 @@ import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
+
+data class SDP(
+    val type: String,
+    val sdp: String
+)
 
 internal class EdgeWebrtcConnectionImpl(
     conn: Connection
@@ -84,12 +87,18 @@ internal class EdgeWebrtcConnectionImpl(
 
     override fun connect() {
         scope.launch {
+            try {
+                signaling.connect()
+            } catch (error: EdgeWebRTCError.SignalingFailedToInitialize) {
+                EdgeLogger.error("Failed to initialize signaling service.")
+                onErrorCallback?.invoke(error)
+            }
             signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
             messageLoop()
         }
     }
 
-    override fun close() {
+    override fun connectionClose() {
         if (::peerConnection.isInitialized) {
             peerConnection.close()
         }
