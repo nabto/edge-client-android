@@ -5,9 +5,11 @@ import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nabto.edge.client.Connection
+import com.nabto.edge.client.NabtoRuntimeException
 import com.nabto.edge.client.ktx.awaitExecute
 import com.nabto.edge.client.ktx.awaitOpen
 import com.nabto.edge.client.ktx.awaitReadAll
+import com.nabto.edge.client.ktx.awaitStreamClose
 import com.nabto.edge.client.ktx.awaitWrite
 import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeWebRTCError
@@ -17,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 data class RTCInfo(
     @JsonProperty("SignalingStreamPort") val signalingStreamPort: Long
@@ -52,6 +55,14 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
         EdgeLogger.info("")
         scope.launch {
             messageFlow.collect { msg -> sendMessage(msg) }
+        }
+    }
+
+    override suspend fun disconnect() {
+        try {
+            stream.awaitStreamClose()
+        } catch (exception: NabtoRuntimeException) {
+            EdgeLogger.warning("Attempted to close signaling service but received error $exception")
         }
     }
 

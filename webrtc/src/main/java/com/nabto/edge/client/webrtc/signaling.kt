@@ -42,6 +42,7 @@ data class SignalMessage(
 
 interface EdgeSignaling {
     suspend fun connect()
+    suspend fun disconnect()
     suspend fun send(msg: SignalMessage)
     suspend fun recv(): SignalMessage
 }

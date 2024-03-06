@@ -99,8 +99,11 @@ internal class EdgeWebrtcConnectionImpl(
     }
 
     override fun connectionClose() {
-        if (::peerConnection.isInitialized) {
-            peerConnection.close()
+        scope.launch {
+            if (::peerConnection.isInitialized) {
+                peerConnection.close()
+            }
+            signaling.disconnect()
         }
     }
 
