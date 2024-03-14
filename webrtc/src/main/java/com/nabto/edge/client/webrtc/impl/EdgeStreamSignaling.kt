@@ -74,6 +74,8 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             (json.length shr 24).toByte()
         )
         val res = lenBytes + json.toByteArray(Charsets.UTF_8)
+
+        // @TODO: Catch and output errors.
         stream.awaitWrite(res)
     }
 
@@ -83,6 +85,8 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
 
     override suspend fun recv(): SignalMessage {
         initialized.await()
+
+        // @TODO: Catch and output errors for this and the awaitReadAll below.
         val lenData = stream.awaitReadAll(4)
         val len =
             ((lenData[0].toUInt() and 0xFFu)) or

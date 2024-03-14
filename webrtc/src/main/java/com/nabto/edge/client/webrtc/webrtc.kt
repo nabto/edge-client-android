@@ -83,19 +83,18 @@ sealed class EdgeWebrtcError : Error() {
  * Video Track representing a Media Track of type Video
  */
 interface EdgeVideoTrack : EdgeMediaTrack {
-    // TODO: add @throws docs
     /**
      * Add a Video View to the track
      *
      * @param view [in] The view to add
+     * @throws IllegalArgumentException if [view] is null.
      */
     fun add(view: EdgeVideoView)
 
-    // TODO: add @throws docs
     /**
-     * remove a Video View to the track
-     *
-     * @param view [in] The view to remove
+     * remove a Video View to the track.
+     * If the EdgeVideoView was not attached to this track, this function is a no-op.
+     * This function does not throw any exceptions.
      */
     fun remove(view: EdgeVideoView)
 }
@@ -112,19 +111,14 @@ interface EdgeAudioTrack : EdgeMediaTrack {
      */
     fun setEnabled(enabled: Boolean)
 
-    // TODO: add @throws docs
     /**
-     * Set the volume of the Audio track
+     * Set the volume of the Audio track.
+     * This function does not throw any exceptions.
      *
      * @param volume [in] The volume to set
      */
     fun setVolume(volume: Double)
 }
-
-/**
- * Callback invoked when a WebRTC connection has been established
- */
-typealias OnConnectedCallback = () -> Unit
 
 /**
  * Callback invoked when a WebRTC connection has been closed
@@ -141,7 +135,7 @@ typealias OnTrackCallback = (EdgeMediaTrack) -> Unit
 /**
  * Callback invoked when an error occurs in the WebRTC connection
  *
- * @param EdgeWebRTCError [in] The Error that occured
+ * @param EdgeWebRTCError [in] The Error that occurred
  */
 typealias OnErrorCallback = (EdgeWebrtcError) -> Unit
 
@@ -150,14 +144,6 @@ typealias OnErrorCallback = (EdgeWebrtcError) -> Unit
  * Main Connection interface used to connect to a device and interact with it.
  */
 interface EdgeWebrtcConnection {
-
-    /**
-     * Set callback to be invoked when the WebRTC connection is connected
-     *
-     * @param cb The callback to set
-     */
-    fun onConnected(cb: OnConnectedCallback)
-
     /**
      * Set callback to be invoked when the WebRTC connection is closed
      *
@@ -184,13 +170,13 @@ interface EdgeWebrtcConnection {
     /**
      * Establish a WebRTC connection to the other peer
      */
-    fun connect()
+    suspend fun connect()
 
     // TODO: add @throws docs
     /**
      * Close a connected WebRTC connection.
      */
-    fun connectionClose()
+    suspend fun connectionClose()
 }
 
 /**

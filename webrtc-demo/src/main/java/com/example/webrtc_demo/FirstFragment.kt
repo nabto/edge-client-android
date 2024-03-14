@@ -43,15 +43,6 @@ class FirstFragment : Fragment() {
         Log.i("TestApp", "Logged in")
         pc = EdgeWebrtcManager.getInstance().createRTCConnection(conn)
 
-        pc.onConnected {
-            val coap = conn.createCoap("POST", "/webrtc/from_device")
-            coap.execute()
-            Log.i("TestApp", "Coap response: ${coap.responseStatusCode}")
-            if (coap.responseStatusCode != 201) {
-                Log.i("TestApp", "Failed to get video feed with status ${coap.responseStatusCode}")
-            }
-        }
-
         pc.onTrack { track ->
             Log.i("TestApp", "Track of type ${track.type}")
             if (track.type == EdgeMediaTrackType.VIDEO) {
@@ -66,6 +57,12 @@ class FirstFragment : Fragment() {
         }
 
         pc.connect()
+        val coap = conn.createCoap("GET", "/webrtc/get")
+        coap.execute()
+        Log.i("TestApp", "Coap response: ${coap.responseStatusCode}")
+        if (coap.responseStatusCode != 201) {
+            Log.i("TestApp", "Failed to get video feed with status ${coap.responseStatusCode}")
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -7,12 +7,12 @@ import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeWebrtcError
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
 import com.nabto.edge.client.webrtc.OnClosedCallback
-import com.nabto.edge.client.webrtc.OnConnectedCallback
 import com.nabto.edge.client.webrtc.OnErrorCallback
 import com.nabto.edge.client.webrtc.OnTrackCallback
 import com.nabto.edge.client.webrtc.SignalMessage
 import com.nabto.edge.client.webrtc.SignalMessageType
 import com.nabto.edge.client.webrtc.SignalingIceCandidate
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,10 +46,11 @@ internal class EdgeWebrtcConnectionImpl(
     private var makingOffer = false
     private var ignoreOffer = false
 
-    private var onConnectedCallback: OnConnectedCallback? = null
     private var onClosedCallback: OnClosedCallback? = null
     private var onTrackCallback: OnTrackCallback? = null
     private var onErrorCallback: OnErrorCallback? = null
+
+    private val connectPromise = CompletableDeferred<Unit>()
 
     private val offerObserver = object : SdpObserver {
         override fun onCreateSuccess(sdp: SessionDescription?) {}
@@ -85,30 +86,28 @@ internal class EdgeWebrtcConnectionImpl(
         }
     }
 
-    override fun connect() {
+    override suspend fun connect() {
         scope.launch {
-            try {
-                signaling.connect()
-            } catch (error: EdgeWebrtcError.SignalingFailedToInitialize) {
-                EdgeLogger.error("Failed to initialize signaling service.")
-                onErrorCallback?.invoke(error)
-            }
-            signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
             messageLoop()
         }
+
+        try {
+            signaling.connect()
+        } catch (error: EdgeWebrtcError.SignalingFailedToInitialize) {
+            EdgeLogger.error("Failed to initialize signaling service.")
+            onErrorCallback?.invoke(error)
+        }
+        signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
+        connectPromise.await()
     }
 
-    override fun connectionClose() {
+    override suspend fun connectionClose() {
         scope.launch {
             if (::peerConnection.isInitialized) {
                 peerConnection.close()
             }
             signaling.disconnect()
         }
-    }
-
-    override fun onConnected(cb: OnConnectedCallback) {
-        onConnectedCallback = cb
     }
 
     override fun onClosed(cb: OnClosedCallback) {
@@ -232,7 +231,7 @@ internal class EdgeWebrtcConnectionImpl(
                         throw EdgeWebrtcError.ConnectionInitError()
                     }
 
-                    onConnectedCallback?.let { it() }
+                    connectPromise.complete(Unit)
                 }
             }
         }
