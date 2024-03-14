@@ -3,7 +3,7 @@ package com.nabto.edge.client.webrtc
 import android.content.Context
 import android.util.AttributeSet
 import com.nabto.edge.client.Connection
-import com.nabto.edge.client.webrtc.impl.EdgeWebRTCManagerInternal
+import com.nabto.edge.client.webrtc.impl.EdgeWebrtcManagerInternal
 import io.getstream.webrtc.android.ui.VideoTextureViewRenderer
 
 // @TODO: Make our own TextureViewRenderer implementation?
@@ -32,7 +32,7 @@ interface EdgeMediaTrack {
 /**
  * Log levels to use in the underlying SDK
  */
-enum class EdgeWebRTCLogLevel {
+enum class EdgeWebrtcLogLevel {
     ERROR,
     WARNING,
     INFO,
@@ -42,41 +42,41 @@ enum class EdgeWebRTCLogLevel {
 /**
  * Error class for errors emitted by the onErrorCallback
  */
-sealed class EdgeWebRTCError : Error() {
+sealed class EdgeWebrtcError : Error() {
     /**
      * The signaling stream could not be established properly.
      */
-    class SignalingFailedToInitialize() : EdgeWebRTCError()
+    class SignalingFailedToInitialize() : EdgeWebrtcError()
 
     /**
      * Reading from the Signaling Stream failed
      */
-    class SignalingFailedRecv() : EdgeWebRTCError()
+    class SignalingFailedRecv() : EdgeWebrtcError()
 
     /**
      * An invalid signaling message was received
      */
-    class SignalingInvalidMessage() : EdgeWebRTCError()
+    class SignalingInvalidMessage() : EdgeWebrtcError()
 
     /**
      * The remote description received from the other peer was invalid
      */
-    class SetRemoteDescriptionError() : EdgeWebRTCError()
+    class SetRemoteDescriptionError() : EdgeWebrtcError()
 
     /**
      * Failed to send an Answer on the signaling stream
      */
-    class SendAnswerError() : EdgeWebRTCError()
+    class SendAnswerError() : EdgeWebrtcError()
 
     /**
      * A invalid ICE candidate was received from the other peer
      */
-    class ICECandidateError() : EdgeWebRTCError()
+    class ICECandidateError() : EdgeWebrtcError()
 
     /**
      * The RTC PeerConnection could not be created
      */
-    class ConnectionInitError() : EdgeWebRTCError()
+    class ConnectionInitError() : EdgeWebrtcError()
 }
 
 /**
@@ -143,7 +143,7 @@ typealias OnTrackCallback = (EdgeMediaTrack) -> Unit
  *
  * @param EdgeWebRTCError [in] The Error that occured
  */
-typealias OnErrorCallback = (EdgeWebRTCError) -> Unit
+typealias OnErrorCallback = (EdgeWebrtcError) -> Unit
 
 
 /**
@@ -196,14 +196,14 @@ interface EdgeWebrtcConnection {
 /**
  * Manager interface to keep track of global WebRTC state
  */
-interface EdgeWebRTCManager {
+interface EdgeWebrtcManager {
 
     /**
      * Set the log level to use by the underlying SDK
      *
      * @param logLevel [in] The log level to set
      */
-    fun setLogLevel(logLevel: EdgeWebRTCLogLevel)
+    fun setLogLevel(logLevel: EdgeWebrtcLogLevel)
 
     // TODO: add @throws docs
     /**
@@ -225,6 +225,6 @@ interface EdgeWebRTCManager {
     fun createRTCConnection(conn: Connection): EdgeWebrtcConnection
 
     companion object {
-        fun getInstance(): EdgeWebRTCManager = EdgeWebRTCManagerInternal.instance
+        fun getInstance(): EdgeWebrtcManager = EdgeWebrtcManagerInternal.instance
     }
 }

@@ -12,14 +12,13 @@ import com.nabto.edge.client.ktx.awaitReadAll
 import com.nabto.edge.client.ktx.awaitStreamClose
 import com.nabto.edge.client.ktx.awaitWrite
 import com.nabto.edge.client.webrtc.EdgeSignaling
-import com.nabto.edge.client.webrtc.EdgeWebRTCError
+import com.nabto.edge.client.webrtc.EdgeWebrtcError
 import com.nabto.edge.client.webrtc.SignalMessage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 data class RTCInfo(
     @JsonProperty("SignalingStreamPort") val signalingStreamPort: Long
@@ -40,7 +39,7 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
 
         if (coap.responseStatusCode != 205) {
             EdgeLogger.error("Unexpected /p2p/webrtc-info return code ${coap.responseStatusCode}")
-            throw EdgeWebRTCError.SignalingFailedToInitialize()
+            throw EdgeWebrtcError.SignalingFailedToInitialize()
         }
 
         val rtcInfo = if (coap.responseContentFormat == 60) {

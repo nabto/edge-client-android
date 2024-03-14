@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.startup.Initializer
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.webrtc.EdgeVideoView
-import com.nabto.edge.client.webrtc.EdgeWebRTCLogLevel
-import com.nabto.edge.client.webrtc.EdgeWebRTCManager
+import com.nabto.edge.client.webrtc.EdgeWebrtcLogLevel
+import com.nabto.edge.client.webrtc.EdgeWebrtcManager
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
@@ -14,10 +14,10 @@ import org.webrtc.Logging
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.RendererCommon
 
-internal class EdgeWebRTCManagerInternal : EdgeWebRTCManager {
+internal class EdgeWebrtcManagerInternal : EdgeWebrtcManager {
     companion object {
         val eglBase: EglBase = EglBase.create()
-        val instance = EdgeWebRTCManagerInternal()
+        val instance = EdgeWebrtcManagerInternal()
         lateinit var peerConnectionFactory: PeerConnectionFactory
 
         fun initialize(context: Context) {
@@ -35,7 +35,7 @@ internal class EdgeWebRTCManagerInternal : EdgeWebRTCManager {
         }
     }
 
-    override fun setLogLevel(logLevel: EdgeWebRTCLogLevel) {
+    override fun setLogLevel(logLevel: EdgeWebrtcLogLevel) {
         EdgeLogger.logLevel = logLevel
     }
 
@@ -51,10 +51,10 @@ internal class EdgeWebRTCManagerInternal : EdgeWebRTCManager {
     }
 }
 
-class EdgeWebRTCInitializer : Initializer<EdgeWebRTCManager> {
-    override fun create(context: Context): EdgeWebRTCManager {
-        EdgeWebRTCManagerInternal.initialize(context)
-        return EdgeWebRTCManagerInternal.instance
+class EdgeWebrtcInitializer : Initializer<EdgeWebrtcManager> {
+    override fun create(context: Context): EdgeWebrtcManager {
+        EdgeWebrtcManagerInternal.initialize(context)
+        return EdgeWebrtcManagerInternal.instance
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> {

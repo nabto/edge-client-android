@@ -41,7 +41,7 @@ class FirstFragment : Fragment() {
 
     suspend fun onConnected() {
         Log.i("TestApp", "Logged in")
-        pc = EdgeWebRTCManager.getInstance().createRTCConnection(conn)
+        pc = EdgeWebrtcManager.getInstance().createRTCConnection(conn)
 
         pc.onConnected {
             val coap = conn.createCoap("POST", "/webrtc/from_device")
@@ -71,7 +71,7 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        EdgeWebRTCManager.getInstance().initVideoView(binding.videoView)
+        EdgeWebrtcManager.getInstance().initVideoView(binding.videoView)
         val client = NabtoClient.create(requireActivity())
         conn = client.createConnection()
 

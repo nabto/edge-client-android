@@ -4,7 +4,7 @@ import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.webrtc.EdgeSignaling
-import com.nabto.edge.client.webrtc.EdgeWebRTCError
+import com.nabto.edge.client.webrtc.EdgeWebrtcError
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
 import com.nabto.edge.client.webrtc.OnClosedCallback
 import com.nabto.edge.client.webrtc.OnConnectedCallback
@@ -89,7 +89,7 @@ internal class EdgeWebrtcConnectionImpl(
         scope.launch {
             try {
                 signaling.connect()
-            } catch (error: EdgeWebRTCError.SignalingFailedToInitialize) {
+            } catch (error: EdgeWebrtcError.SignalingFailedToInitialize) {
                 EdgeLogger.error("Failed to initialize signaling service.")
                 onErrorCallback?.invoke(error)
             }
@@ -158,7 +158,7 @@ internal class EdgeWebrtcConnectionImpl(
 
                 override fun onSetFailure(p0: String?) {
                     EdgeLogger.error("Setting remote SDP failed: $p0")
-                    onErrorCallback?.invoke(EdgeWebRTCError.SetRemoteDescriptionError())
+                    onErrorCallback?.invoke(EdgeWebrtcError.SetRemoteDescriptionError())
                 }
 
             }, sdp)
@@ -174,7 +174,7 @@ internal class EdgeWebrtcConnectionImpl(
             override fun onAddFailure(str: String?) {
                 if (!ignoreOffer) {
                     EdgeLogger.error("Failed adding ice candidate: $str")
-                    onErrorCallback?.invoke(EdgeWebRTCError.ICECandidateError())
+                    onErrorCallback?.invoke(EdgeWebrtcError.ICECandidateError())
                 }
             }
         })
@@ -226,10 +226,10 @@ internal class EdgeWebrtcConnectionImpl(
                     pcOpts.bundlePolicy = PeerConnection.BundlePolicy.BALANCED
                     pcOpts.iceServers = iceServers
 
-                    peerConnection = EdgeWebRTCManagerInternal.peerConnectionFactory.createPeerConnection(pcOpts, this) ?: run {
+                    peerConnection = EdgeWebrtcManagerInternal.peerConnectionFactory.createPeerConnection(pcOpts, this) ?: run {
                         EdgeLogger.error("PeerConnectionFactory.createPeerConnection failed. Returned peerConnection is null.")
-                        onErrorCallback?.invoke(EdgeWebRTCError.ConnectionInitError())
-                        throw EdgeWebRTCError.ConnectionInitError()
+                        onErrorCallback?.invoke(EdgeWebrtcError.ConnectionInitError())
+                        throw EdgeWebrtcError.ConnectionInitError()
                     }
 
                     onConnectedCallback?.let { it() }
