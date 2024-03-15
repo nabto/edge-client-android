@@ -3,6 +3,7 @@ package com.nabto.edge.client.webrtc.impl
 import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
+import com.nabto.edge.client.ConnectionEventsCallback
 import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeWebrtcError
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
@@ -15,6 +16,7 @@ import com.nabto.edge.client.webrtc.SignalingIceCandidate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.webrtc.AddIceObserver
 import org.webrtc.AudioTrack
@@ -27,6 +29,7 @@ import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class SDP(
     val type: String,
@@ -50,7 +53,9 @@ internal class EdgeWebrtcConnectionImpl(
     private var onTrackCallback: OnTrackCallback? = null
     private var onErrorCallback: OnErrorCallback? = null
 
-    private val connectPromise = CompletableDeferred<Unit>()
+    private var hasBeenClosed = AtomicBoolean(false)
+    private var messageLoopJob: Job? = null
+    private var connectPromise: CompletableDeferred<Unit>? = null
 
     private val offerObserver = object : SdpObserver {
         override fun onCreateSuccess(sdp: SessionDescription?) {}
@@ -86,8 +91,21 @@ internal class EdgeWebrtcConnectionImpl(
         }
     }
 
+    init {
+        conn.addConnectionEventsListener(object : ConnectionEventsCallback() {
+            override fun onEvent(event: Int) {
+                if (event == CLOSED) {
+                    scope.launch { connectionClose() }
+                    conn.removeConnectionEventsListener(this)
+                }
+            }
+        })
+    }
+
     override suspend fun connect() {
-        scope.launch {
+        connectPromise?.complete(Unit)
+        connectPromise = CompletableDeferred()
+        messageLoopJob = scope.launch {
             messageLoop()
         }
 
@@ -98,15 +116,18 @@ internal class EdgeWebrtcConnectionImpl(
             onErrorCallback?.invoke(error)
         }
         signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
-        connectPromise.await()
+        connectPromise?.await()
     }
 
     override suspend fun connectionClose() {
-        scope.launch {
-            if (::peerConnection.isInitialized) {
-                peerConnection.close()
+        if (hasBeenClosed.compareAndSet(false, true)) {
+            scope.launch {
+                messageLoopJob?.cancel()
+                if (::peerConnection.isInitialized) {
+                    peerConnection.close()
+                }
+                signaling.disconnect()
             }
-            signaling.disconnect()
         }
     }
 
@@ -231,7 +252,7 @@ internal class EdgeWebrtcConnectionImpl(
                         throw EdgeWebrtcError.ConnectionInitError()
                     }
 
-                    connectPromise.complete(Unit)
+                    connectPromise?.complete(Unit)
                 }
             }
         }
