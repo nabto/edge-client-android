@@ -3,7 +3,9 @@ package com.nabto.edge.client.webrtc.impl
 import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
-import com.nabto.edge.client.ConnectionEventsCallback
+import com.nabto.edge.client.ErrorCodes
+import com.nabto.edge.client.NabtoEOFException
+import com.nabto.edge.client.NabtoRuntimeException
 import com.nabto.edge.client.webrtc.EdgeSignaling
 import com.nabto.edge.client.webrtc.EdgeWebrtcError
 import com.nabto.edge.client.webrtc.EdgeWebrtcConnection
@@ -39,7 +41,6 @@ data class SDP(
 internal class EdgeWebrtcConnectionImpl(
     conn: Connection
 ) : EdgeWebrtcConnection, PeerConnection.Observer, RendererCommon.RendererEvents {
-    private val tag = this.javaClass.simpleName
     private lateinit var peerConnection: PeerConnection
     private val signaling: EdgeSignaling = EdgeStreamSignaling(conn)
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -55,7 +56,6 @@ internal class EdgeWebrtcConnectionImpl(
 
     private var hasBeenClosed = AtomicBoolean(false)
     private var messageLoopJob: Job? = null
-    private var connectPromise: CompletableDeferred<Unit>? = null
 
     private val offerObserver = object : SdpObserver {
         override fun onCreateSuccess(sdp: SessionDescription?) {}
@@ -91,22 +91,10 @@ internal class EdgeWebrtcConnectionImpl(
         }
     }
 
-    init {
-        conn.addConnectionEventsListener(object : ConnectionEventsCallback() {
-            override fun onEvent(event: Int) {
-                if (event == CLOSED) {
-                    scope.launch { connectionClose() }
-                    conn.removeConnectionEventsListener(this)
-                }
-            }
-        })
-    }
-
     override suspend fun connect() {
-        connectPromise?.complete(Unit)
-        connectPromise = CompletableDeferred()
+        val connectPromise = CompletableDeferred<Unit>()
         messageLoopJob = scope.launch {
-            messageLoop()
+            messageLoop(connectPromise)
         }
 
         try {
@@ -116,7 +104,7 @@ internal class EdgeWebrtcConnectionImpl(
             onErrorCallback?.invoke(error)
         }
         signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
-        connectPromise?.await()
+        connectPromise.await()
     }
 
     override suspend fun connectionClose() {
@@ -200,10 +188,34 @@ internal class EdgeWebrtcConnectionImpl(
         })
     }
 
-    private suspend fun messageLoop() {
+    private suspend fun messageLoop(connectPromise: CompletableDeferred<Unit>) {
         while (true) {
-            val msg = signaling.recv()
-            Log.i(tag, msg.toString())
+            val msg = try {
+                signaling.recv()
+            } catch (e: NabtoEOFException) {
+                EdgeLogger.info("Signaling stream is EOF! Closing message loop.")
+                connectPromise.completeExceptionally(EdgeWebrtcError.SignalingFailedRecv())
+                break
+            } catch (e: NabtoRuntimeException) {
+                connectPromise.completeExceptionally(EdgeWebrtcError.SignalingFailedRecv())
+                onErrorCallback?.invoke(EdgeWebrtcError.SignalingFailedRecv())
+
+                if (e.errorCode.errorCode == ErrorCodes.STOPPED) {
+                    EdgeLogger.info("Signaling stream is STOPPED! Closing message loop.")
+                    break
+                } else {
+                    EdgeLogger.error("Failed to receive signaling message: $e")
+                }
+
+                null
+            } catch (e: Exception) {
+                EdgeLogger.error("Failed to receive signaling message: $e")
+                connectPromise.completeExceptionally(EdgeWebrtcError.SignalingFailedRecv())
+                onErrorCallback?.invoke(EdgeWebrtcError.SignalingFailedRecv())
+                break
+            } ?: continue
+
+            EdgeLogger.info("Received signaling messaage of type ${msg.type}")
             when (msg.type) {
                 SignalMessageType.ANSWER -> {
                     val answerData = jsonMapper.readValue(msg.data!!, SDP::class.java)
@@ -252,7 +264,7 @@ internal class EdgeWebrtcConnectionImpl(
                         throw EdgeWebrtcError.ConnectionInitError()
                     }
 
-                    connectPromise?.complete(Unit)
+                    connectPromise.complete(Unit)
                 }
             }
         }
