@@ -23,14 +23,15 @@ enum class EdgeMediaTrackType {
 }
 
 /**
- * Interface used to represent all Media Tracks
+ * Interface used to represent all Media Tracks.
  */
 interface EdgeMediaTrack {
     val type: EdgeMediaTrackType
 }
 
 /**
- * Log levels to use in the underlying SDK
+ * Log levels to use in the underlying SDK.
+ * By default the log level is set to WARNING.
  */
 enum class EdgeWebrtcLogLevel {
     ERROR,
@@ -52,6 +53,11 @@ sealed class EdgeWebrtcError : Error() {
      * Reading from the Signaling Stream failed
      */
     class SignalingFailedRecv() : EdgeWebrtcError()
+
+    /**
+     * Writing to the Signaling Stream failed
+     */
+    class SignalingFailedSend(): EdgeWebrtcError()
 
     /**
      * An invalid signaling message was received
@@ -84,7 +90,7 @@ sealed class EdgeWebrtcError : Error() {
  */
 interface EdgeVideoTrack : EdgeMediaTrack {
     /**
-     * Add a Video View to the track
+     * Attach a Video View to the track. The EdgeVideoTrack object will push video frames to this view.
      *
      * @param view [in] The view to add
      * @throws IllegalArgumentException if [view] is null.
@@ -93,7 +99,9 @@ interface EdgeVideoTrack : EdgeMediaTrack {
 
     /**
      * remove a Video View to the track.
+     *
      * If the EdgeVideoView was not attached to this track, this function is a no-op.
+     *
      * This function does not throw any exceptions.
      */
     fun remove(view: EdgeVideoView)
@@ -103,9 +111,10 @@ interface EdgeVideoTrack : EdgeMediaTrack {
  * Audio Track representing a Media Track of type Audio
  */
 interface EdgeAudioTrack : EdgeMediaTrack {
-    // TODO: add @throws docs
     /**
      * Enable or disable the Audio track
+     *
+     * This function does not throw any exceptions.
      *
      * @param enabled [in] Boolean determining if the track is enabled
      */
@@ -113,6 +122,7 @@ interface EdgeAudioTrack : EdgeMediaTrack {
 
     /**
      * Set the volume of the Audio track.
+     *
      * This function does not throw any exceptions.
      *
      * @param volume [in] The volume to set
@@ -166,15 +176,19 @@ interface EdgeWebrtcConnection {
     fun onError(cb: OnErrorCallback)
 
 
-    // TODO: add @throws docs
     /**
      * Establish a WebRTC connection to the other peer
+     *
+     * @throws EdgeWebrtcError.SignalingFailedToInitialize if the signaling stream could not be set up for some reason.
+     * @throws EdgeWebrtcError.SignalingFailedRecv if the signaling stream failed to receive messages necessary to setting up the connection.
+     * @throws EdgeWebrtcError.SignalingFailedSend if the signaling stream failed to send messages necessary to setting up the connection.
      */
     suspend fun connect()
 
-    // TODO: add @throws docs
     /**
      * Close a connected WebRTC connection.
+     *
+     * This function does not throw any exceptions.
      */
     suspend fun connectionClose()
 }
@@ -191,19 +205,23 @@ interface EdgeWebrtcManager {
      */
     fun setLogLevel(logLevel: EdgeWebrtcLogLevel)
 
-    // TODO: add @throws docs
     /**
      * Initialize a video view to use for video tracks.
+     *
+     * This should be called from main thread, e.g. in the onViewCreated of a Fragment or such.
+     *
+     * This function does not throw any exceptions.
      *
      * @param view [in] The view to initialize
      */
     fun initVideoView(view: EdgeVideoView)
 
-    // TODO: add @throws docs
     /**
      * Create a new WebRTC connection instance using a preexisting Nabto Edge Connection for signaling.
      *
      * Only one WebRTC connection can exist on a Nabto Edge Connection at a time.
+     *
+     * This function does not throw any exceptions.
      *
      * @param conn [in] The Nabto Edge Connection to use for signaling
      * @return The created EdgeWebrtcConnection object

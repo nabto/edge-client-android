@@ -16,6 +16,7 @@ import com.nabto.edge.client.webrtc.EdgeWebrtcError
 import com.nabto.edge.client.webrtc.SignalMessage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -25,8 +26,13 @@ data class RTCInfo(
 )
 
 class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
+    data class MessageBox(
+        val message: SignalMessage,
+        val completable: CompletableDeferred<Unit> = CompletableDeferred()
+    )
+
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val messageFlow = MutableSharedFlow<SignalMessage>(replay = 16)
+    private val messageFlow = MutableSharedFlow<MessageBox>(replay = 16)
     private val mapper = jacksonObjectMapper()
 
     private val coap = conn.createCoap("GET", "/p2p/webrtc-info")
@@ -49,11 +55,23 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
             mapper.readValue(coap.responsePayload, RTCInfo::class.java)
         }
 
-        stream.awaitOpen(rtcInfo.signalingStreamPort.toInt())
+        try {
+            stream.awaitOpen(rtcInfo.signalingStreamPort.toInt())
+        } catch (e: NabtoRuntimeException) {
+            EdgeLogger.error("Failed to open Nabto stream for signaling: $e")
+            throw EdgeWebrtcError.SignalingFailedToInitialize()
+        }
+
         initialized.complete(Unit)
-        EdgeLogger.info("")
         scope.launch {
-            messageFlow.collect { msg -> sendMessage(msg) }
+            messageFlow.collect { box ->
+                try {
+                    sendMessage(box.message)
+                    box.completable.complete(Unit)
+                } catch (e: Exception) {
+                    box.completable.completeExceptionally(e)
+                }
+            }
         }
     }
 
@@ -75,18 +93,18 @@ class EdgeStreamSignaling(conn: Connection) : EdgeSignaling {
         )
         val res = lenBytes + json.toByteArray(Charsets.UTF_8)
 
-        // @TODO: Catch and output errors.
         stream.awaitWrite(res)
     }
 
-    override suspend fun send(msg: SignalMessage) {
-        messageFlow.emit(msg)
+    override suspend fun send(msg: SignalMessage): Deferred<Unit> {
+        val box = MessageBox(msg)
+        messageFlow.emit(box)
+        return box.completable
     }
 
     override suspend fun recv(): SignalMessage {
         initialized.await()
 
-        // @TODO: Catch and output errors for this and the awaitReadAll below.
         val lenData = stream.awaitReadAll(4)
         val len =
             ((lenData[0].toUInt() and 0xFFu)) or

@@ -7,7 +7,7 @@ import org.webrtc.Logging
 
 internal object EdgeLogger: Loggable {
     private const val tag = "EdgeWebRTC"
-    var logLevel = EdgeWebrtcLogLevel.ERROR
+    var logLevel = EdgeWebrtcLogLevel.WARNING
 
     fun error(msg: String) {
         log(EdgeWebrtcLogLevel.ERROR, msg)

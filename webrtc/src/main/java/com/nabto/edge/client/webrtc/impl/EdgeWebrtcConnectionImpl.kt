@@ -1,6 +1,5 @@
 package com.nabto.edge.client.webrtc.impl
 
-import android.util.Log
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.ErrorCodes
@@ -69,7 +68,6 @@ internal class EdgeWebrtcConnectionImpl(
         }
 
         override fun onSetFailure(p0: String?) {
-            // @TODO: Error logging
             EdgeLogger.error("Failed to set local description: $p0")
         }
     }
@@ -101,9 +99,17 @@ internal class EdgeWebrtcConnectionImpl(
             signaling.connect()
         } catch (error: EdgeWebrtcError.SignalingFailedToInitialize) {
             EdgeLogger.error("Failed to initialize signaling service.")
-            onErrorCallback?.invoke(error)
+            throw error
         }
-        signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
+
+        val sendPromise = signaling.send(SignalMessage(type = SignalMessageType.TURN_REQUEST))
+        try {
+            sendPromise.await()
+        } catch (e: Exception) {
+            EdgeLogger.error("Failed to send TurnRequest message over signaling; $e")
+            throw EdgeWebrtcError.SignalingFailedSend()
+        }
+
         connectPromise.await()
     }
 
@@ -112,7 +118,7 @@ internal class EdgeWebrtcConnectionImpl(
             scope.launch {
                 messageLoopJob?.cancel()
                 if (::peerConnection.isInitialized) {
-                    peerConnection.close()
+                    peerConnection.dispose()
                 }
                 signaling.disconnect()
             }
@@ -140,7 +146,13 @@ internal class EdgeWebrtcConnectionImpl(
             else -> SignalMessageType.OFFER
         }
         val msg = SignalMessage(type = type, data = data)
-        signaling.send(msg)
+        val sendPromise = signaling.send(msg)
+        try {
+            sendPromise.await()
+        } catch (e: Exception) {
+            EdgeLogger.error("Failed to send session description to peer: $e")
+            onErrorCallback?.invoke(EdgeWebrtcError.SignalingFailedSend())
+        }
     }
 
     private fun handleDescription(sdp: SessionDescription?) {
@@ -288,7 +300,13 @@ internal class EdgeWebrtcConnectionImpl(
         candidate?.let { cand ->
             scope.launch {
                 val data = jsonMapper.writeValueAsString(SignalingIceCandidate(sdpMid = cand.sdpMid, candidate = cand.sdp))
-                signaling.send(SignalMessage(type = SignalMessageType.ICE_CANDIDATE, data = data))
+                val sendPromise = signaling.send(SignalMessage(type = SignalMessageType.ICE_CANDIDATE, data = data))
+                try {
+                    sendPromise.await()
+                } catch (e: Exception) {
+                    EdgeLogger.error("Failed to send ICE candidate to peer: $e")
+                    onErrorCallback?.invoke(EdgeWebrtcError.SignalingFailedSend())
+                }
             }
         }
     }

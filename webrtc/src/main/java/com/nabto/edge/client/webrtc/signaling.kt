@@ -1,6 +1,7 @@
 package com.nabto.edge.client.webrtc
 
 import com.fasterxml.jackson.annotation.JsonValue
+import kotlinx.coroutines.Deferred
 
 enum class SignalMessageType(@get:JsonValue val num: Int) {
     OFFER(0),
@@ -43,6 +44,6 @@ data class SignalMessage(
 interface EdgeSignaling {
     suspend fun connect()
     suspend fun disconnect()
-    suspend fun send(msg: SignalMessage)
+    suspend fun send(msg: SignalMessage): Deferred<Unit>
     suspend fun recv(): SignalMessage
 }
