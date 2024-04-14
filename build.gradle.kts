@@ -1,4 +1,3 @@
-
 plugins {
     id("com.android.application") version "8.3.0" apply false
     id("org.jetbrains.kotlin.android") version "1.8.10" apply false
@@ -8,9 +7,8 @@ plugins {
     id("maven-publish")
 }
 
-import groovy.lang.Closure
-apply(from="versioning.gradle")
-val buildVersionName: Closure<Any> by ext
+apply(from="$rootDir/scripts/versioning.gradle")
+val buildVersionName: groovy.lang.Closure<String> by extra
 
 buildscript {
     repositories {
@@ -18,16 +16,6 @@ buildscript {
         mavenCentral()
     }
 }
-
-//apply plugin: 'signing'
-//apply plugin: 'maven-publish'
-//apply plugin: 'org.jetbrains.dokka'
-
-//apply from: 'versioning.gradle'
-
-//task clean(type: Delete) {
-//    delete rootProject.buildDir
-//}
 
 task("showVersion") {
     println("VersionName: "  + buildVersionName())
