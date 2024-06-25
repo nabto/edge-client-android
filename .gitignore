@@ -8,9 +8,8 @@
 **/build/
 
 /library/src/main/java/com/nabto/edge/client/swig/*.java
-/library/src/main/java/com/nabto/client/jni/*.java
-/library/src/swig/nabto_client_wrap.cpp
-/library/src/swig/nabto_client_wrap.h
+/library/src/main/jniLibs/*
+/library/src/debug/jniLibs/*
 
 /?/*
 /.idea/*
