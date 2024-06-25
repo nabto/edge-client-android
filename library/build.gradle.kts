@@ -25,7 +25,7 @@ android {
             cmake {
                 cFlags("-DANDROID_PLATFORM=24")
                 cppFlags("-DANDROID_PLATFORM=24")
-                targets("nabto_client")
+                targets("nabto_client", "nabto_client_install")
             }
         }
     }

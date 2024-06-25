@@ -25,10 +25,18 @@ ExternalProject_Add(nabto_client
     SOURCE_DIR ${nabto_client_sdk_dir}
     CMAKE_ARGS -GNinja -DCLIENT_BUILD_EXAMPLES=OFF -DCLIENT_BUILD_TESTS=OFF -DCLIENT_BUILD_ANDROID_JNI=ON -DANDROID_PLATFORM=${ANDROID_PLATFORM} -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI=${ANDROID_ABI} -DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${SRC_DIR}
     INSTALL_COMMAND ninja install
+    BUILD_ALWAYS ON
 )
 
-INSTALL(DIRECTORY ${INSTALL_DIR}/java/com/nabto/edge/client/swig
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src/main/java/com/nabto/edge/client/)
+add_custom_target(nabto_client_install DEPENDS nabto_client)
+add_custom_command(
+        TARGET nabto_client_install POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${INSTALL_DIR}/lib/libnabto_client_jni.so
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})
 
-INSTALL(FILES ${INSTALL_DIR}/lib/libnabto_client_jni.so
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})
+add_custom_command(
+  TARGET nabto_client_install POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${INSTALL_DIR}/java/com/nabto/edge/client/swig
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/java/com/nabto/edge/client)
