@@ -1,49 +1,34 @@
 cmake_minimum_required(VERSION 3.10)
+project(nabto_client_build)
 
-set(libressltar ${CMAKE_CURRENT_BINARY_DIR}/libressl.tar.gz)
-set(libressldir ${CMAKE_CURRENT_BINARY_DIR}/libressl-2.9.1)
+include(ExternalProject)
 
-if(NOT EXISTS ${libressldir})
-  if (NOT EXISTS ${libressltar})
-    file(DOWNLOAD https://downloads.nabto.com/assets/3rdparty-source/libressl/libressl-2.9.1.tar.gz ${libressltar}
-      TIMEOUT 60
-      EXPECTED_HASH SHA256=39e4dd856694dc10d564201e4549c46d2431601a2b10f3422507e24ccc8f62f8
-      TLS_VERIFY ON
-      )
-  endif()
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${libressltar}
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+message(INFO "running cmake")
+
+set(nabto_client_sdk_dir ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk)
+
+if (ANDROID_ABI MATCHES "arm64-v8a")
+  set(VCPKG_TARGET_TRIPLET "arm64-android")
+elseif(ANDROID_ABI MATCHES "armeabi-v7a")
+  set(VCPKG_TARGET_TRIPLET "arm-neon-android")
+elseif(ANDROID_ABI MATCHES "x86_64")
+  set(VCPKG_TARGET_TRIPLET "x64-android")
+elseif(ANDROID_ABI MATCHES "x86")
+  set(VCPKG_TARGET_TRIPLET "x86-android")
+else()
+  message(FATAL_ERROR "unknown VCPKG_TARGET_TRIPLET for ${ANDROID_ABI}")
 endif()
 
-set(LIBRESSL_APPS OFF CACHE BOOL "")
-set(LIBRESSL_TESTS OFF CACHE BOOL "")
+set(INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/andoid-${ANDROID_ABI})
 
-add_subdirectory(${libressldir} ${CMAKE_CURRENT_BINARY_DIR}/libressl-2.9.1)
+ExternalProject_Add(nabto_client
+    SOURCE_DIR ${nabto_client_sdk_dir}
+    CMAKE_ARGS -GNinja -DCLIENT_BUILD_EXAMPLES=OFF -DCLIENT_BUILD_TESTS=OFF -DCLIENT_BUILD_ANDROID_JNI=ON -DANDROID_PLATFORM=${ANDROID_PLATFORM} -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI=${ANDROID_ABI} -DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${SRC_DIR}
+    INSTALL_COMMAND ninja install
+)
 
-set(NABTO_STATIC_OPENSSL true)
-set(NABTO_STATIC_OPENSSL_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/libressl/include)
-set(NABTO_STATIC_OPENSSL_SSL_LIBARY ssl)
-set(NABTO_STATIC_OPENSSL_CRYPTO_LIBRARY crypto)
+INSTALL(DIRECTORY ${INSTALL_DIR}/java/com/nabto/edge/client/swig
+        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src/main/java/com/nabto/edge/client/)
 
-message(info ${NABTO_STATIC_OPENSSL_SSL_LIBARY})
-
-set(CLIENT_BUILD_EXAMPLES OFF CACHE BOOL "")
-set(CLIENT_BUILD_TESTS OFF CACHE BOOL "")
-
-add_subdirectory(../nabto-client-sdk ${CMAKE_BINARY_DIR}/nabto_client)
-
-add_custom_command(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND bash "generate_swig.sh"
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.i" "${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.hpp"
-  OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/src/swig/nabto_client_wrap.cpp"
-  )
-
-set(src
-  ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client_impl.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper/nabto_client.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/swig/nabto_client_wrap.cpp
-  )
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../nabto-client-sdk/cpp_wrapper)
-add_library(nabto_client_jni SHARED ${src})
-target_link_libraries(nabto_client_jni nabto_client ${log-lib})
+INSTALL(FILES ${INSTALL_DIR}/lib/libnabto_client_jni.so
+        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})

@@ -21,11 +21,11 @@ android {
         minSdk = NabtoConfig.minSdk
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        @Suppress("UnstableApiUsage")
         externalNativeBuild {
             cmake {
                 cFlags("-DANDROID_PLATFORM=24")
                 cppFlags("-DANDROID_PLATFORM=24")
+                targets("nabto_client")
             }
         }
     }
@@ -53,7 +53,6 @@ android {
 }
 
 dependencies {
-    implementation(fileTree("libs") { include("*.jar") }) // @TODO: Check if this line is needed
     implementation(libs.androidx.appcompat)
     implementation(libs.jetbrains.annotations)
     implementation(libs.bundles.jackson)
