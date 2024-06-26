@@ -10,11 +10,7 @@ pipeline {
         stage('Build') {
 
             steps {
-                checkout scm
-                sh "./gradlew :library:build --rerun-tasks"
-                sh "./gradlew :library-ktx:build --rerun-tasks"
-                sh "./gradlew :iam-util:build --rerun-tasks"
-                sh "./gradlew :iam-util-ktx:build --rerun-tasks"
+                sh "./build-scripts/android_ci.sh build"
             }
         }
         stage('Deploy') {
@@ -23,7 +19,7 @@ pipeline {
                                   string(credentialsId: "android_signing_key_password", variable: "ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD"),
                                   string(credentialsId: "sonatype_ossrh_username", variable: "ORG_GRADLE_PROJECT_OSSRH_USERNAME"),
                                   string(credentialsId: "sonatype_ossrh_password", variable: "ORG_GRADLE_PROJECT_OSSRH_PASSWORD")]) {
-                     sh "./gradlew publish"
+                     sh "./build-scripts/android_ci.sh deploy"
                  }
             }
         }

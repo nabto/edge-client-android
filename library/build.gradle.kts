@@ -16,6 +16,7 @@ android {
     namespace = "com.nabto.edge.client"
     compileSdk = NabtoConfig.compileSdk
     buildToolsVersion = NabtoConfig.buildToolsVersion
+    ndkVersion = "26.3.11579264"
 
     defaultConfig {
         minSdk = NabtoConfig.minSdk
