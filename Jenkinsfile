@@ -1,9 +1,6 @@
 pipeline {
     agent {
-        dockerfile {
-            filename 'Dockerfile'
-            dir 'build-container'
-        }
+        label "linux"
     }
     options { disableConcurrentBuilds() }
     stages {
