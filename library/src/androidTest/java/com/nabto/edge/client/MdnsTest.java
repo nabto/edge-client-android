@@ -55,7 +55,8 @@ public class MdnsTest {
 
     }
 
-    @Test(expected = Test.None.class)
+
+    @ComplexTest @Test(expected = Test.None.class)
     public void mdnsScan() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
@@ -70,7 +71,8 @@ public class MdnsTest {
 
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
-    @Test(expected = Test.None.class)
+
+    @ComplexTest @Test(expected = Test.None.class)
     public void mdnsScanSubtype() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
@@ -85,7 +87,7 @@ public class MdnsTest {
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
 
-    @Test(expected = Test.None.class)
+    @ComplexTest @Test(expected = Test.None.class)
     public void mdnsTxtItems() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 

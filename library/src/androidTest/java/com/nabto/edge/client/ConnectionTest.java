@@ -33,7 +33,7 @@ import java.util.Optional;
 public class ConnectionTest {
 
     // note: test will fail in emulator, at least on macOS (local test devices not discoverable from within emulator's default network)
-    @Test(expected = Test.None.class)
+    @ComplexTest @Test(expected = Test.None.class)
     public void connectLocal() throws Exception {
 //        final Context context = InstrumentationRegistry.getInstrumentation().getContext();
 //        final ConnectivityManager connectivityManager = (ConnectivityManager)(context.getSystemService(Context.CONNECTIVITY_SERVICE));
@@ -76,7 +76,7 @@ public class ConnectionTest {
         connection.connectionClose();
     }
 
-    @Test(expected = Test.None.class)
+    @ComplexTest @Test(expected = Test.None.class)
     public void noSuchLocalDevice() throws Exception {
         NabtoClient client = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         Connection connection = Helper.createConnection(client);

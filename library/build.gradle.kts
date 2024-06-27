@@ -21,14 +21,6 @@ android {
     defaultConfig {
         minSdk = NabtoConfig.minSdk
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        externalNativeBuild {
-            cmake {
-                cFlags("-DANDROID_PLATFORM=24")
-                cppFlags("-DANDROID_PLATFORM=24")
-                targets("nabto_client", "nabto_client_install")
-            }
-        }
     }
 
     buildTypes {
@@ -45,11 +37,13 @@ android {
         }
     }
 
-    externalNativeBuild {
-        cmake {
-            version = "3.18.1+"
-            path = file("CMakeLists.txt")
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
     }
 }
 
