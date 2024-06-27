@@ -1,7 +1,5 @@
 #!/bin/bash
 
-BUILD_TARGET=$1
-
 set -e
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -22,4 +20,9 @@ docker run --rm -i ${USE_TTY} \
     --volume="${SRC_DIR}:/sandbox" \
     --volume=${HOME}/build-cache:/build-cache \
     --workdir="/sandbox" \
-    android_build_container "build-scripts/android.sh" ${BUILD_TARGET}
+    -e ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64 -e ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD -e ORG_GRADLE_PROJECT_OSSRH_USERNAME -e ORG_GRADLE_PROJECT_OSSRH_PASSWORD \
+    android_build_container build-scripts/android.sh "$@"
+
+    # android_build_container echo "$@"
+
+# android_build_container build-scripts/android.sh "$@"

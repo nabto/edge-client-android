@@ -105,7 +105,7 @@ function all {
 }
 
 function help {
-    echo "read the script"
+    echo "unknown command $0 $@"
 }
 
 case $1 in
@@ -125,6 +125,6 @@ case $1 in
         build_native_libraries
         ;;
     *)
-        help
+        help $@
         ;;
 esac
