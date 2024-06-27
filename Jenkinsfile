@@ -7,7 +7,7 @@ pipeline {
         stage('Build') {
 
             steps {
-                sh "./build-scripts/android_ci.sh build"
+                sh "./build-scripts/android_ci.sh"
             }
         }
         stage('Deploy') {
