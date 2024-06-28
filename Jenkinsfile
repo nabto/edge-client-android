@@ -9,6 +9,11 @@ pipeline {
             steps {
                 sh "./build-scripts/android_ci.sh"
             }
+            post {
+                always {
+                    archiveArtifacts artifacts: './**/*.apk', onlyIfSuccessful: true
+                }
+            }
         }
         stage('Deploy') {
             steps {
