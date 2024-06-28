@@ -74,9 +74,8 @@ public interface Stream extends AutoCloseable {
      * @param length  The amount of bytes to read.
      * @param callback The callback that will be run when the bytes are ready.
      * The callback status will have an EOF status if end of file is reached.
-     * @throws NabtoEOFException if end of file is reached.
      */
-    public void readAllCallback(int length, NabtoCallback<byte[]> callback) throws NabtoEOFException;
+    public void readAllCallback(int length, NabtoCallback<byte[]> callback);
 
     /**
      * Write bytes to a stream. This function blocks until the bytes

@@ -67,7 +67,7 @@ public class StreamImpl implements com.nabto.edge.client.Stream {
         }
     }
 
-    public void readAllCallback(int length, NabtoCallback<byte[]> callback) throws NabtoEOFException {
+    public void readAllCallback(int length, NabtoCallback<byte[]> callback) {
         try {
             FutureBuffer buffer = stream.readAll(length);
             buffer.callback(Util.makeFutureCallbackBuffer(callback, buffer));

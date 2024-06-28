@@ -5,4 +5,5 @@ object NabtoConfig {
     const val buildToolsVersion = "34.0.0"
     const val minSdk = 24
     const val artifactGroup = "com.nabto.edge.client"
+    const val testTargetSdk = compileSdk
 }

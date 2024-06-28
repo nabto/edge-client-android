@@ -46,6 +46,7 @@ android {
         jvmTarget = "11"
     }
     testOptions {
+        targetSdk = NabtoConfig.testTargetSdk
         managedDevices {
             localDevices {
                 create("pixel2api30") {

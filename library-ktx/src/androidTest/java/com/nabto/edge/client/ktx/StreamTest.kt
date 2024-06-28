@@ -41,7 +41,7 @@ class StreamTest {
         Unit
     }
 
-    @Test
+    @Test(timeout=10000)
     fun echoEOF() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().getContext()
         NabtoClient.create(context).use { client ->
