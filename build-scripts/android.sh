@@ -9,10 +9,6 @@ SRC_DIR=${DIR}/..
 ANDROID_LIBRARY_JNILIBS_DIR=${SRC_DIR}/library/src/main/jniLibs
 ANDROID_LIBRARY_JAVA_FOLDER=${SRC_DIR}/library/src/main/java/com/nabto/edge/client
 
-if [ "$ANDROID_NDK_HOME" == "" ]; then
-    echo "missing environment variable ANDROID_NDK_HOME this is needed by vcpkg even that the correct variable name is ANDROID_NDK"
-    exit 1
-fi
 
 function build_android_libraries {
     cd ${SRC_DIR}
@@ -108,6 +104,11 @@ function help {
     echo "unknown command $0 $@"
 }
 
+function test {
+    echo "Testing library against a set of standard devices"
+    ./gradlew library:phonesDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.notAnnotation=com.nabto.edge.client.ComplexTest
+}
+
 case $1 in
     "")
         all
@@ -117,6 +118,9 @@ case $1 in
         ;;
     "deploy")
         deploy
+        ;;
+    "test")
+        test
         ;;
     "build_native_libraries_dev")
         build_native_libraries_dev

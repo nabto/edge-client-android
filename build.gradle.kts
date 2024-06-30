@@ -1,8 +1,9 @@
 plugins {
-    id("com.android.application") version "8.5.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.8.10" apply false
-    id("com.android.library") version "8.5.0" apply false
-    id("org.jetbrains.dokka") version "1.9.10" apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.jetbrains.kotlin.android) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.jetbrains.dokka) apply false
     id("signing")
     id("maven-publish")
 }

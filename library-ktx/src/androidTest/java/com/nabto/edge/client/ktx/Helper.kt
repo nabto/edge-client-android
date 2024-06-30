@@ -1,5 +1,5 @@
 package com.nabto.edge.client.ktx
-import com.nabto.edge.client.ktx.test.R
+//import com.nabto.edge.client.ktx.test.R
 
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -16,6 +16,7 @@ import org.json.JSONObject
 
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.NabtoClient
+import com.nabto.edge.client.testdata.R
 import com.nabto.edge.client.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -28,7 +29,7 @@ suspend fun createStreamConnection(client : NabtoClient): Connection? {
     options.put("ProductId", resources.getString(R.string.stream_product_id))
     options.put("DeviceId", resources.getString(R.string.stream_device_id))
     options.put("PrivateKey", client.createPrivateKey())
-    options.put("ServerConnectToken", resources.getString(R.string.stream_server_connect_token))
+    options.put("ServerConnectToken", resources.getString(R.string.stream_sct))
 
     connection?.updateOptions(options.toString())
     connection?.awaitConnect()

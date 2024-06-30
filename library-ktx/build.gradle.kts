@@ -1,8 +1,8 @@
 import com.nabto.edge.NabtoConfig
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 rootProject.extra.apply {
@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(project(":library"))
     testImplementation(libs.junit)
+    androidTestImplementation(project(":testdata"))
     androidTestImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

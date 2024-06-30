@@ -4,7 +4,7 @@ import android.content.res.Resources;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.nabto.edge.client.test.R;
+import com.nabto.edge.client.testdata.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
