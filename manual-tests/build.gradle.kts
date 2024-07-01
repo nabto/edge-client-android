@@ -29,7 +29,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.junit)
     androidTestImplementation(project(":library"))
-    androidTestImplementation(project(":test-data"))
+    androidTestImplementation(project(":testdata"))
     implementation(libs.androidx.junit)
     implementation(libs.androidx.espresso.core)
 }

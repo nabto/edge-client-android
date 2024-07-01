@@ -1,4 +1,4 @@
-package com.nabto.edge.client;
+package com.nabto.edge.client.test;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -8,7 +8,11 @@ import android.content.res.Resources;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.nabto.edge.client.test.R;
+import com.nabto.edge.client.testdata.R;
+
+import com.nabto.edge.client.MdnsResult;
+import com.nabto.edge.client.MdnsResultListener;
+import com.nabto.edge.client.NabtoClient;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,11 +56,9 @@ public class MdnsTest {
                 }
             }
         }
-
     }
 
-
-    @ComplexTest @Test(expected = Test.None.class)
+    @Test(expected = Test.None.class)
     public void mdnsScan() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
@@ -72,7 +74,7 @@ public class MdnsTest {
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
 
-    @ComplexTest @Test(expected = Test.None.class)
+    @Test(expected = Test.None.class)
     public void mdnsScanSubtype() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 
@@ -87,7 +89,7 @@ public class MdnsTest {
         assertNotEquals(rl.waitForDevice(productId, deviceId), null);
     }
 
-    @ComplexTest @Test(expected = Test.None.class)
+    @Test(expected = Test.None.class)
     public void mdnsTxtItems() throws Exception {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
 

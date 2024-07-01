@@ -21,7 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Edge Client Android"
 include(":library")
-include(":library-test")
+include(":manual-tests")
 include(":library-ktx")
 include(":iam-util")
 include(":iam-util-ktx")
