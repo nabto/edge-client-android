@@ -47,6 +47,7 @@ android {
     }
 
     testOptions {
+
         targetSdk = NabtoConfig.testTargetSdk
         managedDevices {
             localDevices {

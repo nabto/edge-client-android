@@ -29,6 +29,21 @@ e.g.
 ./gradlew library:build
 ```
 
+## Testing
+
+# run tests on a single running device
+```
+./gradlew library:connectedAndroidTest
+./gradlew library-ktx:connectedAndroidTest
+
+```
+
+# run tests on a predefined group of devices
+```
+./gradlew library:phonesGroupCheck
+```
+
+
 ## Publishing the library to the local maven repository
 
 run `./gradlew publishToMavenLocal`

@@ -1,100 +1,102 @@
 package com.nabto.edge.iamutil
 
-import com.nabto.edge.client.Coap
 import com.nabto.edge.client.Connection
-import com.nabto.edge.iamutil.mocks.createCoapMock
-import com.nabto.edge.iamutil.mocks.createCoapMock404
+import com.nabto.edge.iamutil.mocks.createCoapErrorMock
+import com.nabto.edge.iamutil.mocks.createGetPairingCoapMock
+import com.nabto.edge.iamutil.mocks.createGetUserCoapMock
+import com.nabto.edge.iamutil.mocks.mockErrorCodes
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.encodeToByteArray
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Assert.assertThrows
-import org.junit.Rule
+import org.junit.Before
 import org.junit.Test
-import org.junit.rules.ExpectedException
+import java.util.Optional
+import java.util.concurrent.CountDownLatch
 import kotlin.test.assertFailsWith
 
 @kotlinx.serialization.ExperimentalSerializationApi
 class GetUserTest {
-
-    @Serializable
-    class PairingResponse(
-        val Modes: Array<String> = arrayOf("LocalInitial"),
-        val FriendlyName: String = "friendlyname",
-        val DeviceId: String = "de-test",
-        val ProductId: String = "pr-test",
-        val AppVersion: String = "0.0.1",
-        val AppName: String = "test",
-        val NabtoVersion: String = "0.0.0"
-    )
-
-    @Serializable
-    class UserResponse(val Username : String, val DisplayName : String = "Test User", val Fingerprint : String = "0011223344556677889900112233445566778899001122334455667788990011", val Role : String = "Admin");
-
-    fun createGetPairingCoapMock() : Coap {
-        val coap : Coap = createCoapMock();
-        every { coap.execute() } returns ( Unit )
-        every { coap.responseStatusCode } returns ( 205 )
-        //every { coap.responseContentFormat } returns (Coap.ContentFormat.APPLICATION_CBOR )
-        val pairingResponse : PairingResponse = PairingResponse();
-        val responseData =  Cbor.encodeToByteArray(pairingResponse);
-        every { coap.responsePayload } returns ( responseData )
-        return coap
+    private var connection : Connection? = null
+    private var iamUtil : IamUtil? = null
+    @Before
+    fun setup() {
+        connection = mockk<Connection>()
+        iamUtil = IamUtil.create();
+        mockErrorCodes();
     }
 
-    fun createGetUserCoapMoxk(username: String) : Coap {
-        val coap : Coap = createCoapMock();
-        every { coap.execute() } returns ( Unit )
-        every { coap.responseStatusCode } returns ( 205 )
-        //every { coap.responseContentFormat } returns (Coap.ContentFormat.APPLICATION_CBOR )
-        val userResponse : UserResponse = UserResponse(Username = username);
-        every { coap.responsePayload } returns ( Cbor.encodeToByteArray(userResponse) )
-        return coap
+    @After
+    fun teardown() {
+        connection = null
+        iamUtil = null
     }
 
     @Test
     fun getUser()
     {
-
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
-
         val testUserUsername = "testuser"
 
-        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMoxk(testUserUsername) )
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
-        val user = iamUtil.getUser(connection, testUserUsername);
-        assertEquals(testUserUsername, user.username);
+        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
+        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        val user = iamUtil?.getUser(connection, testUserUsername);
+        assertEquals(testUserUsername, user?.username);
+    }
+
+    @Test
+    fun getUserCallback()
+    {
+        val testUserUsername = "testuser"
+
+        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
+        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        var called = false;
+        val latch : CountDownLatch = CountDownLatch(1)
+        iamUtil?.getUserCallback(connection!!, testUserUsername, { iamError: IamError, user : Optional<IamUser> ->
+            run {
+                called = true;
+                latch.countDown();
+            }
+        })
+        latch.await()
+        assertTrue(called);
+
     }
 
     @Test
     fun getUserIamDisabled() {
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
         val testUserUsername = "testuser"
 
-        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapMock404() )
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createCoapMock404() )
+        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(404) )
+        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createCoapErrorMock(404) )
         val exception = assertFailsWith<IamException> {
-            iamUtil.getUser(connection, testUserUsername)
+            iamUtil?.getUser(connection!!, testUserUsername)
         }
         assertEquals(exception.getError(), IamError.IAM_NOT_SUPPORTED)
     }
 
     @Test
     fun getUserNoSuchUser() {
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
         val testUserUsername = "testuser"
 
-        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapMock404() )
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(404) )
+        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val exception = assertFailsWith<IamException> {
-            iamUtil.getUser(connection, testUserUsername)
+            iamUtil?.getUser(connection!!, testUserUsername)
         }
         assertEquals(exception.getError(), IamError.USER_DOES_NOT_EXIST)
+    }
+
+    @Test
+    fun getUserDenied() {
+        val testUserUsername = "testuser"
+
+        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(403) )
+        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        val exception = assertFailsWith<IamException> {
+            iamUtil?.getUser(connection!!, testUserUsername)
+        }
+        assertEquals(exception.getError(), IamError.BLOCKED_BY_DEVICE_CONFIGURATION)
     }
 }
