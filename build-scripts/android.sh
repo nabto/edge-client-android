@@ -16,6 +16,11 @@ function build_android_libraries {
     ./gradlew :library-ktx:build --rerun-tasks
     ./gradlew :iam-util:build --rerun-tasks
     ./gradlew :iam-util-ktx:build --rerun-tasks
+
+    ./gradlew :library:assembleAndroidTest --rerun-tasks
+    ./gradlew :library-ktx:assembleAndroidTest --rerun-tasks
+    ./gradlew :iam-util:assembleAndroidTest --rerun-tasks
+    ./gradlew :iam-util-ktx:assembleAndroidTest --rerun-tasks
 }
 
 function build_native_libraries {
