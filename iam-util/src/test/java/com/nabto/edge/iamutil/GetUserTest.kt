@@ -18,19 +18,11 @@ import kotlin.test.assertFailsWith
 
 @kotlinx.serialization.ExperimentalSerializationApi
 class GetUserTest {
-    private var connection : Connection? = null
-    private var iamUtil : IamUtil? = null
+    private var connection : Connection = mockk<Connection>()
+    private var iamUtil : IamUtil = IamUtil.create();
     @Before
     fun setup() {
-        connection = mockk<Connection>()
-        iamUtil = IamUtil.create();
         mockErrorCodes();
-    }
-
-    @After
-    fun teardown() {
-        connection = null
-        iamUtil = null
     }
 
     @Test
@@ -38,10 +30,10 @@ class GetUserTest {
     {
         val testUserUsername = "testuser"
 
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
-        val user = iamUtil?.getUser(connection, testUserUsername);
-        assertEquals(testUserUsername, user?.username);
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        val user = iamUtil.getUser(connection, testUserUsername);
+        assertEquals(testUserUsername, user.username);
     }
 
     @Test
@@ -49,29 +41,26 @@ class GetUserTest {
     {
         val testUserUsername = "testuser"
 
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
-        var called = false;
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val latch : CountDownLatch = CountDownLatch(1)
-        iamUtil?.getUserCallback(connection!!, testUserUsername, { iamError: IamError, user : Optional<IamUser> ->
+        iamUtil.getUserCallback(connection, testUserUsername, { iamError: IamError, _ : Optional<IamUser> ->
             run {
-                called = true;
+                assertEquals(IamError.NONE, iamError)
                 latch.countDown();
             }
         })
         latch.await()
-        assertTrue(called);
-
     }
 
     @Test
     fun getUserIamDisabled() {
         val testUserUsername = "testuser"
 
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(404) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createCoapErrorMock(404) )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(404) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createCoapErrorMock(404) )
         val exception = assertFailsWith<IamException> {
-            iamUtil?.getUser(connection!!, testUserUsername)
+            iamUtil.getUser(connection, testUserUsername)
         }
         assertEquals(exception.getError(), IamError.IAM_NOT_SUPPORTED)
     }
@@ -80,10 +69,10 @@ class GetUserTest {
     fun getUserNoSuchUser() {
         val testUserUsername = "testuser"
 
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(404) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(404) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val exception = assertFailsWith<IamException> {
-            iamUtil?.getUser(connection!!, testUserUsername)
+            iamUtil.getUser(connection, testUserUsername)
         }
         assertEquals(exception.getError(), IamError.USER_DOES_NOT_EXIST)
     }
@@ -92,10 +81,10 @@ class GetUserTest {
     fun getUserDenied() {
         val testUserUsername = "testuser"
 
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(403) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapErrorMock(403) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val exception = assertFailsWith<IamException> {
-            iamUtil?.getUser(connection!!, testUserUsername)
+            iamUtil.getUser(connection, testUserUsername)
         }
         assertEquals(exception.getError(), IamError.BLOCKED_BY_DEVICE_CONFIGURATION)
     }

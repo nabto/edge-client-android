@@ -24,29 +24,21 @@ import kotlin.test.assertFailsWith
  * For these tests we just use a common iam function such getUser
  */
 class CoapInvocationTest {
-    private var connection : Connection? = null
-    private var iamUtil : IamUtil? = null
+    private var connection : Connection = mockk<Connection>()
+    private var iamUtil : IamUtil = IamUtil.create()
     @Before
     fun setup() {
-        connection = mockk<Connection>()
-        iamUtil = IamUtil.create();
         mockErrorCodes();
-    }
-
-    @After
-    fun teardown() {
-        connection = null
-        iamUtil = null
     }
 
     @Test
     fun coapExecuteTimeout() {
         val testUserUsername = "testuser"
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.TIMEOUT) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.TIMEOUT) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
         val exception = assertFailsWith<NabtoRuntimeException> {
-            iamUtil?.getUser(connection, testUserUsername)
+            iamUtil.getUser(connection, testUserUsername)
         }
         assertEquals(ErrorCodes.TIMEOUT, exception.getErrorCode().getErrorCode())
     }
@@ -54,11 +46,11 @@ class CoapInvocationTest {
     @Test
     fun coapExecuteStopped() {
         val testUserUsername = "testuser"
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.STOPPED) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.STOPPED) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
         val exception = assertFailsWith<NabtoRuntimeException> {
-            iamUtil?.getUser(connection, testUserUsername)
+            iamUtil.getUser(connection, testUserUsername)
         }
         assertEquals(ErrorCodes.STOPPED, exception.getErrorCode().getErrorCode())
     }
@@ -66,11 +58,11 @@ class CoapInvocationTest {
     @Test
     fun coapExecuteNotConnected() {
         val testUserUsername = "testuser"
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.NOT_CONNECTED) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.NOT_CONNECTED) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
         val exception = assertFailsWith<NabtoRuntimeException> {
-            iamUtil?.getUser(connection, testUserUsername)
+            iamUtil.getUser(connection, testUserUsername)
         }
         assertEquals(ErrorCodes.NOT_CONNECTED, exception.getErrorCode().getErrorCode())
     }
@@ -78,12 +70,12 @@ class CoapInvocationTest {
     @Test
     fun coapExecuteTimeoutCallback() {
         val testUserUsername = "testuser"
-        every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.NOT_CONNECTED) )
-        every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.NOT_CONNECTED) )
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
         var called = false
         val latch : CountDownLatch = CountDownLatch(1)
-        iamUtil?.getUserCallback(connection!!, testUserUsername, { iamError: IamError, _ : Optional<IamUser> ->
+        iamUtil.getUserCallback(connection, testUserUsername, { iamError: IamError, _ : Optional<IamUser> ->
             run {
                 called = true
                 assertEquals(iamError, IamError.FAILED)

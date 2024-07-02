@@ -7,20 +7,26 @@ import com.nabto.edge.iamutil.mocks.createPutUserUsernameCoapMock
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
 @kotlinx.serialization.ExperimentalSerializationApi
 class RenameUserTest {
+    val connection : Connection = mockk<Connection>();
+    val iamUtil = IamUtil.create()
+
+    @Before
+    fun setup() {
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+    }
+
+
     @Test
     fun renameOk() {
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
-
         val testUserUsername = "testuser"
         val newUsername = "new"
 
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         every { connection.createCoap("PUT", "/iam/users/"+testUserUsername+"/username") } returns ( createPutUserUsernameCoapMock(newUsername) )
 
         iamUtil.renameUser(connection, testUserUsername, newUsername);
@@ -28,12 +34,8 @@ class RenameUserTest {
 
     @Test
     fun renameUserDoesNotExists() {
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
-
         val testUserUsername = "testuser"
         every { connection.createCoap("PUT", "/iam/users/"+testUserUsername+"/username") } returns ( createCoapErrorMock(404) )
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val exception = assertFailsWith<IamException> {
             iamUtil.renameUser(connection, testUserUsername, "newname")
         }
@@ -42,11 +44,7 @@ class RenameUserTest {
 
     @Test
     fun invalidUsernameFormat() {
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
-
         val testUserUsername = "testuser"
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         every { connection.createCoap("PUT", "/iam/users/"+testUserUsername+"/username") } returns ( createCoapErrorMock(400) )
         val exception = assertFailsWith<IamException> {
             iamUtil.renameUser(connection, testUserUsername, "newname")
@@ -56,11 +54,7 @@ class RenameUserTest {
 
     @Test
     fun missingPermissions() {
-        val connection : Connection = mockk<Connection>();
-        val iamUtil = IamUtil.create()
-
         val testUserUsername = "testuser"
-        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         every { connection.createCoap("PUT", "/iam/users/"+testUserUsername+"/username") } returns ( createCoapErrorMock(403) )
         val exception = assertFailsWith<IamException> {
             iamUtil.renameUser(connection, testUserUsername, "newname")
