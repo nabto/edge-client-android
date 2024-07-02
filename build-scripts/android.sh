@@ -95,9 +95,16 @@ function deploy {
     ./gradlew publish
 }
 
+function run_unit_tests {
+    ./gradlew test
+}
+
 function all {
     build_native_libraries
     build_android_libraries
+    run_unit_tests
+    echo "finding built apks (jenkins help)"
+    find ${SRC_DIR} -iname "*.apk"
 }
 
 function help {
