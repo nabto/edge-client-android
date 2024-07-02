@@ -11,7 +11,7 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: './**/*.apk', onlyIfSuccessful: true
+                    archiveArtifacts artifacts: './library/build/outputs/**/*.apk', onlyIfSuccessful: true
                 }
             }
         }
