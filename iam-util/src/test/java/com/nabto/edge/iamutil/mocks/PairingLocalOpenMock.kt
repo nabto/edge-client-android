@@ -21,3 +21,9 @@ fun pairingLocalOpenCoapMock(username: String, statusCode: Int) : Coap {
     every { coap.responseStatusCode } returns statusCode
     return coap
 }
+
+fun pairingLocalInitialCoapMock(statusCode: Int) : Coap {
+    val coap = createCoapMock()
+    every { coap.responseStatusCode } returns statusCode
+    return coap
+}
