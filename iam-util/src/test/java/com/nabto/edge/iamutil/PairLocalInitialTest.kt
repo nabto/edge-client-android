@@ -1,11 +1,9 @@
 package com.nabto.edge.iamutil
 
 import com.nabto.edge.client.Connection
-import com.nabto.edge.iamutil.mocks.createCoapErrorMock
+import com.nabto.edge.iamutil.mocks.createCoapMock
 import com.nabto.edge.iamutil.mocks.createGetPairingCoapMock
-import com.nabto.edge.iamutil.mocks.createPutUserUsernameCoapMock
-import com.nabto.edge.iamutil.mocks.pairingLocalInitialCoapMock
-import com.nabto.edge.iamutil.mocks.pairingLocalOpenCoapMock
+import com.nabto.edge.iamutil.mocks.mockErrorCodes
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -24,15 +22,21 @@ class PairLocalInitialTest {
         every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
     }
 
+    fun mockCoapCall(statusCode: Int) {
+        val coap = createCoapMock()
+        every { coap.responseStatusCode } returns statusCode
+        every { connection.createCoap("POST", "/iam/pairing/local-initial" ) } returns coap
+    }
+
     @Test
     fun pairLocalInitial() {
-        every { connection.createCoap("POST", "/iam/pairing/local-initial" ) } returns ( pairingLocalInitialCoapMock(201) )
+        mockCoapCall(201);
         iamUtil.pairLocalInitial(connection);
     }
 
     @Test
     fun pairLocalinitialBlockedByIam() {
-        every { connection.createCoap("POST", "/iam/pairing/local-initial" ) } returns ( pairingLocalInitialCoapMock(403) )
+        mockCoapCall(403);
         val exception = assertFailsWith<IamException> {
             iamUtil.pairLocalInitial(connection)
         }
@@ -40,7 +44,7 @@ class PairLocalInitialTest {
     }
     @Test
     fun pairLocalInitialModeDisabled() {
-        every { connection.createCoap("POST", "/iam/pairing/local-initial" ) } returns ( pairingLocalInitialCoapMock(404) )
+        mockCoapCall(404);
         val exception = assertFailsWith<IamException> {
             iamUtil.pairLocalInitial(connection)
         }
@@ -48,7 +52,7 @@ class PairLocalInitialTest {
     }
     @Test
     fun pairLocalInitialAlreadyPaired() {
-        every { connection.createCoap("POST", "/iam/pairing/local-initial" ) } returns ( pairingLocalInitialCoapMock(409) )
+        mockCoapCall(409);
         val exception = assertFailsWith<IamException> {
             iamUtil.pairLocalInitial(connection)
         }
