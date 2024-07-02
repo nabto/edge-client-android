@@ -2,6 +2,7 @@ package com.nabto.edge.iamutil
 
 import com.nabto.edge.client.Connection
 import com.nabto.edge.client.ErrorCodes
+import com.nabto.edge.client.NabtoRuntimeException
 import com.nabto.edge.iamutil.mocks.createCoapExecuteErrorMock
 import com.nabto.edge.iamutil.mocks.createGetPairingCoapMock
 import com.nabto.edge.iamutil.mocks.createGetUserCoapMock
@@ -44,10 +45,10 @@ class CoapInvocationTest {
         every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.TIMEOUT) )
         every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
-        val exception = assertFailsWith<IamException> {
+        val exception = assertFailsWith<NabtoRuntimeException> {
             iamUtil?.getUser(connection, testUserUsername)
         }
-        assertEquals(IamError.FAILED, exception.getError())
+        assertEquals(ErrorCodes.TIMEOUT, exception.getErrorCode().getErrorCode())
     }
 
     @Test
@@ -56,10 +57,10 @@ class CoapInvocationTest {
         every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.STOPPED) )
         every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
-        val exception = assertFailsWith<IamException> {
+        val exception = assertFailsWith<NabtoRuntimeException> {
             iamUtil?.getUser(connection, testUserUsername)
         }
-        assertEquals(IamError.FAILED, exception.getError())
+        assertEquals(ErrorCodes.STOPPED, exception.getErrorCode().getErrorCode())
     }
 
     @Test
@@ -68,10 +69,10 @@ class CoapInvocationTest {
         every { connection?.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createCoapExecuteErrorMock(ErrorCodes.NOT_CONNECTED) )
         every { connection?.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
 
-        val exception = assertFailsWith<IamException> {
+        val exception = assertFailsWith<NabtoRuntimeException> {
             iamUtil?.getUser(connection, testUserUsername)
         }
-        assertEquals(IamError.FAILED, exception.getError())
+        assertEquals(ErrorCodes.NOT_CONNECTED, exception.getErrorCode().getErrorCode())
     }
 
     @Test
@@ -82,10 +83,11 @@ class CoapInvocationTest {
 
         var called = false
         val latch : CountDownLatch = CountDownLatch(1)
-        iamUtil?.getUserCallback(connection!!, testUserUsername, { iamError: IamError, user : Optional<IamUser> ->
+        iamUtil?.getUserCallback(connection!!, testUserUsername, { iamError: IamError, _ : Optional<IamUser> ->
             run {
                 called = true
                 assertEquals(iamError, IamError.FAILED)
+
                 latch.countDown()
             }
         })

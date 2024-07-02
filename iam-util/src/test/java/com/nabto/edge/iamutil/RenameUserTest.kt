@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
+@kotlinx.serialization.ExperimentalSerializationApi
 class RenameUserTest {
     @Test
     fun renameOk() {
