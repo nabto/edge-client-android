@@ -21,6 +21,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    testOptions {
+        targetSdk = NabtoConfig.testTargetSdk
+    }
 }
 
 dependencies {

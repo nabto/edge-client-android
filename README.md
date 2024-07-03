@@ -29,20 +29,55 @@ e.g.
 ./gradlew library:build
 ```
 
-## Testing
+# Testing
 
-# run tests on a single running device
+## Test library and library-ktx
+
+Run tests on a single running device
+
 ```
 ./gradlew library:connectedAndroidTest
 ./gradlew library-ktx:connectedAndroidTest
 
 ```
 
-# run tests on a predefined group of devices
+Run tests on a predefined group of devices
 ```
 ./gradlew library:phonesGroupCheck
 ```
 
+Mdns and Local Connections is not tested using the connectedAndroidTest projects, they need to be tested using the manual-tests test suite.
+
+Testing mdns:
+
+Run a local mdns test device and switch the phone to the local wifi.
+```
+./start_local_test_devices.sh
+```
+
+```
+./gradlew :manual-tests:connectedAndroidTest
+```
+
+Run a specific test ./gradlew :manual-tests:connectedAndroidTes-Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.test.MdnsTest or ConnectionTest
+
+
+
+### Test IAM-Util
+
+```
+./gradlew iam-util:test
+```
+
+We have quite a few iam tests which requires running local test devices.
+
+```
+./start_local_test_devices.sh
+```
+
+```
+./gradlew :iam-util:connectedAndroidTest
+```
 
 ## Publishing the library to the local maven repository
 
@@ -88,11 +123,6 @@ The process is described on [sonatype.org](https://central.sonatype.org/publish/
 >
 > Once you have successfully closed the staging repository, you can release it by pressing the Release button. This will move the components into the release repository of OSSRH where it will be synced to the Central Repository.
 
-## Running a single test case
-
-```
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.TunnelTest#connect
-```
 
 ## Debugging swig generation
 
@@ -140,78 +170,59 @@ These test features of the client sdk
 
 The app must be able to make a tunnel and it should be shown that a resource can be reached through the tunnel.
 
-Scope: connectedAndroidTest
-
-```
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.TunnelTest#connect
-```
+Scope: library:connectedAndroidTest
 
 ### Test Feature 2.
 
 The app must be able to get logs from the nabto-client-sdk.
 
-Scope: connectedAndroidTest
-
-
+Scope: library:connectedAndroidTest
 
 ### Test Feature 4.
 
 The app must be able to make a stream.
 
-Scope: connectedAndroidTest
-
-```
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.StreamTest
-```
+Scope: clibrary:onnectedAndroidTest
 
 ### Test Feature 5.
 
 The app must be able to make a coap request.
 
-Scope: connectedAndroidTest
-
-```
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.CoapTest
-```
+Scope: Scope: library:connectedAndroidTest
 
 ### Test Feature 6.
 
 The app must be able to get the version of the nabto core library.
 The app must be able to get the version of the nabto wrapper library.
 
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ClientTest#nabtoVersion
-
-
 ## Connectivity
 
-Test connectivity from an app with the nabto-client-sdk.
-
+Test library:connectivity from an app with the nabto-client-sdk.
 
 ### Test Conn 1.
 
 The app must be able to connect to a remote nabto-device.
 
-Scope: connectedAndroidTest
-
+Scope: library:connectedAndroidTest
 
 
 ### Test Conn 3.
 
 The app must be able to connect to a local nabto-device on an ipv4 only local network.
 
-Scope: connectedAndroidTest on a real device with given network
+Scope: manual-tests:connectedAndroidTest on a real device with given network
 
 Make sure the test device and phone is on the same network.
 
 run a test device: `./start_local_test_device.sh`
 
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ConnectionTest#connectLocal
+./gradlew :manual-tests:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.test.ConnectionTest#connectLocal
 
 ### Test Conn 4.
 
 The app must be able to connect to a local nabto-device on an ipv6 only local network.
 
-Scope: connectedAndroidTest on a real device with given network
+Scope: :manual-tests:connectedAndroidTest on a real device with given network
 
 join ipv6only network on both laptop and phone. Currently our embedded sdk test
 devices has a problem with ipv6 and mdns so this probably fails.
@@ -219,12 +230,12 @@ devices has a problem with ipv6 and mdns so this probably fails.
 
 ### Test Conn 5.
 
-On android, if there is not internet access on a local network, then
+On android, if there is no internet access on a local network, then
 by default no traffic is sent to that network.
 
 The app must be able to connect to a local nabto-device on a network without internet access on a android-device which has internet access via 3/4/5g
 
-Scope: connectedAndroidTest on a real device with given network
+Scope: :manual-tests:connectedAndroidTest on a real device with given network
 
 prerequisite: embedded sdk device and android joins an ipv4 network without internet access
 
@@ -232,7 +243,7 @@ run a test device: `./start_local_test_device.sh`
 
 This is TODO since gradle does not seem to function without internet.
 
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.ConnectionTest#connectLocal
+./gradlew :manual-tests:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.test.ConnectionTest#connectLocal
 
 
 ### Test Conn 6.
@@ -241,12 +252,4 @@ The client can scan for mdns devices, subtypes and get txt records.
 
 `./start_local_test_device.sh`
 
-./gradlew :library:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.MdnsTest
-
-
-# Run an emulated device inside docker
-
-docker run --rm -it --device /dev/kvm android_build_container bash
-
-/usr/local/android-sdk/cmdline-tools/latest/bin/avdmanager create avd -n test2 -k "system-images;android-34;google_apis;x86_64"
-/usr/local/android-sdk/emulator/emulator -avd test2 -no-audio -no-window
+./gradlew :manual-tests:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.test.MdnsTest
