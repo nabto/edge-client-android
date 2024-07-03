@@ -2,7 +2,10 @@ pipeline {
     agent {
         label "linux"
     }
-    options { disableConcurrentBuilds() }
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
     stages {
         stage('Build') {
 
