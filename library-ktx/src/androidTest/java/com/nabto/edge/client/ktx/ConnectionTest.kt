@@ -28,7 +28,7 @@ class ConnectionTest {
 
     @Test
     fun testConnection() = testScope.runTest {
-        var connection: Connection? = null
+        var connection: Connection?
         val client: NabtoClient = NabtoClient.create(InstrumentationRegistry.getInstrumentation().getContext());
         connection = createStreamConnection(client)
         assertNotNull(connection);

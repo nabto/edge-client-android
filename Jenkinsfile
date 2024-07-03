@@ -1,21 +1,21 @@
 pipeline {
     agent {
-        dockerfile {
-            filename 'Dockerfile'
-            dir 'build-container'
-        }
+        label "linux"
     }
-    options { disableConcurrentBuilds() }
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
     stages {
         stage('Build') {
 
             steps {
-                checkout scm
-                sh "./library/generate_swig.sh"
-                sh "./gradlew :library:build --rerun-tasks"
-                sh "./gradlew :library-ktx:build --rerun-tasks"
-                sh "./gradlew :iam-util:build --rerun-tasks"
-                sh "./gradlew :iam-util-ktx:build --rerun-tasks"
+                sh "./build-scripts/android_ci.sh"
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '**/*.apk', onlyIfSuccessful: true
+                }
             }
         }
         stage('Deploy') {
@@ -24,7 +24,7 @@ pipeline {
                                   string(credentialsId: "android_signing_key_password", variable: "ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD"),
                                   string(credentialsId: "sonatype_ossrh_username", variable: "ORG_GRADLE_PROJECT_OSSRH_USERNAME"),
                                   string(credentialsId: "sonatype_ossrh_password", variable: "ORG_GRADLE_PROJECT_OSSRH_PASSWORD")]) {
-                     sh "./gradlew publish"
+                     sh "./build-scripts/android_ci.sh deploy"
                  }
             }
         }

@@ -42,9 +42,13 @@ public class Util {
         // Most of the future callbacks used just pass through to a NabtoCallback like this
         FutureCallback cb = new FutureCallback() {
             public void run(com.nabto.edge.client.swig.Status status) {
-                Optional<Void> opt = Optional.empty();
                 try {
-                    callback.run(status.getErrorCode(), Optional.of(buffer.getResult()));
+                    Optional<byte[]> data = Optional.empty();
+                    try {
+                        data = Optional.of(buffer.getResult());
+                    } catch (Throwable T) {
+                    }
+                    callback.run(status.getErrorCode(), data);
                 } catch (Throwable t) {
                     logUnhandledCallbackException(t);
                 } finally {

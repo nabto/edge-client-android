@@ -1,8 +1,8 @@
 import com.nabto.edge.NabtoConfig
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 rootProject.extra.apply {
@@ -44,6 +44,21 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    testOptions {
+        targetSdk = NabtoConfig.testTargetSdk
+        managedDevices {
+            localDevices {
+                create("pixel2api30") {
+                    // Use device profiles you typically see in Android Studio.
+                    device = "Pixel 2"
+                    // Use only API levels 27 and higher.
+                    apiLevel = 30
+                    // To include Google services, use "google".
+                    systemImageSource = "aosp"
+                }
+            }
+        }
+    }
 }
 
 dependencies {
@@ -51,7 +66,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(project(":library"))
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(project(":testdata"))
+    androidTestImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.core.ktx)
