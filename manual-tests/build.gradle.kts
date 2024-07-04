@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.nabto.edge.client.test"
+    namespace = "com.nabto.edge.client.manualtests"
     compileSdk = NabtoConfig.compileSdk
 
     defaultConfig {
