@@ -26,8 +26,6 @@ import kotlin.test.assertFailsWith
 class GetAvailablePairingModesTest {
     val connection : Connection = mockk<Connection>();
     val iamUtil = IamUtil.create()
-    val username = "testuser"
-    val password = "testpassword"
 
     @Before
     fun setup() {
@@ -60,7 +58,7 @@ class GetAvailablePairingModesTest {
     fun handle404() {
         mockCoapGetPairingError(connection, 404)
         val exception = assertFailsWith<IamException> {
-            val pairingModes = iamUtil.getAvailablePairingModes(connection)
+            iamUtil.getAvailablePairingModes(connection)
         }
         assertEquals(exception.getError(), IamError.IAM_NOT_SUPPORTED)
     }
@@ -68,7 +66,7 @@ class GetAvailablePairingModesTest {
     fun handle403() {
         mockCoapGetPairingError(connection, 403)
         val exception = assertFailsWith<IamException> {
-            val pairingModes = iamUtil.getAvailablePairingModes(connection)
+            iamUtil.getAvailablePairingModes(connection)
         }
         assertEquals(exception.getError(), IamError.BLOCKED_BY_DEVICE_CONFIGURATION)
     }
