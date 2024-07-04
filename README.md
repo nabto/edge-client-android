@@ -48,9 +48,7 @@ Run tests on a predefined group of devices
 
 Mdns and Local Connections is not tested using the connectedAndroidTest projects, they need to be tested using the manual-tests test suite.
 
-Testing mdns:
-
-Run a local mdns test device and switch the phone to the local wifi.
+Run a local mdns test device and switch the phone to the local wifi, the phones screen needs to be turned on else the wifi will probably be in a low power state and mdns packets are not receieved.
 ```
 ./start_local_test_devices.sh
 ```
@@ -78,6 +76,39 @@ We have quite a few iam tests which requires running local test devices.
 ```
 ./gradlew :iam-util:connectedAndroidTest
 ```
+
+## Run connectedAndroidTests from an apk on a device
+
+Run the manualtests:
+```
+$ adb install ~/Downloads/manual-tests-debug-androidTest.apk
+...
+# Ensure that the screen is turned on, else mdns fails
+$ adb shell am instrument -w com.nabto.edge.client.manualtests.test/androidx.test.runner.AndroidJUnitRunner
+
+com.nabto.edge.client.manualtests.ConnectionTest:..
+com.nabto.edge.client.manualtests.MdnsTest:...
+
+Time: 3,29
+
+OK (5 tests)
+```
+
+Run the library tests
+```
+$ adb install ~/Downloads/library-debug-androidTest\ \(1\).apk
+...
+$ adb shell am instrument -w com.nabto.edge.client.test/androidx.test.runner.AndroidJUnitRunner
+
+com.nabto.edge.client.manualtests.ConnectionTest:..
+com.nabto.edge.client.manualtests.MdnsTest:...
+
+Time: 3,29
+
+OK (5 tests)
+```
+
+
 
 ## Publishing the library to the local maven repository
 
@@ -253,3 +284,22 @@ The client can scan for mdns devices, subtypes and get txt records.
 `./start_local_test_device.sh`
 
 ./gradlew :manual-tests:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nabto.edge.client.test.MdnsTest
+
+
+# Release Procedure
+
+1. Create a git tag
+2. See that the build passes, this runs unit tests.
+3. Download manual-tests-debug-androidTest.apk and library-debug-androidTest.apk from jenkins
+4. run
+```
+adb install manual-tests-debug-androidTest.apk
+adb install library-debug-androidTest.apk
+./start_local_test_devices.sh (in a seperate shell)
+adb shell am instrument -w com.nabto.edge.client.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w com.nabto.edge.client.manualtests.test/androidx.test.runner.AndroidJUnitRunner
+```
+5. Bonus: test library-ktx, iam-util and iam-util-ktx with connectedAndroidTests as described somewhere in this document.
+6. Bonus: test the staging library from sonatype nexus in an example app, such that the version etc is validated.
+7. when tests is passed close the staging repository on sonatype nexus, it takes some time, afterwards promote the staging reporisoty to a release.
+8. Bonus: test that the artifacts on maven central works.

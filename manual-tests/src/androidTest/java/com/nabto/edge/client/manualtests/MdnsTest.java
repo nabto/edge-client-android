@@ -1,4 +1,4 @@
-package com.nabto.edge.client.test;
+package com.nabto.edge.client.manualtests;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;

@@ -1,4 +1,4 @@
-package com.nabto.edge.client.test;
+package com.nabto.edge.client.manualtests;
 
 import android.content.res.Resources;
 

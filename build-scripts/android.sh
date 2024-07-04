@@ -21,6 +21,7 @@ function build_android_libraries {
     ./gradlew :library-ktx:assembleAndroidTest --rerun-tasks
     ./gradlew :iam-util:assembleAndroidTest --rerun-tasks
     ./gradlew :iam-util-ktx:assembleAndroidTest --rerun-tasks
+    ./gradlew :manual-tests:assembleAndroidTest --rerun-tasks
 }
 
 function build_native_libraries {
@@ -110,6 +111,8 @@ function all {
     run_unit_tests
     echo "finding built apks (jenkins help)"
     find ${SRC_DIR} -iname "*.apk"
+    echo "finding built aars (jenkins help)"
+    find ${SRC_DIR} -iname "*.aar"
 }
 
 function help {
