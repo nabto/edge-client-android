@@ -1,6 +1,7 @@
 package com.nabto.edge.iamutil
 
 import com.nabto.edge.client.Connection
+import com.nabto.edge.iamutil.mocks.UserResponse
 import com.nabto.edge.iamutil.mocks.createCoapErrorMock
 import com.nabto.edge.iamutil.mocks.createGetPairingCoapMock
 import com.nabto.edge.iamutil.mocks.createGetUserCoapMock
@@ -30,10 +31,33 @@ class GetUserTest {
     {
         val testUserUsername = "testuser"
 
-        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(UserResponse( Username = testUserUsername) ) )
         every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val user = iamUtil.getUser(connection, testUserUsername);
         assertEquals(testUserUsername, user.username);
+    }
+
+    @Test
+    fun getUserAllInfo()
+    {
+        val testUserUsername = "testuser"
+
+        val ur = UserResponse(
+            Username = testUserUsername,
+            DisplayName = "displayName",
+            Role = "role",
+            Fingerprint = "fingerprint",
+            Sct = "sct"
+            )
+
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(ur))
+        every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
+        val user = iamUtil.getUser(connection, testUserUsername);
+        assertEquals(ur.Username, user.username);
+        assertEquals(ur.DisplayName, user.displayName)
+        assertEquals(ur.Role, user.role)
+        assertEquals(ur.Sct, user.sct)
+        assertEquals(ur.Fingerprint, user.fingerprint)
     }
 
     @Test
@@ -41,7 +65,7 @@ class GetUserTest {
     {
         val testUserUsername = "testuser"
 
-        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(testUserUsername) )
+        every { connection.createCoap("GET", "/iam/users/"+testUserUsername) } returns ( createGetUserCoapMock(UserResponse( Username = testUserUsername) ) )
         every { connection.createCoap("GET", "/iam/pairing" ) } returns ( createGetPairingCoapMock() )
         val latch : CountDownLatch = CountDownLatch(1)
         iamUtil.getUserCallback(connection, testUserUsername, { iamError: IamError, _ : Optional<IamUser> ->

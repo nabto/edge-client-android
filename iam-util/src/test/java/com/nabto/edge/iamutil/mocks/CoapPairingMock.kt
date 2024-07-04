@@ -51,3 +51,11 @@ fun mockCoapGetParing(connection : Connection, pairingResponse : PairingResponse
 
     every { connection.createCoap("GET", "/iam/pairing") } returns coap
 }
+
+fun mockCoapGetParingError(connection : Connection, statusCode: Int)
+{
+    val coap : Coap = createCoapMock();
+    every { coap.execute() } returns ( Unit )
+    every { coap.responseStatusCode } returns ( statusCode )
+    every { connection.createCoap("GET", "/iam/pairing") } returns coap
+}
