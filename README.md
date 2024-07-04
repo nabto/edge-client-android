@@ -48,9 +48,7 @@ Run tests on a predefined group of devices
 
 Mdns and Local Connections is not tested using the connectedAndroidTest projects, they need to be tested using the manual-tests test suite.
 
-Testing mdns:
-
-Run a local mdns test device and switch the phone to the local wifi.
+Run a local mdns test device and switch the phone to the local wifi, the phones screen needs to be turned on else the wifi will probably be in a low power state and mdns packets are not receieved.
 ```
 ./start_local_test_devices.sh
 ```
