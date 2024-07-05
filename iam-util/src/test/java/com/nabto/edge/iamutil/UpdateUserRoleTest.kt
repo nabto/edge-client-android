@@ -34,6 +34,6 @@ class UpdateUserRoleTest {
     @Test
     fun ok() {
         mockPutUserSetting(connection, username, "role", "value")
-        val user = iamUtil.updateUserRole(connection, username, "value")
+        iamUtil.updateUserRole(connection, username, "value")
     }
 }

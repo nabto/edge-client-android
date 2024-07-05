@@ -34,6 +34,6 @@ class UpdateUserPasswordTest {
     @Test
     fun ok() {
         mockPutUserSetting(connection, username, "password", "value")
-        val user = iamUtil.updateUserPassword(connection, username, "value")
+        iamUtil.updateUserPassword(connection, username, "value")
     }
 }

@@ -34,6 +34,6 @@ class UpdateUserDisplayNameTest {
     @Test
     fun ok() {
         mockPutUserSetting(connection, username, "display-name", "value")
-        val user = iamUtil.updateUserDisplayName(connection, username, "value")
+        iamUtil.updateUserDisplayName(connection, username, "value")
     }
 }

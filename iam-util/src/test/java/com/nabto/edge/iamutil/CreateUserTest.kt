@@ -35,11 +35,9 @@ class CreateUserTest {
     fun mockPostUsersCoapCall(statusCode: Int)  {
         val coap = createCoapMock()
         every { coap.responseStatusCode } returns statusCode
-        val stringListSerializer: KSerializer<List<String>> = ListSerializer(String.serializer())
         val userRequest : UserResponse = UserResponse(Username = username)
         every { coap.setRequestPayload(ContentFormat.APPLICATION_CBOR, any()) } answers {
             val bytes = secondArg<ByteArray>()
-            val stringSerializer: KSerializer<String> = String.serializer()
             val newUser : UserResponse = Cbor.decodeFromByteArray<UserResponse>(UserResponse.serializer(), bytes)
             assertEquals(newUser.Username, username);
         }
@@ -61,7 +59,7 @@ class CreateUserTest {
         mockPostUsersCoapCall(201);
         mockPutUserSetting(connection, username, "password", password)
         mockPutUserSetting(connection, username, "role", role)
-        val user = iamUtil.createUser(connection, username, password, role)
+        iamUtil.createUser(connection, username, password, role)
     }
 
     @Test
