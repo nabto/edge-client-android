@@ -9,6 +9,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -17,20 +18,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.junit.Assert.assertEquals
 import java.util.Optional
-
-@kotlinx.serialization.ExperimentalSerializationApi
-@Serializer(forClass = String::class)
-object StringSerializer : KSerializer<String> {
-    //override val descriptor: SerialDescriptor = SerialDescriptor("String", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: String) {
-        encoder.encodeString(value)
-    }
-
-    override fun deserialize(decoder: Decoder): String {
-        return decoder.decodeString()
-    }
-}
 
 @Serializable
 class UserResponse(
@@ -67,7 +54,8 @@ fun createPutUserUsernameCoapMock(expectedUsername : String) : Coap {
 
     every { coap.setRequestPayload(60, any()) } answers {
         val bytes = secondArg<ByteArray>()
-        val newUsername : String = Cbor.decodeFromByteArray<String>(StringSerializer, bytes)
+        val stringSerializer: KSerializer<String> = String.serializer()
+        val newUsername : String = Cbor.decodeFromByteArray<String>(stringSerializer, bytes)
         assertEquals(newUsername, expectedUsername);
     }
     return coap;
