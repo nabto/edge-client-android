@@ -186,7 +186,7 @@ public class IamImpl extends IamUtil {
                 case "LocalOpen": mode = PairingMode.LOCAL_OPEN; break;
                 case "PasswordInvite": mode = PairingMode.PASSWORD_INVITE; break;
                 case "PasswordOpen": mode = PairingMode.PASSWORD_OPEN; break;
-                default: throw new IamException(IamError.FAILED, "unknown mode " + stringMode);
+                default: continue;
             }
             list.add(mode);
         }
@@ -389,6 +389,7 @@ public class IamImpl extends IamUtil {
                 {204, IamError.NONE},
                 {400, IamError.INVALID_INPUT},
                 {403, IamError.BLOCKED_BY_DEVICE_CONFIGURATION},
+                {409, IamError.USERNAME_EXISTS},
                 {404, error404}
             })
             .execute();
