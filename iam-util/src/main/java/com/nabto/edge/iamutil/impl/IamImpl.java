@@ -186,7 +186,7 @@ public class IamImpl extends IamUtil {
                 case "LocalOpen": mode = PairingMode.LOCAL_OPEN; break;
                 case "PasswordInvite": mode = PairingMode.PASSWORD_INVITE; break;
                 case "PasswordOpen": mode = PairingMode.PASSWORD_OPEN; break;
-                default: throw new IamException(IamError.FAILED, "unknown mode " + stringMode);
+                default: continue;
             }
             list.add(mode);
         }
