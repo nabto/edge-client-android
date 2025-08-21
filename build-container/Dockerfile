@@ -21,11 +21,11 @@ RUN mv $ANDROID_HOME/foo $ANDROID_HOME/cmdline-tools/latest
 
 RUN yes | $ANDROID_SDKMANAGER --licenses
 
-ARG NDK_VERSION=26.3.11579264
+ARG NDK_VERSION=28.2.13676358
 
 # Install Android Build Tool and Libraries
 RUN $ANDROID_SDKMANAGER "tools" "platform-tools"
-RUN $ANDROID_SDKMANAGER "build-tools;34.0.0"
+RUN $ANDROID_SDKMANAGER "build-tools;35.0.0"
 RUN $ANDROID_SDKMANAGER "platforms;android-34"
 RUN $ANDROID_SDKMANAGER "ndk-bundle"
 #RUN $ANDROID_SDKMANAGER "cmake;3.18.1"
