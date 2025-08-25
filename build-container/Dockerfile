@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install curl unzip zip git build-essential openjdk
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
     ANDROID_HOME="/usr/local/android-sdk"
 ENV ANDROID_SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+#
 # Download Android SDK
 RUN mkdir "$ANDROID_HOME" .android \
     && cd "$ANDROID_HOME" \
@@ -25,7 +26,7 @@ ARG NDK_VERSION=28.2.13676358
 
 # Install Android Build Tool and Libraries
 RUN $ANDROID_SDKMANAGER "tools" "platform-tools"
-RUN $ANDROID_SDKMANAGER "build-tools;35.0.0"
+RUN $ANDROID_SDKMANAGER "build-tools;34.0.0"
 RUN $ANDROID_SDKMANAGER "platforms;android-34"
 RUN $ANDROID_SDKMANAGER "ndk-bundle"
 #RUN $ANDROID_SDKMANAGER "cmake;3.18.1"
