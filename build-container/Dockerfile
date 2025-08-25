@@ -15,17 +15,17 @@ ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-131
 ENV ANDROID_SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 ENV ANDROID_SDK_ROOT=$ANDROID_HOME
 
-# sdkmanager expects to be run from $ANDROID_HOME/cmdline-tools/{version}/bin/sdkmanager otherwise it will error
-RUN mv $ANDROID_HOME/cmdline-tools $ANDROID_HOME/Temp
-RUN mkdir $ANDROID_HOME/cmdline-tools
-RUN mv $ANDROID_HOME/Temp $ANDROID_HOME/cmdline-tools/latest
-
 # Download and unzip Android SDK
 RUN mkdir -p "$ANDROID_HOME" .android \
     && cd "$ANDROID_HOME" \
     && curl -s -o sdk.zip $SDK_URL \
     && unzip -q sdk.zip \
     && rm sdk.zip
+
+# sdkmanager expects to be run from $ANDROID_HOME/cmdline-tools/{version}/bin/sdkmanager otherwise it will error
+RUN mv $ANDROID_HOME/cmdline-tools $ANDROID_HOME/Temp
+RUN mkdir $ANDROID_HOME/cmdline-tools
+RUN mv $ANDROID_HOME/Temp $ANDROID_HOME/cmdline-tools/latest
 
 RUN yes | $ANDROID_SDKMANAGER --licenses
 
