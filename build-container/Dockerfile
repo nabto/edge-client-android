@@ -4,14 +4,18 @@ USER root
 
 RUN apt-get update && apt-get install curl unzip zip git build-essential openjdk-17-jdk swig cmake zip pkg-config ninja-build ccache tar wget python3 -y
 
-ARG DOCKER_USER=default_user
+ARG DOCKER_USER=defaultuser
 ARG DOCKER_USER_UID=1000
 ARG DOCKER_USER_GID=1000
-RUN groupadd -g ${DOCKER_USER_GID} ${DOCKER_USER} && adduser --uid ${DOCKER_USER_UID} --gid ${DOCKER_USER_GID} --gecos "" --disabled-password ${DOCKER_USER}
+RUN groupadd -g ${DOCKER_USER_GID} ${DOCKER_USER} \
+    && adduser --uid ${DOCKER_USER_UID} --gid ${DOCKER_USER_GID} --gecos "" --disabled-password ${DOCKER_USER} \
+    && chown -R ${DOCKER_USER}:${DOCKER_USER} /home/${DOCKER_USER}
 USER $DOCKER_USER
 
+WORKDIR /home/${DOCKER_USER}
+
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip" \
-    ANDROID_HOME="/home/default_user/Android/Sdk"
+    ANDROID_HOME="/home/defaultuser/Android/Sdk"
 ENV ANDROID_SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 ENV ANDROID_SDK_ROOT=$ANDROID_HOME
 
