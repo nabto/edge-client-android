@@ -4,21 +4,28 @@ USER root
 
 RUN apt-get update && apt-get install curl unzip zip git build-essential openjdk-17-jdk swig cmake zip pkg-config ninja-build ccache tar wget python3 -y
 
-ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
-    ANDROID_HOME="/usr/local/android-sdk"
+ARG DOCKER_USER=default_user
+ARG DOCKER_USER_UID=1000
+ARG DOCKER_USER_GID=1000
+RUN groupadd -g ${DOCKER_USER_GID} ${DOCKER_USER} && adduser --uid ${DOCKER_USER_UID} --gid ${DOCKER_USER_GID} --gecos "" --disabled-password ${DOCKER_USER}
+USER $DOCKER_USER
+
+ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip" \
+    ANDROID_HOME="/home/default_user/Android/Sdk"
 ENV ANDROID_SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-#
-# Download Android SDK
+ENV ANDROID_SDK_ROOT=$ANDROID_HOME
+
+# sdkmanager expects to be run from $ANDROID_HOME/cmdline-tools/{version}/bin/sdkmanager otherwise it will error
+RUN mv $ANDROID_HOME/cmdline-tools $ANDROID_HOME/Temp
+RUN mkdir $ANDROID_HOME/cmdline-tools
+RUN mv $ANDROID_HOME/Temp $ANDROID_HOME/cmdline-tools/latest
+
+# Download and unzip Android SDK
 RUN mkdir "$ANDROID_HOME" .android \
     && cd "$ANDROID_HOME" \
     && curl -s -o sdk.zip $SDK_URL \
     && unzip -q sdk.zip \
     && rm sdk.zip
-
-#wtf
-RUN mv $ANDROID_HOME/cmdline-tools $ANDROID_HOME/foo
-RUN mkdir $ANDROID_HOME/cmdline-tools
-RUN mv $ANDROID_HOME/foo $ANDROID_HOME/cmdline-tools/latest
 
 RUN yes | $ANDROID_SDKMANAGER --licenses
 
@@ -29,20 +36,13 @@ RUN $ANDROID_SDKMANAGER "tools" "platform-tools"
 RUN $ANDROID_SDKMANAGER "build-tools;36.0.0"
 RUN $ANDROID_SDKMANAGER "platforms;android-36"
 RUN $ANDROID_SDKMANAGER "ndk-bundle"
-#RUN $ANDROID_SDKMANAGER "cmake;3.18.1"
 RUN $ANDROID_SDKMANAGER "ndk;$NDK_VERSION"
 
 RUN yes | $ANDROID_SDKMANAGER --licenses
 
-ARG DOCKER_USER=default_user
-ARG DOCKER_USER_UID=1000
-ARG DOCKER_USER_GID=1000
-RUN groupadd -g ${DOCKER_USER_GID} ${DOCKER_USER} && adduser --uid ${DOCKER_USER_UID} --gid ${DOCKER_USER_GID} --gecos "" --disabled-password ${DOCKER_USER}
-USER $DOCKER_USER
-
+ENV ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}
 ENV VCPKG_BINARY_SOURCES=clear;files,/build-cache/edge-client-android/vcpkg,readwrite
 ENV CCACHE_DIR=/build-cache/edge-client-android/ccache
 ENV CMAKE_CXX_COMPILER_LAUNCHER=ccache
-ENV ANDROID_NDK_HOME=/usr/local/android-sdk/ndk/${NDK_VERSION}
 
 WORKDIR /sandbox
