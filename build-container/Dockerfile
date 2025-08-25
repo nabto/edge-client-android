@@ -21,7 +21,7 @@ RUN mkdir $ANDROID_HOME/cmdline-tools
 RUN mv $ANDROID_HOME/Temp $ANDROID_HOME/cmdline-tools/latest
 
 # Download and unzip Android SDK
-RUN mkdir "$ANDROID_HOME" .android \
+RUN mkdir -p "$ANDROID_HOME" .android \
     && cd "$ANDROID_HOME" \
     && curl -s -o sdk.zip $SDK_URL \
     && unzip -q sdk.zip \
