@@ -20,7 +20,7 @@ docker run --rm -i ${USE_TTY} \
     --volume="${SRC_DIR}:/sandbox" \
     --volume=${HOME}/build-cache:/build-cache \
     --workdir="/sandbox" \
-    -e ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64 -e ORG_GRADLE_PROJECT_GPG_PUBLIC_KEY -e ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD -e ORG_GRADLE_PROJECT_OSSRH_USERNAME -e ORG_GRADLE_PROJECT_OSSRH_PASSWORD \
+    -e ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64 -e ORG_GRADLE_PROJECT_GPG_SIGNING_PUBLIC_KEY_BASE64 -e ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD -e ORG_GRADLE_PROJECT_OSSRH_USERNAME -e ORG_GRADLE_PROJECT_OSSRH_PASSWORD \
     android_build_container build-scripts/android.sh "$@"
 
     # android_build_container echo "$@"
