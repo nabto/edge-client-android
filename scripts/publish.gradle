@@ -1,14 +1,5 @@
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
 apply from: "${rootDir}/scripts/versioning.gradle"
-
-def getReleaseRepositoryUrl() {
-    return 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
-}
-
-def getSnapshotRepositoryUrl() {
-    return 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-}
 
 afterEvaluate { project ->
     publishing {
@@ -51,25 +42,8 @@ afterEvaluate { project ->
 
         repositories {
             maven {
-
-                url = isReleaseVersion() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
-                credentials {
-                    username = OSSRH_USERNAME
-                    password = OSSRH_PASSWORD
-                }
+                url = rootProject.layout.buildDirectory.dir('staging-deploy')
             }
         }
-
-    }
-    signing {
-        def signingPassword = GPG_SIGNING_PASSWORD
-        def signingKey = new String(Base64.decoder.decode(GPG_SIGNING_KEY_BASE64))
-        if (signingPassword.empty || signingKey.empty) {
-            project.logger.info("missing signing password or key so skipping the signing of the artifacts.")
-            return
-        }
-        project.logger.info('password: ' + signingKey)
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.release
     }
 }

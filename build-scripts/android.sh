@@ -99,6 +99,7 @@ function copy_native_libs_to_android_library {
 function deploy {
     cd ${SRC_DIR}
     ./gradlew publish
+    ./gradlew jreleaserDeploy
 }
 
 function run_unit_tests {
