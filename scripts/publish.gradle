@@ -36,6 +36,15 @@ afterEvaluate { project ->
                         developerConnection = POM_SCM_DEV_CONNECTION
                         url = POM_SCM_URL
                     }
+                    pom.withXml {
+                        def buildNode = asNode().appendNode('build')
+                        def pluginsNode = buildNode.appendNode('plugins')
+                        def pluginNode = pluginsNode.appendNode('plugin')
+                        pluginNode.appendNode('groupId', 'com.simpligility.maven.plugins')
+                        pluginNode.appendNode('artifactId', 'android-maven-plugin')
+                        pluginNode.appendNode('version', '4.6.0')
+                        pluginNode.appendNode('extensions', 'true')
+                    }
                 }
             }
         }
