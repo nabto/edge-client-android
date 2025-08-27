@@ -37,7 +37,7 @@ jreleaser {
                     snapshotSupported = true
                     closeRepository = true
                     releaseRepository = true
-                    stagingRepository('target/staging-deploy')
+                    stagingRepository('build/staging-deploy')
                     username = OSSRH_USERNAME
                     password = OSSRH_PASSWORD
                 }
