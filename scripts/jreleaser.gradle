@@ -13,8 +13,8 @@ jreleaser {
     signing {
         active = 'ALWAYS'
         armored = true
-        verify = false
         passphrase = GPG_SIGNING_PASSWORD
+        publicKey = GPG_SIGNING_PUBLIC_KEY_BASE64
         secretKey = GPG_SIGNING_KEY_BASE64
     }
     deploy {
