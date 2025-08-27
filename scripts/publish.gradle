@@ -36,6 +36,9 @@ afterEvaluate { project ->
                         developerConnection = POM_SCM_DEV_CONNECTION
                         url = POM_SCM_URL
                     }
+                    
+                    // The POM checker that JReleaser uses will error without this, see:
+                    // https://github.com/jreleaser/jreleaser.github.io/issues/85#issuecomment-3062376973
                     pom.withXml {
                         def buildNode = asNode().appendNode('build')
                         def pluginsNode = buildNode.appendNode('plugins')
