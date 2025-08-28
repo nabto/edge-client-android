@@ -13,7 +13,7 @@ ext {
         if (isReleaseVersion()) {
             gitTag.substring(1)
         } else {
-            "0.0.0" + "-branch." + gitBranch + ".commits." + gitCount + "+" + gitHash + gitDirty
+            "0.0.0" + ".branch." + gitBranch + ".commits." + gitCount + "+" + gitHash + gitDirty
         }
     }
 

@@ -12,9 +12,18 @@ Client SDK library.
 
 ## Release strategy
 
-All non tagged builds are put into the snapshot repository at  https://s01.oss.sonatype.org/content/repositories/snapshots/com/nabto/edge/client/library/ using a naming strategy which is "<branch-name>-SNAPSHOT".
+All non-tagged builds are put into the snapshot repository at https://central.sonatype.com/service/rest/repository/browse/maven-snapshots using a naming strategy which is `<branch-name>-SNAPSHOT`
 
-All tagged releases are going to the staging repository where they need to be accepted before they can go to the maven central repository. Only visible if logged into sonatype.org (upper right corner).
+To consume snapshot builds in your project, add the following repository to your gradle settings
+
+```kotlin
+maven {
+    name = "Central Portal Snapshots"
+    url = "https://central.sonatype.com/repository/maven-snapshots/"
+}
+```
+
+Read more at https://central.sonatype.org/publish/publish-portal-snapshots/#consuming-snapshot-releases-for-your-project
 
 ## Building the library
 
@@ -108,52 +117,52 @@ Time: 3,29
 OK (5 tests)
 ```
 
+# Deploying to Maven Central with JReleaser
 
+This repository now uses JReleaser to upload artifacts to Maven Central. This happens in two steps
+1. The publish step runs the `scripts/publish.gradle` in each subproject to store staging artifacts in the build directory.
+2. JReleaser (configured in `scripts/jreleaser.gradle`) deploys the staging artifacts to Maven Central using the new Portal API.
 
-## Publishing the library to the local maven repository
+[More info about JReleaser's workflow.](https://jreleaser.org/guide/latest/concepts/workflow.html) Currently we only use the `deploy`, and `sign` steps.
 
-run `./gradlew publishToMavenLocal`
+Sonatype has sunset OSSRH and now intends for developers to use their new Portal Publisher API. [As of writing there is no official Gradle plugin for publishing using the Portal API](https://central.sonatype.org/publish/publish-portal-gradle/). JReleaser is used to smoothly enable a transition to the Portal API.
 
-## Publish to maven OSSRH.
+## Gradle properties for deployment
 
-This requires OSSRH_USERNAME, OSSRH_PASSWORD, GPG_SIGNING_PASSWORD and GPG_SIGNING_KEY_BASE64 to be set. These variables can be set in ~/.gradle/gradle.properties for local builds or via the environment for CI builds. ORG_GRADLE_PROJECT_OSSRH_USERNAME etc. Credentials can be found in dokuwiki.
+The following gradle properties must be set to allow JReleaser to publish artifacts.
 
-The base64 key can be created by `gpg --armor --export-secret-keys keyid | base64 -w 0`
+* `GPG_SIGNING_KEY_BASE64` Base64 encoded armored PGP private key
+* `GPG_SIGNING_PUBLIC_KEY_BASE64` Base64 encoded armored PGP public key
+* `GPG_SIGNING_PASSWORD` Passphrase for the above keypair
+* `OSSRH_USERNAME` **IMPORTANT** this is no longer the OSSRH username but actually the username of a token generated in the account options in https://central.sonatype.com/
+* `OSSRH_PASSWORD` Similar to above, this is the password of that same token.
 
-`./gradlew publish`
-
-Tagged releases will be sent to the staging repository at sonatype https://s01.oss.sonatype.org/ Where they manually needs to be promoted as releases before they can be found in maven central (see below).
-
-Non release builds aka snapshots can be found at https://s01.oss.sonatype.org/content/repositories/snapshots/com/nabto/edge/client/library/
-
-### Using a build in a Sonatype Staging Repository
-
-To use a staging build, modify the `dependencyResolutionManagement` section of settings.gradle to include the staging repository (the id `10XX` is incremented with each uploaded build (and staging builds may only removed after a short while)):
-
+Note that the signing keys are **armored and base64 encoded**, so they are actually twice-encoded. This is to get around a Jenkins limitation where secrets cannot have newlines. To output these keys from `gpg` you can use the following commands
 ```
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        maven {
-            url "https://s01.oss.sonatype.org/service/local/repositories/comnabto-10XX/content/"
-        }
-        google()
-        mavenCentral()
-    }
-}
+gpg --armor --export <KEYID> | base64 -w 0
+gpg --armor --export-secret-keys <KEYID> | base64 -w 0
 ```
 
+## Publishing staging artifacts
 
-### Promoting a build through Sonatype
+```
+./gradlew publish
+```
 
-The process is described on [sonatype.org](https://central.sonatype.org/publish/release/#locate-and-examine-your-staging-repository) - basically you must _close_ the staging build before it can be released for public access:
+Running publish will no longer attempt to deploy to maven. Instead it will store staging artifacts into the `build/staging-deploy` directory.
 
-> After your deployment the repository will be in an Open status. You can evaluate the deployed components in the repository using the Contents tab. If you believe everything is correct you, can press the Close button above the list. This will trigger the evaluations of the components against the requirements.
->
-> Closing will fail if your components do not meet the requirements. If this happens, you can press Drop and the staging repository will be deleted. This allows you to correct any problems with the components and the deployment process and re-run the deployment. Details are available in the Activity tab below the list by selecting. Press on the individual steps for further details.
->
-> Once you have successfully closed the staging repository, you can release it by pressing the Release button. This will move the components into the release repository of OSSRH where it will be synced to the Central Repository.
+## Deploying
 
+```
+./gradlew jreleaserDeploy
+```
+Running this command will deploy the files in `build/staging-deploy` to Maven Central.
+
+If the current Git commit is tagged with a version it will be uploaded but not published. You must manually go to https://central.sonatype.com/ and publish the staged artifacts.
+
+If there is no tag JReleaser will only deploy a snapshot.
+
+---
 
 ## Debugging swig generation
 

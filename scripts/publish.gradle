@@ -1,14 +1,5 @@
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
 apply from: "${rootDir}/scripts/versioning.gradle"
-
-def getReleaseRepositoryUrl() {
-    return 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
-}
-
-def getSnapshotRepositoryUrl() {
-    return 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-}
 
 afterEvaluate { project ->
     publishing {
@@ -45,31 +36,26 @@ afterEvaluate { project ->
                         developerConnection = POM_SCM_DEV_CONNECTION
                         url = POM_SCM_URL
                     }
+                    
+                    // The POM checker that JReleaser uses will error without this, see:
+                    // https://github.com/jreleaser/jreleaser.github.io/issues/85#issuecomment-3062376973
+                    pom.withXml {
+                        def buildNode = asNode().appendNode('build')
+                        def pluginsNode = buildNode.appendNode('plugins')
+                        def pluginNode = pluginsNode.appendNode('plugin')
+                        pluginNode.appendNode('groupId', 'com.simpligility.maven.plugins')
+                        pluginNode.appendNode('artifactId', 'android-maven-plugin')
+                        pluginNode.appendNode('version', '4.6.0')
+                        pluginNode.appendNode('extensions', 'true')
+                    }
                 }
             }
         }
 
         repositories {
             maven {
-
-                url = isReleaseVersion() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
-                credentials {
-                    username = OSSRH_USERNAME
-                    password = OSSRH_PASSWORD
-                }
+                url = rootProject.layout.buildDirectory.dir('staging-deploy')
             }
         }
-
-    }
-    signing {
-        def signingPassword = GPG_SIGNING_PASSWORD
-        def signingKey = new String(Base64.decoder.decode(GPG_SIGNING_KEY_BASE64))
-        if (signingPassword.empty || signingKey.empty) {
-            project.logger.info("missing signing password or key so skipping the signing of the artifacts.")
-            return
-        }
-        project.logger.info('password: ' + signingKey)
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.release
     }
 }

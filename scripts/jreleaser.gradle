@@ -1,0 +1,47 @@
+apply from: "${rootDir}/scripts/versioning.gradle"
+
+jreleaser {
+    project {
+        name = "Edge Client Android"
+        version = isReleaseVersion() ? buildVersionName() : "0." + gitBranch + "-SNAPSHOT"
+        languages {
+            java {
+                groupId = JRELEASER_GROUP_ID
+            }
+        }
+    }
+    signing {
+        active = 'ALWAYS'
+        armored = true
+        passphrase = GPG_SIGNING_PASSWORD
+        publicKey = new String(Base64.decoder.decode(GPG_SIGNING_PUBLIC_KEY_BASE64))
+        secretKey = new String(Base64.decoder.decode(GPG_SIGNING_KEY_BASE64))
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                'release-deploy' {
+                    active = 'RELEASE'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stage = 'UPLOAD'
+                    stagingRepository('build/staging-deploy')
+                    username = OSSRH_USERNAME
+                    password = OSSRH_PASSWORD
+                }
+            }
+            nexus2 {
+                'snapshot-deploy' {
+                    active = 'SNAPSHOT'
+                    snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    applyMavenCentralRules = true
+                    snapshotSupported = true
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepository('build/staging-deploy')
+                    username = OSSRH_USERNAME
+                    password = OSSRH_PASSWORD
+                }
+            }
+        }
+    }
+}
