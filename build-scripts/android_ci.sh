@@ -21,6 +21,8 @@ docker run --rm -i ${USE_TTY} \
     --volume=${HOME}/build-cache:/build-cache \
     --workdir="/sandbox" \
     -e ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64 -e ORG_GRADLE_PROJECT_GPG_SIGNING_PUBLIC_KEY_BASE64 -e ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD -e ORG_GRADLE_PROJECT_OSSRH_USERNAME -e ORG_GRADLE_PROJECT_OSSRH_PASSWORD \
+    -e VCPKG_BINARY_SOURCES \
+    -e AWS_REGION -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN \
     android_build_container build-scripts/android.sh "$@"
 
     # android_build_container echo "$@"

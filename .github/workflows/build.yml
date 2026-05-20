@@ -1,0 +1,191 @@
+name: Build
+
+on:
+  push:
+    branches: ['**']
+    tags: ['**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Don't cancel tag builds — they produce stage-for-promote releases.
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+
+env:
+  AWS_DEV_REGION: us-east-1
+  VCPKG_BINARY_SOURCES: 'clear;x-aws,s3://vcpkg-build-cache-us-east-1/,readwrite'
+
+jobs:
+  native:
+    name: native (${{ matrix.abi }})
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86, x86_64]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve Client SDK pinned commit
+        # Reads the submodule's pinned SHA from the parent tree without needing the
+        # submodule itself to be initialized — lets us check the cache before doing
+        # any of the heavy init steps below.
+        id: sdk-sha
+        run: echo "sha=$(git rev-parse HEAD:nabto-client-sdk)" >> $GITHUB_OUTPUT
+
+      - name: Cache native artifacts
+        # Invalidates on Client SDK version bump or build-container/Dockerfile change
+        # (NDK / toolchain). No restore-keys — clean build is intentional when either
+        # input changes.
+        id: native-cache
+        uses: actions/cache@v4
+        with:
+          path: nabto-client-sdk/artifacts/android-${{ matrix.abi }}
+          key: native-${{ matrix.abi }}-sdk-${{ steps.sdk-sha.outputs.sha }}-docker-${{ hashFiles('build-container/Dockerfile') }}
+
+      - uses: actions/create-github-app-token@v1
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: nabto
+          repositories: |
+            nabto-client-sdk
+            nabto-common-cpp
+
+      - name: Initialize submodules
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/nabto/".insteadOf "https://github.com/nabto/"
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_DEV_REGION }}
+          role-duration-seconds: 7200
+
+      - name: Build native (${{ matrix.abi }})
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        run: ./build-scripts/android_ci.sh build_native_one_abi ${{ matrix.abi }}
+
+      - name: Upload native artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.abi }}
+          path: nabto-client-sdk/artifacts/android-${{ matrix.abi }}
+          if-no-files-found: error
+
+  build:
+    needs: native
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Restore branch name on detached HEAD
+        # versioning.gradle reads `git rev-parse --abbrev-ref HEAD`; without this fix
+        # snapshots publish as 0.HEAD-SNAPSHOT (jreleaser.gradle:6).
+        if: github.ref_type == 'branch'
+        run: git checkout -B "${GITHUB_REF_NAME}" "${GITHUB_SHA}"
+
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: nabto
+          repositories: |
+            nabto-client-sdk
+            nabto-common-cpp
+
+      - name: Initialize submodules
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/nabto/".insteadOf "https://github.com/nabto/"
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_DEV_REGION }}
+          role-duration-seconds: 7200
+
+      - name: Download native artifacts
+        # Each `android-<abi>` artifact extracts into its own subdir, reconstructing
+        # nabto-client-sdk/artifacts/android-<abi>/ as if all four ABI builds had run here.
+        uses: actions/download-artifact@v4
+        with:
+          pattern: android-*
+          path: nabto-client-sdk/artifacts/
+
+      - name: Build Android
+        run: ./build-scripts/android_ci.sh build_android_no_native
+
+      - name: Upload APKs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apks
+          path: '**/build/outputs/**/*.apk'
+          if-no-files-found: warn
+
+      - name: Upload AARs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aars
+          path: '**/build/outputs/aar/*.aar'
+          if-no-files-found: warn
+
+      - name: Publish JVM test reports
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: '**/build/test-results/test*/TEST-*.xml'
+          fail_on_failure: true
+
+      - name: Deploy
+        env:
+          ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64 }}
+          ORG_GRADLE_PROJECT_GPG_SIGNING_PUBLIC_KEY_BASE64: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_PUBLIC_KEY_BASE64 }}
+          ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_OSSRH_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_OSSRH_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_OSSRH_PASSWORD }}
+        run: ./build-scripts/android_ci.sh deploy
+
+      - name: Upload staging-deploy bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-deploy
+          path: build/staging-deploy/**
+          if-no-files-found: ignore
+
+      - name: Upload JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-output
+          path: build/jreleaser/**
+          if-no-files-found: ignore

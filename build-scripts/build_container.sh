@@ -47,6 +47,7 @@ else
 fi
 
 docker build --pull ${PUSH} -t ${IMAGE_COMMIT} --build-arg BUILDKIT_INLINE_CACHE=1 \
+--build-arg DOCKER_USER_UID=$(id -u) --build-arg DOCKER_USER_GID=$(id -g) \
 --cache-from type=registry,ref=${IMAGE_COMMIT} \
 --cache-from type=registry,ref=${CACHE_COMMIT1} \
 --cache-from type=registry,ref=${CACHE_COMMIT2} \
