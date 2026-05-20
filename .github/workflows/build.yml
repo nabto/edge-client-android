@@ -1,0 +1,102 @@
+name: Build
+
+on:
+  push:
+    branches: ['**']
+    tags: ['**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Don't cancel tag builds — they produce stage-for-promote releases.
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+
+env:
+  AWS_DEV_REGION: us-east-1
+  VCPKG_BINARY_SOURCES: 'clear;x-aws,s3://vcpkg-build-cache-us-east-1/,readwrite'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Restore branch name on detached HEAD
+        if: github.ref_type == 'branch'
+        run: git checkout -B "${GITHUB_REF_NAME}" "${GITHUB_SHA}"
+
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: nabto
+          repositories: |
+            nabto-client-sdk
+            nabto-common-cpp
+
+      - name: Initialize submodules
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/nabto/".insteadOf "https://github.com/nabto/"
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_DEV_REGION }}
+          role-duration-seconds: 7200
+
+      - name: Build
+        run: ./build-scripts/android_ci.sh
+
+      - name: Upload APKs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apks
+          path: '**/build/outputs/**/*.apk'
+          if-no-files-found: warn
+
+      - name: Upload AARs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aars
+          path: '**/build/outputs/aar/*.aar'
+          if-no-files-found: warn
+
+      - name: Publish JVM test reports
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: '**/build/test-results/test*/TEST-*.xml'
+          fail_on_failure: true
+
+      - name: Deploy
+        env:
+          ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_KEY_BASE64 }}
+          ORG_GRADLE_PROJECT_GPG_SIGNING_PUBLIC_KEY_BASE64: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_PUBLIC_KEY_BASE64 }}
+          ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_OSSRH_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_OSSRH_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_OSSRH_PASSWORD }}
+        run: ./build-scripts/android_ci.sh deploy
+
+      - name: Upload staging-deploy bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-deploy
+          path: build/staging-deploy/**
+          if-no-files-found: ignore
