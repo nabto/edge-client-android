@@ -48,6 +48,10 @@ public interface Connection extends AutoCloseable {
      * - `ServerConnectToken`
      * - `AppName`
      * - `AppVersion`
+     * - `IgnoreDeviceNotAttached`: if `true`, the client observes the device attach
+     *   state and waits for the device to attach instead of failing immediately when
+     *   the device is not currently attached. Emits a `WAITING_FOR_ATTACH` connection
+     *   event while waiting.
      *
      * @param json a string of valid json.
      */
