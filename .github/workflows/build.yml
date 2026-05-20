@@ -35,7 +35,25 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Resolve Client SDK pinned commit
+        # Reads the submodule's pinned SHA from the parent tree without needing the
+        # submodule itself to be initialized — lets us check the cache before doing
+        # any of the heavy init steps below.
+        id: sdk-sha
+        run: echo "sha=$(git rev-parse HEAD:nabto-client-sdk)" >> $GITHUB_OUTPUT
+
+      - name: Cache native artifacts
+        # Invalidates on Client SDK version bump or build-container/Dockerfile change
+        # (NDK / toolchain). No restore-keys — clean build is intentional when either
+        # input changes.
+        id: native-cache
+        uses: actions/cache@v4
+        with:
+          path: nabto-client-sdk/artifacts/android-${{ matrix.abi }}
+          key: native-${{ matrix.abi }}-sdk-${{ steps.sdk-sha.outputs.sha }}-docker-${{ hashFiles('build-container/Dockerfile') }}
+
       - uses: actions/create-github-app-token@v1
+        if: steps.native-cache.outputs.cache-hit != 'true'
         id: app-token
         with:
           app-id: ${{ vars.GH_APP_ID }}
@@ -46,6 +64,7 @@ jobs:
             nabto-common-cpp
 
       - name: Initialize submodules
+        if: steps.native-cache.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
@@ -54,12 +73,14 @@ jobs:
           git submodule update --init --recursive
 
       - uses: aws-actions/configure-aws-credentials@v6
+        if: steps.native-cache.outputs.cache-hit != 'true'
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_DEV_REGION }}
           role-duration-seconds: 7200
 
       - name: Build native (${{ matrix.abi }})
+        if: steps.native-cache.outputs.cache-hit != 'true'
         run: ./build-scripts/android_ci.sh build_native_one_abi ${{ matrix.abi }}
 
       - name: Upload native artifacts
