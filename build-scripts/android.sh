@@ -36,6 +36,29 @@ function build_native_libraries {
     copy_native_libs_to_android_library
 }
 
+function build_native_one_abi {
+    # Build native libraries for a single ABI. Used by CI matrix jobs that build each ABI
+    # in parallel, then download the per-ABI artifacts and call build_android_no_native.
+    local abi=$1
+    if [ -z "${abi}" ]; then
+        echo "build_native_one_abi: ABI argument required (arm64-v8a, armeabi-v7a, x86, x86_64)"
+        exit 1
+    fi
+    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_${abi}
+}
+
+function build_android_no_native {
+    # Counterpart to build_native_one_abi. Assumes native artifacts already exist in
+    # nabto-client-sdk/artifacts/android-<abi>/ (typically downloaded from parallel ABI jobs).
+    copy_native_libs_to_android_library
+    build_android_libraries
+    run_unit_tests
+    echo "finding built apks (jenkins help)"
+    find ${SRC_DIR} -iname "*.apk"
+    echo "finding built aars (jenkins help)"
+    find ${SRC_DIR} -iname "*.aar"
+}
+
 function build_native_libraries_dev {
     # Only build for the two most used simulators and devices
 
@@ -143,6 +166,12 @@ case $1 in
         ;;
     "build_native_libraries")
         build_native_libraries
+        ;;
+    "build_native_one_abi")
+        build_native_one_abi $2
+        ;;
+    "build_android_no_native")
+        build_android_no_native
         ;;
     *)
         help $@

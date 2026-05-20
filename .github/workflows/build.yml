@@ -20,9 +20,59 @@ env:
   VCPKG_BINARY_SOURCES: 'clear;x-aws,s3://vcpkg-build-cache-us-east-1/,readwrite'
 
 jobs:
-  build:
+  native:
+    name: native (${{ matrix.abi }})
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86, x86_64]
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: nabto
+          repositories: |
+            nabto-client-sdk
+            nabto-common-cpp
+
+      - name: Initialize submodules
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/nabto/".insteadOf "https://github.com/nabto/"
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_DEV_REGION }}
+          role-duration-seconds: 7200
+
+      - name: Build native (${{ matrix.abi }})
+        run: ./build-scripts/android_ci.sh build_native_one_abi ${{ matrix.abi }}
+
+      - name: Upload native artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.abi }}
+          path: nabto-client-sdk/artifacts/android-${{ matrix.abi }}
+          if-no-files-found: error
+
+  build:
+    needs: native
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v6
@@ -31,6 +81,8 @@ jobs:
           fetch-tags: true
 
       - name: Restore branch name on detached HEAD
+        # versioning.gradle reads `git rev-parse --abbrev-ref HEAD`; without this fix
+        # snapshots publish as 0.HEAD-SNAPSHOT (jreleaser.gradle:6).
         if: github.ref_type == 'branch'
         run: git checkout -B "${GITHUB_REF_NAME}" "${GITHUB_SHA}"
 
@@ -58,8 +110,16 @@ jobs:
           aws-region: ${{ env.AWS_DEV_REGION }}
           role-duration-seconds: 7200
 
-      - name: Build
-        run: ./build-scripts/android_ci.sh
+      - name: Download native artifacts
+        # Each `android-<abi>` artifact extracts into its own subdir, reconstructing
+        # nabto-client-sdk/artifacts/android-<abi>/ as if all four ABI builds had run here.
+        uses: actions/download-artifact@v4
+        with:
+          pattern: android-*
+          path: nabto-client-sdk/artifacts/
+
+      - name: Build Android
+        run: ./build-scripts/android_ci.sh build_android_no_native
 
       - name: Upload APKs
         if: always()
@@ -99,4 +159,12 @@ jobs:
         with:
           name: staging-deploy
           path: build/staging-deploy/**
+          if-no-files-found: ignore
+
+      - name: Upload JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-output
+          path: build/jreleaser/**
           if-no-files-found: ignore
