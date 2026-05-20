@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 USER root
 
-RUN apt-get update && apt-get install curl unzip zip git build-essential openjdk-17-jdk swig cmake zip pkg-config ninja-build ccache tar wget python3 awscli -y
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install curl unzip zip git build-essential openjdk-17-jdk swig cmake zip pkg-config ninja-build ccache tar wget python3 awscli -y
 
 ARG DOCKER_USER=defaultuser
 ARG DOCKER_USER_UID=1000
