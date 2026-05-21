@@ -30,6 +30,18 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Free disk space
+        # ubuntu-latest ships with ~14 GB free. Docker image + vcpkg + ccache
+        # + gradle outputs blow past that on cold builds. Reclaims ~25-30 GB.
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -96,6 +108,16 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
