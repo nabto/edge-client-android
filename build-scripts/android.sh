@@ -24,15 +24,20 @@ function build_android_libraries {
     ./gradlew :manual-tests:assembleAndroidTest --rerun-tasks
 }
 
+function build_sdk_target {
+    # The SDK build script uses CMake presets which are resolved relative to the working directory
+    (cd ${SRC_DIR}/nabto-client-sdk && ./build-scripts/android.sh $1)
+}
+
 function build_native_libraries {
     # build native libraries
 
     remove_existing_java_and_jni_files
 
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_arm64-v8a
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_armeabi-v7a
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_x86_64
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_x86
+    build_sdk_target android-arm64-v8a
+    build_sdk_target android-armeabi-v7a
+    build_sdk_target android-x86_64
+    build_sdk_target android-x86
     copy_native_libs_to_android_library
 }
 
@@ -44,7 +49,7 @@ function build_native_one_abi {
         echo "build_native_one_abi: ABI argument required (arm64-v8a, armeabi-v7a, x86, x86_64)"
         exit 1
     fi
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_${abi}
+    build_sdk_target android-${abi}
 }
 
 function build_android_no_native {
@@ -64,8 +69,8 @@ function build_native_libraries_dev {
 
     remove_existing_java_and_jni_files
 
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_arm64-v8a
-    ${SRC_DIR}/nabto-client-sdk/build-scripts/android.sh build_x86_64
+    build_sdk_target android-arm64-v8a
+    build_sdk_target android-x86_64
     copy_native_libs_to_android_library
 }
 
