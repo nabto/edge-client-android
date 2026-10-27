@@ -2,7 +2,13 @@ FROM ubuntu:22.04
 
 USER root
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install curl unzip zip git build-essential openjdk-17-jdk swig cmake zip pkg-config ninja-build ccache tar wget python3 -y
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install curl unzip zip git build-essential openjdk-17-jdk swig zip pkg-config ninja-build ccache tar wget python3 -y
+
+# Install CMake >= 3.25 (the Client SDK's CMakePresets.json needs it; Ubuntu 22.04's apt package is 3.22).
+ARG CMAKE_VERSION=3.31.6
+RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
+    | tar -xz -C /opt \
+    && ln -s /opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/* /usr/local/bin/
 
 # Install AWS CLI v2 (vcpkg's x-aws backend requires >=2.4.4; Ubuntu's apt package is v1.22).
 RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip \
