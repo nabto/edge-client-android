@@ -42,7 +42,7 @@ RUN yes | $ANDROID_SDKMANAGER --licenses
 ARG NDK_VERSION=28.2.13676358
 
 # Install Android Build Tool and Libraries
-RUN $ANDROID_SDKMANAGER "tools" "platform-tools"
+RUN $ANDROID_SDKMANAGER "platform-tools"
 RUN $ANDROID_SDKMANAGER "build-tools;36.0.0"
 RUN $ANDROID_SDKMANAGER "platforms;android-36"
 RUN $ANDROID_SDKMANAGER "ndk-bundle"
