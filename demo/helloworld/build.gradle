@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.nabto.edge.client.helloworld"
-        minSdk 24
+        minSdk 28
         targetSdk 31
         versionCode 1
         versionName "1.0"
